@@ -13,7 +13,7 @@
     --text: #e8e8f0; --text-dim: #666680; --text-muted: #3a3a50;
     --accent: #5b5bf6; --accent-glow: rgba(91,91,246,0.3);
     --danger: #f65b5b; --success: #5bf6a0; --warn: #f6c85b;
-    --cell: clamp(20px, calc((100vh - 160px) / 20), 56px);
+    --cell: 35;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -712,13 +712,13 @@ const Sound = {
   MOVE_THROTTLE: 55, // мс между звуками движения
 
   init() {
-    this.move  = new SoundPool(SOUND_FILES.move,  0.45, 5);
-    this.lock  = new SoundPool(SOUND_FILES.lock,  0.65, 3);
-    this.click = new SoundPool(SOUND_FILES.click, 0.55, 3);
+    this.move  = new SoundPool(SOUND_FILES.move,  0.05, 5);
+    this.lock  = new SoundPool(SOUND_FILES.lock,  0.05, 3);
+    this.click = new SoundPool(SOUND_FILES.click, 0.05, 3);
     if (SOUND_FILES.music) {
       this.musicEl = new Audio(SOUND_FILES.music);
       this.musicEl.loop = true;
-      this.musicEl.volume = 0.22;
+      this.musicEl.volume = 0.1;
       this.musicEl.preload = 'auto';
     }
   },
