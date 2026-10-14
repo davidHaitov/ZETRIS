@@ -560,7 +560,7 @@
           <div class="checkbox-content">
             <div class="checkbox-label">Experimental mode</div>
             <div class="checkbox-hint">
-              Press <kbd>F</kbd> to clear bottom 4 rows · <strong>2 uses per game</strong>
+              Press <kbd>F</kbd> to clear 4 top rows of your stack · <strong>2 uses per game</strong>
             </div>
           </div>
         </label>
@@ -668,6 +668,88 @@ const PEER_CONFIG = {
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
     ],
+  },
+};
+
+// ══════════════════════════════════════════════════════════════════
+// SOUND
+// ══════════════════════════════════════════════════════════════════
+const SOUND_FILES = {
+  move:  'sound/move.mp3',
+  lock:  'sound/lock.mp3',
+  click: 'sound/click.mp3',
+  music: 'sound/music.mp3',
+};
+
+class SoundPool {
+  constructor(src, volume, size = 4) {
+    this.volume = volume;
+    this.pool = [];
+    this.index = 0;
+    if (!src) return;
+    for (let i = 0; i < size; i++) {
+      const a = new Audio(src);
+      a.preload = 'auto';
+      a.volume = volume;
+      this.pool.push(a);
+    }
+  }
+  play() {
+    if (!this.pool.length) return;
+    const a = this.pool[this.index];
+    this.index = (this.index + 1) % this.pool.length;
+    try {
+      a.currentTime = 0;
+      const p = a.play();
+      if (p && p.catch) p.catch(() => {});
+    } catch (e) {}
+  }
+}
+
+const Sound = {
+  move: null, lock: null, click: null, musicEl: null,
+  moveLast: 0,
+  MOVE_THROTTLE: 55, // мс между звуками движения
+
+  init() {
+    this.move  = new SoundPool(SOUND_FILES.move,  0.45, 5);
+    this.lock  = new SoundPool(SOUND_FILES.lock,  0.65, 3);
+    this.click = new SoundPool(SOUND_FILES.click, 0.55, 3);
+    if (SOUND_FILES.music) {
+      this.musicEl = new Audio(SOUND_FILES.music);
+      this.musicEl.loop = true;
+      this.musicEl.volume = 0.22;
+      this.musicEl.preload = 'auto';
+    }
+  },
+
+  playMove() {
+    const now = performance.now();
+    if (now - this.moveLast < this.MOVE_THROTTLE) return;
+    this.moveLast = now;
+    if (this.move) this.move.play();
+  },
+  playLock()  { if (this.lock)  this.lock.play();  },
+  playClick() { if (this.click) this.click.play(); },
+
+  startMusic() {
+    if (!this.musicEl) return;
+    this.musicEl.play().catch(() => {
+      // autoplay заблокирован — ждём первый клик/клавишу
+      const retry = () => {
+        this.musicEl.play().catch(() => {});
+        document.removeEventListener('pointerdown', retry);
+        document.removeEventListener('keydown', retry);
+      };
+      document.addEventListener('pointerdown', retry, { once: true });
+      document.addEventListener('keydown', retry, { once: true });
+    });
+  },
+  stopMusic() {
+    if (this.musicEl) {
+      this.musicEl.pause();
+      this.musicEl.currentTime = 0;
+    }
   },
 };
 
@@ -856,17 +938,32 @@ class TetrisGame {
     }
   }
   useAbility() {
-    if (!this.experimental || this.abilityUses <= 0) return false;
-    this.abilityUses--;
-    const captured = [];
-    for (let i = 0; i < 4; i++) {
-      const y = ROWS - 1 - i;
-      captured.push({ y, cells: this.board[y].slice() });
-    }
-    this.clearAnim = { rows: captured, start: performance.now(), duration: CLEAR_ANIM_MS + 80, count: 4 };
-    for (let i = 0; i < 4; i++) this.board[ROWS - 1 - i] = Array(COLS).fill(0);
-    return true;
+  if (!this.experimental || this.abilityUses <= 0) return false;
+
+  // Ищем самую верхнюю заполненную строку
+  let top = -1;
+  for (let r = 0; r < ROWS; r++) {
+    if (this.board[r].some(v => v)) { top = r; break; }
   }
+  if (top === -1) return false; // поле пустое — нечего убирать
+
+  // Очищаем 4 строки начиная от верха стека (вниз)
+  const captured = [];
+  const endRow = Math.min(top + 3, ROWS - 1);
+  for (let r = top; r <= endRow; r++) {
+    captured.push({ y: r, cells: this.board[r].slice() });
+    this.board[r] = Array(COLS).fill(0);
+  }
+
+  this.abilityUses--;
+  this.clearAnim = {
+    rows: captured,
+    start: performance.now(),
+    duration: CLEAR_ANIM_MS + 80,
+    count: captured.length,
+  };
+  return true;
+}
   lock() {
     if (!this.current || !this.alive) return 0;
     const { shape, color } = this.current;
@@ -1598,6 +1695,7 @@ function startGame() {
   cleanupTimers();
   gamePhase = 'playing';
   gameRunning = true;
+  Sound.startMusic();
   gameStartTime = performance.now();
   speedBoost = 0;
 
@@ -1626,13 +1724,14 @@ function startGame() {
   Object.keys(statValues).forEach(k => delete statValues[k]);
 
   game = new TetrisGame({
-    experimental: gameSettings.experimental,
-    onLock: (attack, g) => {
-      if (attack > 0) sendAttack(attack);
-      broadcastBoard(true);
-      if (!g.alive) endGame();
-      else restartGravity();
-    }
+  experimental: gameSettings.experimental,
+  onLock: (attack, g) => {
+    Sound.playLock();
+    if (attack > 0) sendAttack(attack);
+    broadcastBoard(true);
+    if (!g.alive) endGame();
+    else restartGravity();
+  }
   });
 
   setupInput();
@@ -1724,6 +1823,7 @@ function cleanupTimers() {
 }
 
 function fullCleanup() {
+  Sound.stopMusic();
   cleanupTimers();
   gameRunning = false;
   gamePhase = 'lobby';
@@ -1748,6 +1848,7 @@ function endGame() {
   gameRunning = false;
   gamePhase = 'gameover';
   cleanupTimers();
+  Sound.stopMusic();
 
   const scores = { [myId]: game.score };
   const names = { [myId]: myName };
@@ -1777,6 +1878,7 @@ function handleRemoteGameOver(data) {
   gameRunning = false;
   gamePhase = 'gameover';
   cleanupTimers();
+  Sound.stopMusic();
   showRoundOver(data.winnerId, data.winnerName, data.loserId, data.loserName);
   scheduleReturnFromRound();
 }
@@ -1968,7 +2070,7 @@ function onKeyDown(e) {
     e.preventDefault();
     if (!held[e.code]) {
       held[e.code] = true;
-      game.softDrop();
+      if (game.softDrop()) Sound.playMove();
       if (softDropTimer) clearInterval(softDropTimer);
       softDropTimer = setInterval(() => {
         if (!game || !game.alive) { clearInterval(softDropTimer); softDropTimer = null; return; }
@@ -1980,13 +2082,30 @@ function onKeyDown(e) {
   if (held[e.code]) return;
   held[e.code] = true;
   switch (e.code) {
-    case 'ArrowLeft': e.preventDefault(); game.move(-1); startDAS(-1); break;
-    case 'ArrowRight': e.preventDefault(); game.move(1); startDAS(1); break;
-    case 'ArrowUp': case 'KeyX': e.preventDefault(); game.rotate(1); break;
-    case 'KeyZ': e.preventDefault(); game.rotate(-1); break;
+    case 'ArrowLeft':
+      e.preventDefault();
+      if (game.move(-1)) Sound.playMove();
+      startDAS(-1);
+      break;
+    case 'ArrowRight':
+      e.preventDefault();
+      if (game.move(1)) Sound.playMove();
+      startDAS(1);
+      break;
+    case 'ArrowUp': case 'KeyX':
+      e.preventDefault();
+      if (game.rotate(1)) Sound.playMove();
+      break;
+    case 'KeyZ':
+      e.preventDefault();
+      if (game.rotate(-1)) Sound.playMove();
+      break;
     case 'Space': e.preventDefault(); game.hardDrop(); break;
     case 'KeyC': case 'ShiftLeft': case 'ShiftRight':
-      e.preventDefault(); game.holdPiece(); break;
+      e.preventDefault();
+      game.holdPiece();
+      Sound.playMove();
+      break;
     case 'KeyF':
       if (game.experimental) {
         e.preventDefault();
@@ -2011,7 +2130,7 @@ function startDAS(dir) {
   dasTimer = setTimeout(() => {
     arrTimer = setInterval(() => {
       if (!game || !game.alive) { stopDAS(); return; }
-      game.move(dasDir);
+      if (game.move(dasDir)) Sound.playMove();
     }, ARR);
   }, DAS);
 }
@@ -2124,10 +2243,15 @@ window.addEventListener('keydown', e => {
     e.preventDefault();
   }
 }, { passive: false });
-
+  
+document.addEventListener('click', (e) => {
+  const hit = e.target.closest('button, .room-id-display, .header-name');
+  if (hit) Sound.playClick();
+}, true);
 // ══════════════════════════════════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════════════════════════════════
+Sound.init();
 setupSettingsUI();
 applySettingsToUI();
 runtimeReady = initRuntime();
