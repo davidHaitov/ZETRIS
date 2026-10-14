@@ -24,8 +24,6 @@
     -webkit-tap-highlight-color: transparent;
     overflow: hidden;
   }
-
-  /* ── SITE HEADER ── */
   .site-header {
     width: 100%; padding: 12px 24px;
     display: flex; align-items: center; justify-content: space-between;
@@ -52,12 +50,9 @@
     border: 1px solid transparent;
   }
   .header-name:hover { background: var(--surface2); border-color: var(--border); }
-
-  /* ── SCREENS ── */
   .screen { display: none; width: 100%; flex: 1; min-height: 0; }
   .screen.active { display: flex; }
 
-  /* NAME SCREEN */
   #name-screen {
     flex-direction: column; align-items: center; justify-content: center;
     gap: 28px; padding: 40px 20px;
@@ -81,8 +76,6 @@
     font-size: 11px; color: var(--text-muted);
     letter-spacing: 0.03em; margin-top: 4px;
   }
-
-  /* MENUS */
   #main-menu, #mp-menu, #join-screen {
     flex-direction: column; align-items: center; justify-content: center;
     gap: 32px; padding: 40px 20px;
@@ -111,7 +104,7 @@
     background: var(--surface); border: 1px solid var(--border);
     color: var(--text); border-radius: 8px;
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s, transform 0.1s, color 0.15s;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s, color 0.15s, opacity 0.15s;
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
   .menu-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
@@ -134,7 +127,6 @@
     letter-spacing: 0.4em; font-size: 20px; font-weight: 700; padding: 14px;
   }
 
-  /* WAITING ROOM */
   #waiting-room {
     flex-direction: column; align-items: center; justify-content: center;
     gap: 24px; padding: 40px 20px;
@@ -180,10 +172,32 @@
     border: 1px solid rgba(91,91,246,0.3); border-radius: 3px;
     padding: 1px 5px; letter-spacing: 0.05em;
   }
-  .player-row .host-tag { font-size: 9px; color: var(--warn); margin-left: auto; }
+  .player-row .host-tag { font-size: 9px; color: var(--warn); }
+  .player-row .ready-tag {
+    font-size: 9px; padding: 1px 6px; border-radius: 3px;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    border: 1px solid var(--border); color: var(--text-muted);
+    background: transparent;
+  }
+  .player-row .ready-tag.ready {
+    color: var(--success); border-color: var(--success);
+    background: rgba(91,246,160,0.1);
+  }
+  .player-row .spacer { margin-left: auto; }
+  .player-row .kick-btn {
+    width: 22px; height: 22px; padding: 0;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); border-radius: 3px; cursor: pointer;
+    font-size: 13px; line-height: 1; display: flex;
+    align-items: center; justify-content: center;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .player-row .kick-btn:hover {
+    border-color: var(--danger); color: var(--danger);
+    background: rgba(246,91,91,0.08);
+  }
   .start-hint { font-size: 11px; color: var(--text-muted); text-align: center; }
 
-  /* SETTINGS */
   .speed-tabs {
     display: flex; gap: 3px; background: var(--surface2);
     border: 1px solid var(--border); border-radius: 5px; padding: 3px;
@@ -218,7 +232,6 @@
     border-radius: 4px; border: 1px dashed var(--border);
   }
 
-  /* GAME */
   #game {
     flex-direction: column; align-items: center;
     padding: 14px 16px 20px; gap: 12px;
@@ -246,7 +259,6 @@
   .game-timer::before { content: '⏱'; font-size: 11px; opacity: 0.7; }
   .game-timer.hidden { display: none; }
 
-  /* ARENA */
   .arena {
     display: flex; flex-direction: row; align-items: center;
     justify-content: center; gap: 28px;
@@ -315,7 +327,6 @@
   }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  /* OPPONENTS */
   .opponents-wrap {
     display: none; flex-direction: column; gap: 10px;
     align-items: center; flex-shrink: 0;
@@ -331,7 +342,7 @@
     content: ''; height: 1px; width: 16px; background: var(--border);
   }
   .opponents {
-    display: flex; flex-direction: column; gap: 10px;
+    display: flex; flex-direction: column; gap: 12px;
     align-items: center; justify-content: center;
     padding: 2px;
   }
@@ -339,15 +350,14 @@
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 5px; padding: 6px 8px 8px;
     display: flex; flex-direction: column; align-items: center; gap: 5px;
-    transition: opacity 0.2s; flex-shrink: 0;
+    flex-shrink: 0;
   }
-  .opponent-card.dead { opacity: 0.35; }
   .opp-name {
-    font-size: 10px; font-weight: 600; color: var(--text);
+    font-size: 11px; font-weight: 600; color: var(--text);
     max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     letter-spacing: 0.02em;
   }
-  .opp-score { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); line-height: 1; }
+  .opp-score { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--accent); line-height: 1; }
   .opp-canvas { display: block; border-radius: 2px; }
 
   .attack-flash {
@@ -373,7 +383,6 @@
   #toast.show { opacity: 1; }
   #toast.boost { border-color: var(--warn); color: var(--warn); font-weight: 600; }
 
-  /* LEADERBOARD */
   #leaderboard-screen {
     flex-direction: column; align-items: center; justify-content: center;
     padding: 40px 20px;
@@ -428,10 +437,6 @@
     text-align: right; letter-spacing: -0.02em;
   }
   .lb-table td.lines { color: var(--text-dim); width: 70px; }
-  .lb-hint {
-    font-size: 11px; color: var(--text-muted);
-    text-align: center; letter-spacing: 0.05em;
-  }
 
   .btn {
     display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -440,10 +445,13 @@
     cursor: pointer; transition: opacity 0.15s, transform 0.1s, border-color 0.15s, color 0.15s;
   }
   .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:hover:not(:disabled) { opacity: 0.9; }
   .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .btn-success { background: var(--success); color: #0a0a0f; }
+  .btn-success:hover:not(:disabled) { opacity: 0.9; }
   .btn-sm { padding: 6px 12px; font-size: 11px; }
   kbd {
     font-family: 'Space Mono', monospace; font-size: 9px;
@@ -459,7 +467,6 @@
   <div class="header-name" id="header-name" title="Click to change name">player</div>
 </header>
 
-<!-- NAME -->
 <div class="screen" id="name-screen">
   <div class="name-brand">BL<span class="accent">O</span>KK</div>
   <div class="name-card">
@@ -470,7 +477,6 @@
   </div>
 </div>
 
-<!-- MAIN MENU -->
 <div class="screen" id="main-menu">
   <div>
     <div class="menu-hero">BL<span class="accent">O</span>KK</div>
@@ -482,7 +488,6 @@
   </div>
 </div>
 
-<!-- MP MENU -->
 <div class="screen" id="mp-menu">
   <div class="menu-hero">Multiplayer</div>
   <div class="menu-buttons">
@@ -492,7 +497,6 @@
   </div>
 </div>
 
-<!-- JOIN -->
 <div class="screen" id="join-screen">
   <div class="menu-hero">Join room</div>
   <div class="menu-buttons">
@@ -502,7 +506,6 @@
   </div>
 </div>
 
-<!-- WAITING ROOM -->
 <div class="screen" id="waiting-room">
   <div class="room-panel">
     <h2>Waiting for players</h2>
@@ -559,12 +562,12 @@
       </div>
     </div>
     <div class="start-hint" id="start-hint">Waiting for host to start…</div>
-    <button class="btn btn-primary" id="start-btn" style="display:none">Start game</button>
+    <button class="btn btn-success" id="ready-btn">Ready</button>
+    <button class="btn btn-primary" id="start-btn" style="display:none" disabled>Start game</button>
     <button class="btn btn-ghost" id="leave-btn">Leave room</button>
   </div>
 </div>
 
-<!-- GAME -->
 <div class="screen" id="game">
   <div class="game-header">
     <div class="room-id-display" id="game-room-label" title="Click to copy">room: ----</div>
@@ -640,7 +643,6 @@
   </div>
 </div>
 
-<!-- LEADERBOARD -->
 <div class="screen" id="leaderboard-screen">
   <div class="lb-panel">
     <div class="lb-title" id="lb-title">MATCH RESULTS</div>
@@ -656,7 +658,7 @@
       </thead>
       <tbody id="lb-body"></tbody>
     </table>
-    <div class="lb-hint">Returning to room…</div>
+    <button class="btn btn-primary" id="lb-return-btn" style="margin-top: 8px;">Return to room</button>
   </div>
 </div>
 
@@ -775,8 +777,15 @@ function cellSize() {
   const v = getComputedStyle(document.documentElement).getPropertyValue('--cell');
   return parseInt(v) || 30;
 }
-const OPP_CELL = 8;
-function computeOppCell() { return OPP_CELL; }
+
+// Dynamic opponent cell — grows when others die
+function computeOppCell() {
+  const alive = Object.values(opponentStates).filter(s => s.alive !== false).length;
+  if (alive <= 1) return 20;
+  if (alive === 2) return 14;
+  if (alive === 3) return 11;
+  return 9;
+}
 
 function easeOutBack(t) {
   const c1 = 1.70158, c3 = c1 + 1;
@@ -833,7 +842,7 @@ function pieceBounds(shape) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// GAME CLASS (with lock delay)
+// GAME CLASS
 // ══════════════════════════════════════════════════════════════════
 class TetrisGame {
   constructor(opts = {}) {
@@ -858,14 +867,12 @@ class TetrisGame {
 
     this.spawn();
   }
-
   refillBag() { while (this.bag.length < 7) this.bag.push(...makeBag()); }
   getNext(n) { this.refillBag(); return this.bag.slice(0, n); }
   makePiece(key) {
     const p = PIECES[key];
     return { key, shape: p.shape.map(r => [...r]), color: p.color };
   }
-
   spawn() {
     this.refillBag();
     const key = this.bag.shift();
@@ -876,7 +883,6 @@ class TetrisGame {
     this.cancelLockDelay();
     if (!this.valid(this.current.shape, this.cx, this.cy)) this.alive = false;
   }
-
   startLockDelay() {
     if (this.lockDelayActive) return;
     this.lockDelayActive = true;
@@ -897,7 +903,6 @@ class TetrisGame {
     this.cancelLockDelay();
     this.startLockDelay();
   }
-
   valid(shape, tx, ty) {
     for (let r = 0; r < shape.length; r++)
       for (let c = 0; c < shape[r].length; c++) {
@@ -908,7 +913,6 @@ class TetrisGame {
       }
     return true;
   }
-
   ghostY() {
     if (!this.current) return this.cy;
     let gy = this.cy;
@@ -1214,18 +1218,12 @@ function drawSmallBoard(canvas, boardData, cell, current) {
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#0e0e15'; ctx.fillRect(0, 0, w, h);
-
   if (cell >= 6) {
-    ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
     ctx.lineWidth = 0.5;
-    for (let r = 0; r <= ROWS; r++) {
-      ctx.beginPath(); ctx.moveTo(0, r*cell+0.25); ctx.lineTo(w, r*cell+0.25); ctx.stroke();
-    }
-    for (let c = 0; c <= COLS; c++) {
-      ctx.beginPath(); ctx.moveTo(c*cell+0.25, 0); ctx.lineTo(c*cell+0.25, h); ctx.stroke();
-    }
+    for (let r = 0; r <= ROWS; r++) { ctx.beginPath(); ctx.moveTo(0, r*cell+0.25); ctx.lineTo(w, r*cell+0.25); ctx.stroke(); }
+    for (let c = 0; c <= COLS; c++) { ctx.beginPath(); ctx.moveTo(c*cell+0.25, 0); ctx.lineTo(c*cell+0.25, h); ctx.stroke(); }
   }
-
   if (boardData) {
     for (let r = 0; r < ROWS; r++) {
       const row = boardData[r]; if (!row) continue;
@@ -1236,7 +1234,6 @@ function drawSmallBoard(canvas, boardData, cell, current) {
       }
     }
   }
-
   if (current && current.shape) {
     const { shape, cx, cy, color } = current;
     for (let r = 0; r < shape.length; r++)
@@ -1299,7 +1296,6 @@ function genRandomName() {
   for (let i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
   return 'TETR-' + s;
 }
-
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -1391,6 +1387,12 @@ class PeerAdapter {
     for (const conn of this.connections.values())
       if (conn.open) { try { conn.send(msg); } catch(e) {} }
   }
+  sendTo(peerId, event, data) {
+    const conn = this.connections.get(peerId);
+    if (conn && conn.open) {
+      try { conn.send({ type: 'event', event, data }); } catch(e) {}
+    }
+  }
   _dispatch(event, data) {
     (this.handlers[event] || []).forEach(h => { try { h(data); } catch(e){ console.error(e); } });
   }
@@ -1416,7 +1418,6 @@ class PeerAdapter {
     this.roomCode = roomCode;
     this.isHost = !!asHost;
     const hostPeerId = 'blokk-' + roomCode;
-
     if (this.isHost) {
       this.peer = new Peer(hostPeerId, PEER_CONFIG);
       await new Promise((resolve, reject) => {
@@ -1514,6 +1515,7 @@ class PeerAdapter {
 let namedRoom = null;
 let runtimeAvailable = false;
 let myId = null, myName = '', roomCode = '', isHost = false;
+let myReady = false;
 let gameRunning = false, game = null;
 let gravityTimer = null, renderLoop = null, speedTimer = null, roundOverTimer = null;
 let gamePhase = 'lobby';
@@ -1521,7 +1523,8 @@ let runtimeReady = null;
 let gameStartTime = 0;
 let speedBoost = 0;
 let opponentStates = {};
-let peerRoster = {};
+let peerRoster = {};   // id -> { name, ready }
+let returnScheduled = false;
 
 const GRAVITY_INTERVALS = [800,720,630,550,470,380,300,220,140,100,80,70,60,50];
 function getGravity(level, boost, settings) {
@@ -1545,7 +1548,6 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
-
   const mode = SCREEN_MODE[id];
   const header = document.getElementById('app-header');
   if (!mode) header.classList.add('hidden');
@@ -1609,11 +1611,15 @@ async function enterRoom() {
   document.getElementById('display-code').textContent = roomCode;
   document.getElementById('game-room-label').textContent = 'room: ' + roomCode;
   document.getElementById('start-btn').style.display = isHost ? 'block' : 'none';
+  document.getElementById('ready-btn').style.display = isHost ? 'none' : 'block';
   document.getElementById('start-hint').textContent = isHost
-    ? 'You are the host. Start when ready.'
-    : 'Waiting for host to start…';
+    ? 'All players must be ready to start'
+    : 'Click Ready when you\'re set';
   setSettingsEditable(isHost);
   applySettingsToUI();
+
+  myReady = false;
+  updateReadyButton();
 
   const adapter = window.__adapter;
   if (isHost) {
@@ -1649,11 +1655,15 @@ async function enterRoom() {
     return;
   }
 
-  namedRoom.presence({ id: myId, name: myName, alive: true });
+  namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady });
   namedRoom.onPeers(({ peers }) => updatePlayerList(peers || []));
 
   namedRoom.on('start_game', ({ countdown, settings }) => {
     if (settings) gameSettings = sanitizeSettings(settings);
+    myReady = false;
+    if (namedRoom && namedRoom.presenceData) {
+      namedRoom.presence({ id: myId, name: myName, alive: true, ready: false });
+    }
     if (gamePhase === 'playing') return;
     beginCountdown(countdown || 3);
   });
@@ -1679,7 +1689,8 @@ async function enterRoom() {
     if (typeof data.lines === 'number') st.lines = data.lines;
     if (typeof data.level === 'number') st.level = data.level;
     opponentStates[data.id] = st;
-    renderOpponentCard(data.id, st);
+    // remove card from view and grow others
+    rerenderAliveOpponents();
     if (gamePhase === 'playing') checkForWinner();
   });
 
@@ -1688,7 +1699,22 @@ async function enterRoom() {
     applyRoundEnd(data);
   });
 
+  namedRoom.on('return_to_room', () => {
+    returnToWaitingRoom();
+  });
+
+  namedRoom.on('kick', ({ target }) => {
+    if (target !== myId) return;
+    toast('You were kicked from the room');
+    setTimeout(() => {
+      fullCleanup();
+      leaveRoom();
+      showScreen('main-menu');
+    }, 600);
+  });
+
   namedRoom.onPeerLeft = (peerId) => {
+    // if game in progress and we're host, treat as died
     if (isHost && (gamePhase === 'playing' || gamePhase === 'countdown')) {
       const st = opponentStates[peerId] || {};
       namedRoom.emit('player_died', {
@@ -1699,47 +1725,132 @@ async function enterRoom() {
         level: st.level || 1,
         disconnected: true,
       });
-      if (st) { st.alive = false; renderOpponentCard(peerId, st); }
+      if (st) {
+        st.alive = false;
+        opponentStates[peerId] = st;
+        rerenderAliveOpponents();
+      }
       if (gamePhase === 'playing') checkForWinner();
     }
+    // clean roster
+    delete peerRoster[peerId];
+    delete opponentStates[peerId];
+    const el = document.getElementById('opp-' + peerId);
+    if (el) el.remove();
   };
 
   gamePhase = 'waiting';
   updatePlayerList([]);
 }
 
+// ══════════════════════════════════════════════════════════════════
+// PLAYER LIST (with ready + kick)
+// ══════════════════════════════════════════════════════════════════
 function updatePlayerList(peers) {
   const list = document.getElementById('players-list');
   const seen = new Set([myId]);
-  const rows = [{ id: myId, name: myName, isMe: true }];
+  const rows = [{ id: myId, name: myName, isMe: true, ready: myReady }];
   (peers || []).forEach(p => {
     const pres = p && p.presence;
     if (!pres || !pres.id || seen.has(pres.id)) return;
     seen.add(pres.id);
-    rows.push({ id: pres.id, name: pres.name || 'player', isMe: false });
+    rows.push({ id: pres.id, name: pres.name || 'player', isMe: false, ready: !!pres.ready });
   });
+
   list.innerHTML = '';
   rows.forEach((p, i) => {
     const row = document.createElement('div');
     row.className = 'player-row';
-    const tag = document.createElement('span');
-    tag.textContent = p.name;
-    row.appendChild(tag);
+
+    const nameEl = document.createElement('span');
+    nameEl.textContent = p.name;
+    row.appendChild(nameEl);
+
     if (p.isMe) {
       const you = document.createElement('span');
       you.className = 'you-tag'; you.textContent = 'YOU';
       row.appendChild(you);
     }
+
     if (i === 0) {
       const host = document.createElement('span');
       host.className = 'host-tag'; host.textContent = 'HOST';
       row.appendChild(host);
     }
+
+    const spacer = document.createElement('span');
+    spacer.className = 'spacer';
+    row.appendChild(spacer);
+
+    const ready = document.createElement('span');
+    ready.className = 'ready-tag' + (p.ready ? ' ready' : '');
+    ready.textContent = p.ready ? 'READY' : 'NOT READY';
+    row.appendChild(ready);
+
+    if (isHost && !p.isMe) {
+      const kick = document.createElement('button');
+      kick.className = 'kick-btn';
+      kick.title = 'Kick player';
+      kick.textContent = '×';
+      kick.addEventListener('click', () => hostKick(p.id));
+      row.appendChild(kick);
+    }
+
     list.appendChild(row);
   });
+
   document.getElementById('online-count').textContent =
-    rows.length + ' player' + (rows.length !== 1 ? 's' : '');
+    rows.length + ' player' + (rows.length !== 1 ? 's' : '') + ' in room';
+
+  // update peerRoster
+  const prevRoster = peerRoster;
+  peerRoster = {};
+  rows.forEach(r => {
+    if (!r.isMe) peerRoster[r.id] = { name: r.name, ready: r.ready };
+  });
+
+  // sync opponent board states only if roster changed structurally
   syncOpponentRoster(rows);
+
+  // update start button state
+  updateStartButtonState();
+}
+
+function updateStartButtonState() {
+  if (!isHost) return;
+  const btn = document.getElementById('start-btn');
+  const others = Object.keys(peerRoster);
+  const allReady = others.length === 0 || others.every(id => peerRoster[id].ready);
+  btn.disabled = !allReady;
+}
+
+function updateReadyButton() {
+  const btn = document.getElementById('ready-btn');
+  if (!btn) return;
+  if (myReady) {
+    btn.textContent = 'Not ready';
+    btn.classList.remove('btn-success');
+    btn.classList.add('btn-ghost');
+  } else {
+    btn.textContent = 'Ready';
+    btn.classList.remove('btn-ghost');
+    btn.classList.add('btn-success');
+  }
+}
+
+function hostKick(peerId) {
+  if (!isHost || !namedRoom) return;
+  namedRoom.sendTo(peerId, 'kick', { target: peerId });
+  // close after a moment
+  setTimeout(() => {
+    const conn = namedRoom.connections.get(peerId);
+    if (conn) try { conn.close(); } catch(e){}
+  }, 400);
+  delete peerRoster[peerId];
+  delete opponentStates[peerId];
+  const el = document.getElementById('opp-' + peerId);
+  if (el) el.remove();
+  toast('Player kicked');
 }
 
 async function hostStartGame() {
@@ -1796,15 +1907,17 @@ function startGame() {
   gameRunning = true;
   gameStartTime = performance.now();
   speedBoost = 0;
+  returnScheduled = false;
   Sound.startMusic();
 
+  // preserve roster, reset per-round state
   const rosterSnapshot = Object.entries(opponentStates).map(([id, st]) => ({ id, name: st.name }));
   opponentStates = {};
   document.getElementById('opponents').innerHTML = '';
   rosterSnapshot.forEach(({ id, name }) => {
     opponentStates[id] = { name, board: null, current: null, score: 0, lines: 0, level: 1, alive: true, pending: true };
   });
-  rerenderAllOpponents();
+  rerenderAliveOpponents();
 
   document.getElementById('my-gameover').style.display = 'none';
   document.getElementById('my-countdown').style.display = 'none';
@@ -1908,15 +2021,9 @@ function broadcastBoard(force) {
     id: myId, name: myName,
     board: game.board,
     current: (game.current && game.alive) ? {
-      shape: game.current.shape,
-      cx: game.cx,
-      cy: game.cy,
-      color: game.current.color,
+      shape: game.current.shape, cx: game.cx, cy: game.cy, color: game.current.color,
     } : null,
-    score: game.score,
-    lines: game.lines,
-    level: game.level,
-    alive: game.alive,
+    score: game.score, lines: game.lines, level: game.level, alive: game.alive,
   });
 }
 
@@ -1947,6 +2054,7 @@ function fullCleanup() {
   game = null;
   opponentStates = {};
   peerRoster = {};
+  myReady = false;
   document.getElementById('opponents').innerHTML = '';
   updateOpponentsWrapVisibility();
   document.getElementById('my-gameover').style.display = 'none';
@@ -1969,14 +2077,11 @@ function endGame() {
   cleanupTimers();
   Sound.stopMusic();
 
-  // Solo mode — old behaviour with R restart
   if (!namedRoom) {
     gamePhase = 'gameover';
-    showOverlay(
-      'GAME OVER',
+    showOverlay('GAME OVER',
       'Score: ' + game.score.toLocaleString() + ' · Lines: ' + game.lines,
-      'var(--danger)'
-    );
+      'var(--danger)');
     return;
   }
 
@@ -1984,11 +2089,8 @@ function endGame() {
   broadcastBoard(true);
 
   namedRoom.emit('player_died', {
-    id: myId,
-    name: myName,
-    score: game.score,
-    lines: game.lines,
-    level: game.level,
+    id: myId, name: myName,
+    score: game.score, lines: game.lines, level: game.level,
   });
 
   showOverlay('ELIMINATED', 'Waiting for the winner…', 'var(--danger)');
@@ -2014,7 +2116,6 @@ function checkForWinner() {
 
 function finishRound(winnerId, winnerName) {
   if (gamePhase === 'round_over') return;
-  gamePhase = 'round_over';
   gameRunning = false;
   cleanupTimers();
   Sound.stopMusic();
@@ -2026,8 +2127,6 @@ function finishRound(winnerId, winnerName) {
 
 function buildLeaderboardPayload(winnerId, winnerName) {
   const players = [];
-
-  // myself
   players.push({
     id: myId,
     name: myName,
@@ -2036,8 +2135,6 @@ function buildLeaderboardPayload(winnerId, winnerName) {
     level: game ? game.level : 1,
     alive: myId === winnerId,
   });
-
-  // opponents from opponentStates (has final stats from player_died events)
   for (const [id, st] of Object.entries(opponentStates)) {
     players.push({
       id,
@@ -2048,15 +2145,12 @@ function buildLeaderboardPayload(winnerId, winnerName) {
       alive: id === winnerId,
     });
   }
-
-  // sort: winner first, then by score desc
   players.sort((a, b) => {
     if (a.id === winnerId && b.id !== winnerId) return -1;
     if (b.id === winnerId && a.id !== winnerId) return 1;
     return (b.score || 0) - (a.score || 0);
   });
   players.forEach((p, i) => { p.place = i + 1; });
-
   return { winnerId, winnerName, players };
 }
 
@@ -2066,10 +2160,9 @@ function applyRoundEnd(data) {
   gameRunning = false;
   cleanupTimers();
   Sound.stopMusic();
-
   renderLeaderboard(data);
   showScreen('leaderboard-screen');
-  scheduleReturnFromRound();
+  // no auto-return — user presses button
 }
 
 function renderLeaderboard(data) {
@@ -2084,10 +2177,7 @@ function renderLeaderboard(data) {
     title.textContent = 'MATCH RESULTS';
     title.style.color = '';
   }
-
-  winnerEl.textContent = data.winnerName
-    ? data.winnerName + ' WINS'
-    : 'NO WINNER';
+  winnerEl.textContent = data.winnerName ? data.winnerName + ' WINS' : 'NO WINNER';
   winnerEl.style.color = data.winnerId === myId ? 'var(--success)' : 'var(--text-dim)';
 
   body.innerHTML = '';
@@ -2106,17 +2196,16 @@ function renderLeaderboard(data) {
   });
 }
 
-function scheduleReturnFromRound() {
-  if (roundOverTimer) clearTimeout(roundOverTimer);
-  roundOverTimer = setTimeout(returnFromRound, 6000);
-}
+function returnToWaitingRoom() {
+  if (returnScheduled) return;
+  returnScheduled = true;
 
-function returnFromRound() {
   document.getElementById('my-gameover').style.display = 'none';
   const title = document.getElementById('gameover-title');
   title.textContent = 'GAME OVER';
   title.style.color = '';
 
+  // reset per-round state
   Object.keys(opponentStates).forEach(id => {
     opponentStates[id].board = null;
     opponentStates[id].current = null;
@@ -2129,19 +2218,37 @@ function returnFromRound() {
   updateOpponentsWrapVisibility();
   document.getElementById('ability-box').style.display = 'none';
 
+  // reset ready
+  myReady = false;
+  updateReadyButton();
+  if (namedRoom && namedRoom.presenceData) {
+    namedRoom.presence({ id: myId, name: myName, alive: true, ready: false });
+  }
+
   if (namedRoom) {
     gameRunning = false;
     gamePhase = 'waiting';
     game = null;
     document.getElementById('my-waiting').style.display = 'flex';
     document.getElementById('my-countdown').style.display = 'none';
+    document.getElementById('game-timer').classList.add('hidden');
+    document.getElementById('start-btn').style.display = isHost ? 'block' : 'none';
+    document.getElementById('ready-btn').style.display = isHost ? 'none' : 'block';
+    document.getElementById('start-hint').textContent = isHost
+      ? 'All players must be ready to start'
+      : 'Click Ready when you\'re set';
+    updateStartButtonState();
     showScreen('waiting-room');
+    // refresh list
+    updatePlayerList([...namedRoom.roster.values()].slice(1).map(p => ({ presence: p })));
   } else {
     gameRunning = false;
     gamePhase = 'lobby';
     game = null;
     showScreen('main-menu');
   }
+
+  setTimeout(() => { returnScheduled = false; }, 500);
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -2154,15 +2261,17 @@ function updateOpponentsWrapVisibility() {
 }
 
 function syncOpponentRoster(rows) {
-  peerRoster = {};
-  rows.forEach(r => { if (!r.isMe) peerRoster[r.id] = r.name; });
+  const rosterIds = new Set();
+  rows.forEach(r => { if (!r.isMe) rosterIds.add(r.id); });
+  // remove opponents not in roster
   Object.keys(opponentStates).forEach(id => {
-    if (!peerRoster[id]) {
+    if (!rosterIds.has(id)) {
       delete opponentStates[id];
       const el = document.getElementById('opp-' + id);
       if (el) el.remove();
     }
   });
+  // add new opponents
   rows.forEach(r => {
     if (r.isMe) return;
     if (!opponentStates[r.id])
@@ -2170,13 +2279,15 @@ function syncOpponentRoster(rows) {
     else if (!opponentStates[r.id].name)
       opponentStates[r.id].name = r.name;
   });
-  rerenderAllOpponents();
+  rerenderAliveOpponents();
 }
 
-function rerenderAllOpponents() {
+function rerenderAliveOpponents() {
   const container = document.getElementById('opponents');
   container.innerHTML = '';
+  // only alive opponents are shown
   Object.entries(opponentStates).forEach(([id, state]) => {
+    if (state.alive === false) return;
     renderOpponentCard(id, state);
   });
   updateOpponentsWrapVisibility();
@@ -2195,7 +2306,10 @@ function updateOpponent(id, name, board, current, score, lines, level, alive) {
     alive: alive !== false,
     pending: false,
   };
-  renderOpponentCard(id, opponentStates[id]);
+  // only render if alive (dead ones are hidden)
+  if (opponentStates[id].alive) {
+    renderOpponentCard(id, opponentStates[id]);
+  }
 }
 
 function renderOpponentCard(id, state) {
@@ -2226,7 +2340,6 @@ function renderOpponentCard(id, state) {
       canvas.width = w; canvas.height = h;
     }
   }
-  card.classList.toggle('dead', state.alive === false);
   card.querySelector('.opp-name').textContent = state.name || 'player';
   card.querySelector('.opp-score').textContent = (state.score || 0).toLocaleString();
   const canvas = card.querySelector('canvas');
@@ -2363,7 +2476,7 @@ document.getElementById('header-name').addEventListener('click', () => {
     localStorage.setItem('blokk-name', myName);
     updateHeaderName();
     if (namedRoom && namedRoom.presenceData) {
-      namedRoom.presence({ id: myId, name: myName, alive: true });
+      namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady });
     }
   }
 });
@@ -2390,12 +2503,25 @@ document.getElementById('room-input').addEventListener('keydown', e => {
 });
 
 document.getElementById('start-btn').addEventListener('click', hostStartGame);
+document.getElementById('ready-btn').addEventListener('click', () => {
+  myReady = !myReady;
+  updateReadyButton();
+  if (namedRoom && namedRoom.presenceData) {
+    namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady });
+  }
+});
+
 document.getElementById('leave-btn').addEventListener('click', () => {
   fullCleanup(); leaveRoom(); showScreen('main-menu');
 });
 
 document.getElementById('quit-btn').addEventListener('click', () => {
   fullCleanup(); leaveRoom(); showScreen('main-menu');
+});
+
+document.getElementById('lb-return-btn').addEventListener('click', () => {
+  if (namedRoom) namedRoom.emit('return_to_room', {});
+  returnToWaitingRoom();
 });
 
 function leaveRoom() {
@@ -2444,4 +2570,4 @@ if (savedName) {
 }
 </script>
 </body>
-  </html>
+</html>
