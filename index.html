@@ -28,7 +28,7 @@
     /* piece colors stay vivid */
     --c1: #00f0ff; --c2: #ffd000; --c3: #a000ff;
     --c4: #00aaff; --c5: #ff2244; --c6: #ff8800; --c7: #00dd44;
-    --cell: clamp(26px, calc((100vh - 160px) / 20), 38px);
+    --cell: clamp(22px, calc((100vh - 160px) / 23), 34px);
     --board-blur-bg: rgba(0,0,0,0.55);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -910,7 +910,7 @@ const Sound = {
 // ══════════════════════════════════════════════════════════════════
 // TETRIS CONSTANTS
 // ══════════════════════════════════════════════════════════════════
-const COLS = 10, ROWS = 20;
+const COLS = 10, ROWS = 20, BUFFER = 3; // 3 visible buffer rows above death line
 const LOCK_ANIM_MS = 150;
 const CLEAR_ANIM_MS = 330;
 
@@ -1034,9 +1034,19 @@ class TetrisGame {
     const key = this.bag.shift();
     this.current = this.makePiece(key);
     this.cx = Math.floor((COLS - this.current.shape[0].length) / 2);
-    this.cy = 0; this.rotation = 0;
+    this.rotation = 0;
     this.lockResets = 0;
     this.cancelLockDelay();
+    // Find how high the stack reaches — spawn above it in buffer zone if needed
+    let stackTop = ROWS;
+    for (let r = 0; r < ROWS; r++) {
+      if (this.board[r].some(v => v)) { stackTop = r; break; }
+    }
+    // Normal spawn at row 0 (just at death line). If stack reaches row 0,
+    // try spawning higher (up to -BUFFER) so player can still maneuver.
+    let spawnY = 0;
+    if (stackTop <= 2) spawnY = Math.max(-BUFFER, stackTop - 3);
+    this.cy = spawnY;
     if (!this.valid(this.current.shape, this.cx, this.cy)) this.alive = false;
   }
   startLockDelay() {
@@ -1078,14 +1088,16 @@ class TetrisGame {
       }
     return true;
   }
-  // same as valid() but also rejects any cell above row 0
+  // Stricter valid: allows buffer zone (ny >= -BUFFER) but not beyond
   validStrict(shape, tx, ty) {
     for (let r = 0; r < shape.length; r++)
       for (let c = 0; c < shape[r].length; c++) {
         if (!shape[r][c]) continue;
         const nx = tx + c, ny = ty + r;
-        if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS) return false;
-        if (this.board[ny][nx]) return false;
+        if (nx < 0 || nx >= COLS) return false;
+        if (ny >= ROWS) return false;
+        if (ny < -BUFFER) return false; // can't go above buffer zone
+        if (ny >= 0 && this.board[ny][nx]) return false;
       }
     return true;
   }
@@ -1093,7 +1105,7 @@ class TetrisGame {
     if (!this.current) return this.cy;
     let gy = this.cy;
     while (this.valid(this.current.shape, this.cx, gy + 1)) gy++;
-    return gy;
+    return gy; // may be negative if piece is in buffer zone — drawBoard handles this
   }
   move(dx) {
     if (!this.current || !this.alive) return false;
@@ -1186,13 +1198,12 @@ class TetrisGame {
       for (let c = 0; c < shape[r].length; c++) {
         if (!shape[r][c]) continue;
         const ny = this.cy + r, nx = this.cx + c;
-        // Cell above visible area = topped out
+        // Cell above death line (row 0) = topped out
         if (ny < 0) { this.alive = false; return 0; }
         this.board[ny][nx] = color;
         lockedCells.push({ x: nx, y: ny, color: COLORS[color] });
         hasVisibleCell = true;
       }
-    // Piece locked with no visible cells = bug, treat as topped out
     if (!hasVisibleCell) { this.alive = false; return 0; }
     this.lockAnim = { cells: lockedCells, start: performance.now(), duration: LOCK_ANIM_MS };
 
@@ -1292,38 +1303,73 @@ function drawGhostCell(ctx, px, py, size, color) {
   ctx.strokeRect(px + 1.5, py + 1.5, size - 3, size - 3);
   ctx.globalAlpha = 1;
 }
+function boardY(row) { return (row + BUFFER) * arguments[1]; } // unused helper — inline below
 function drawBoard(canvas, game, cell) {
-  const w = COLS * cell, h = ROWS * cell;
+  const w = COLS * cell;
+  const h = (ROWS + BUFFER) * cell; // canvas taller by BUFFER rows
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = 'rgba(0,0,0,0.72)'; ctx.fillRect(0, 0, w, h);
+
+  // ── Background ──
+  // Buffer zone (above death line) — slightly lighter dark
+  ctx.fillStyle = 'rgba(12,12,18,0.85)';
+  ctx.fillRect(0, 0, w, BUFFER * cell);
+  // Main play area
+  ctx.fillStyle = 'rgba(0,0,0,0.72)';
+  ctx.fillRect(0, BUFFER * cell, w, ROWS * cell);
+
+  // ── Grid — only in play area ──
   ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 0.5;
-  for (let r = 0; r <= ROWS; r++) { ctx.beginPath(); ctx.moveTo(0, r*cell+0.25); ctx.lineTo(w, r*cell+0.25); ctx.stroke(); }
-  for (let c = 0; c <= COLS; c++) { ctx.beginPath(); ctx.moveTo(c*cell+0.25, 0); ctx.lineTo(c*cell+0.25, h); ctx.stroke(); }
+  for (let r = 0; r <= ROWS; r++) {
+    const y = (r + BUFFER) * cell + 0.25;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+  for (let c = 0; c <= COLS; c++) {
+    ctx.beginPath(); ctx.moveTo(c*cell+0.25, BUFFER*cell); ctx.lineTo(c*cell+0.25, h); ctx.stroke();
+  }
+
+  // ── RED DEATH LINE ──
+  ctx.strokeStyle = 'rgba(255,60,60,0.75)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0, BUFFER*cell); ctx.lineTo(w, BUFFER*cell); ctx.stroke();
+  // subtle danger tint in buffer
+  ctx.fillStyle = 'rgba(255,30,30,0.04)';
+  ctx.fillRect(0, 0, w, BUFFER * cell);
+  // skull / warning label
+  ctx.fillStyle = 'rgba(255,60,60,0.30)';
+  ctx.font = `${Math.max(8, Math.round(cell * 0.35))}px Space Mono, monospace`;
+  ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+  ctx.fillText('▲ DEATH LINE', w - 4, BUFFER*cell - 3);
+  ctx.textAlign = 'left';
+
+  // ── Board cells ──
   for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) {
       const v = game.board[r][c];
       if (!v) continue;
-      drawCell(ctx, c*cell, r*cell, cell, v === 8 ? GARBAGE_COLOR : COLORS[v]);
+      drawCell(ctx, c*cell, (r + BUFFER)*cell, cell, v === 8 ? GARBAGE_COLOR : COLORS[v]);
     }
+
   if (game.current && game.alive) {
+    // ── Ghost ──
     const gy = game.ghostY();
     for (let r = 0; r < game.current.shape.length; r++)
       for (let c = 0; c < game.current.shape[r].length; c++) {
         if (!game.current.shape[r][c]) continue;
         const nx = game.cx + c, ny = gy + r;
-        if (ny >= 0 && !(ny === game.cy + r && nx === game.cx + c))
-          drawGhostCell(ctx, nx*cell, ny*cell, cell, COLORS[game.current.color]);
+        if (ny >= 0)
+          drawGhostCell(ctx, nx*cell, (ny + BUFFER)*cell, cell, COLORS[game.current.color]);
       }
-  }
-  if (game.current && game.alive) {
+    // ── Current piece — visible even in buffer zone ──
     for (let r = 0; r < game.current.shape.length; r++)
       for (let c = 0; c < game.current.shape[r].length; c++) {
         if (!game.current.shape[r][c]) continue;
         const nx = game.cx + c, ny = game.cy + r;
-        if (ny >= 0) drawCell(ctx, nx*cell, ny*cell, cell, COLORS[game.current.color]);
+        // Draw in buffer zone too (ny < 0 = above death line, still render it)
+        drawCell(ctx, nx*cell, (ny + BUFFER)*cell, cell, COLORS[game.current.color]);
       }
   }
+
+  // ── Lock animation ──
   if (game.lockAnim) {
     const t = (performance.now() - game.lockAnim.start) / game.lockAnim.duration;
     if (t < 1) {
@@ -1333,7 +1379,7 @@ function drawBoard(canvas, game, cell) {
       for (const c of game.lockAnim.cells) {
         const size = cell * scale;
         const ox = c.x * cell + (cell - size) / 2;
-        const oy = c.y * cell + (cell - size) / 2;
+        const oy = (c.y + BUFFER) * cell + (cell - size) / 2;
         drawCell(ctx, ox, oy, size, c.color, alpha);
         const glow = (1 - t) * 0.55;
         if (glow > 0.01) {
@@ -1344,20 +1390,22 @@ function drawBoard(canvas, game, cell) {
       }
     } else game.lockAnim = null;
   }
+
+  // ── Clear animation ──
   if (game.clearAnim) {
     const t = Math.min(1, (performance.now() - game.clearAnim.start) / game.clearAnim.duration);
     if (t < 1) {
       for (const row of game.clearAnim.rows) {
-        const y = row.y * cell;
+        const y = (row.y + BUFFER) * cell;
         const flashAlpha = Math.max(0, 1 - t * 2.8);
         if (flashAlpha > 0.01) {
           ctx.fillStyle = `rgba(255,255,255,${flashAlpha})`;
-          ctx.fillRect(0, y, COLS * cell, cell);
+          ctx.fillRect(0, y, w, cell);
         }
         const collapseT = Math.max(0, (t - 0.15) / 0.85);
         const scaleX = 1 - collapseT;
         if (scaleX > 0.02) {
-          const cx = (COLS * cell) / 2;
+          const cx = w / 2;
           for (let c = 0; c < COLS; c++) {
             const v = row.cells[c];
             if (!v) continue;
@@ -1861,14 +1909,14 @@ async function enterRoom() {
     return;
   }
 
-  namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady });
+  namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady, host: isHost });
   namedRoom.onPeers(({ peers }) => updatePlayerList(peers || []));
 
   namedRoom.on('start_game', ({ countdown, settings }) => {
     if (settings) gameSettings = sanitizeSettings(settings);
     myReady = false;
     if (namedRoom && namedRoom.presenceData) {
-      namedRoom.presence({ id: myId, name: myName, alive: true, ready: false });
+      namedRoom.presence({ id: myId, name: myName, alive: true, ready: false, host: isHost });
     }
     if (gamePhase === 'playing') return;
     beginCountdown(countdown || 3);
@@ -1912,46 +1960,29 @@ async function enterRoom() {
   namedRoom.on('kick', ({ target }) => {
     if (target !== myId) return;
     toast('You were kicked from the room');
+    // If in a match, register as defeat first
+    if (gamePhase === 'playing' || gamePhase === 'countdown') {
+      if (game && game.alive) {
+        game.alive = false;
+        showOverlay('KICKED', 'You were removed by the host', 'var(--danger)',
+          game ? { score: game.score, lines: game.lines, level: game.level, attack: game.totalAttack } : null);
+      }
+    }
     setTimeout(() => {
       fullCleanup();
       leaveRoom();
       showScreen('main-menu');
-    }, 600);
+    }, 1800);
+  });
+
+  // Non-host clients learn about kicked peers via this broadcast
+  namedRoom.on('peer_kicked', ({ id }) => {
+    if (id === myId) return; // handled by 'kick' event above
+    _removePeer(id);
   });
 
   namedRoom.onPeerLeft = (peerId) => {
-    // if game in progress and we're host, treat as died
-    if (isHost && (gamePhase === 'playing' || gamePhase === 'countdown')) {
-      const st = opponentStates[peerId] || {};
-      namedRoom.emit('player_died', {
-        id: peerId,
-        name: st.name || 'Player',
-        score: st.score || 0,
-        lines: st.lines || 0,
-        level: st.level || 1,
-        disconnected: true,
-      });
-      if (st) {
-        st.alive = false;
-        opponentStates[peerId] = st;
-        rerenderAliveOpponents();
-      }
-      if (gamePhase === 'playing') checkForWinner();
-    }
-    // clean roster everywhere
-    delete peerRoster[peerId];
-    delete opponentStates[peerId];
-    namedRoom.roster.delete(peerId);
-    const el = document.getElementById('opp-' + peerId);
-    if (el) el.remove();
-    // always refresh the waiting room player list
-    if (gamePhase === 'waiting' || gamePhase === 'lobby') {
-      const peers = [...namedRoom.roster.values()]
-        .filter(p => p.id !== myId)
-        .map(p => ({ presence: p }));
-      updatePlayerList(peers);
-    }
-    updateOpponentsWrapVisibility();
+    _removePeer(peerId);
   };
 
   gamePhase = 'waiting';
@@ -1969,11 +2000,11 @@ function updatePlayerList(peers) {
     const pres = p && p.presence;
     if (!pres || !pres.id || seen.has(pres.id)) return;
     seen.add(pres.id);
-    rows.push({ id: pres.id, name: pres.name || 'player', isMe: false, ready: !!pres.ready });
+    rows.push({ id: pres.id, name: pres.name || 'player', isMe: false, ready: !!pres.ready, host: !!pres.host });
   });
 
   list.innerHTML = '';
-  rows.forEach((p, i) => {
+  rows.forEach((p) => {
     const row = document.createElement('div');
     row.className = 'player-row';
 
@@ -1987,8 +2018,8 @@ function updatePlayerList(peers) {
       row.appendChild(you);
     }
 
-    // Host is always index 0 (first in list = me if isHost, or whoever has host flag)
-    const isRowHost = (i === 0);
+    // Host flag: me if isHost, others only if their presence.host === true
+    const isRowHost = p.isMe ? isHost : !!p.host;
     if (isRowHost) {
       const host = document.createElement('span');
       host.className = 'host-tag'; host.textContent = 'HOST';
@@ -1999,14 +2030,12 @@ function updatePlayerList(peers) {
     spacer.className = 'spacer';
     row.appendChild(spacer);
 
-    // Don't show NOT READY for the host row
-    if (!isRowHost || !p.isMe) {
+    // Host doesn't need a ready tag — they control the start
+    if (!isRowHost) {
       const ready = document.createElement('span');
       ready.className = 'ready-tag' + (p.ready ? ' ready' : '');
       ready.textContent = p.ready ? 'READY' : 'NOT READY';
       row.appendChild(ready);
-    } else if (isRowHost && p.isMe) {
-      // Host sees their own status as HOST (no ready tag needed)
     }
 
     if (isHost && !p.isMe) {
@@ -2070,31 +2099,49 @@ function updateReadyButton() {
 function hostKick(peerId) {
   if (!isHost || !namedRoom) return;
   const conn = namedRoom.connections.get(peerId);
-  // 1. Send kick message directly to that peer's connection
+  // 1. Send kick directly to that peer so they know they were kicked
   if (conn && conn.open) {
-    try {
-      conn.send({ type: 'event', event: 'kick', data: { target: peerId } });
-    } catch(e) {}
+    try { conn.send({ type: 'event', event: 'kick', data: { target: peerId } }); } catch(e) {}
   }
-  // 2. Close the connection after a brief delay so the message arrives first
+  // 2. Broadcast to all others that this peer was removed
+  namedRoom.emit('peer_kicked', { id: peerId });
+  // 3. Clean up after brief delay (message needs to arrive first)
   setTimeout(() => {
-    if (conn) {
-      try { conn.close(); } catch(e) {}
-    }
-    // 3. Manually clean up host-side state immediately (conn.close fires onPeerLeft async)
-    namedRoom.connections.delete(peerId);
-    namedRoom.roster.delete(peerId);
-    delete peerRoster[peerId];
-    delete opponentStates[peerId];
-    const el = document.getElementById('opp-' + peerId);
-    if (el) el.remove();
-    // 4. Refresh player list
+    if (conn) { try { conn.close(); } catch(e) {} }
+    _removePeer(peerId);
+  }, 350);
+  toast('Player kicked');
+}
+
+// Central peer removal used by kick and onPeerLeft
+function _removePeer(peerId) {
+  namedRoom.connections.delete(peerId);
+  namedRoom.roster.delete(peerId);
+  delete peerRoster[peerId];
+  // If game in progress, host emits player_died for this peer
+  if (isHost && (gamePhase === 'playing' || gamePhase === 'countdown')) {
+    const st = opponentStates[peerId] || {};
+    namedRoom.emit('player_died', {
+      id: peerId, name: st.name || 'Player',
+      score: st.score || 0, lines: st.lines || 0, level: st.level || 1,
+      disconnected: true,
+    });
+  }
+  if (opponentStates[peerId]) {
+    opponentStates[peerId].alive = false;
+    rerenderAliveOpponents();
+  }
+  delete opponentStates[peerId];
+  const el = document.getElementById('opp-' + peerId);
+  if (el) el.remove();
+  if (gamePhase === 'waiting' || gamePhase === 'lobby') {
     const peers = [...namedRoom.roster.values()]
       .filter(p => p.id !== myId)
       .map(p => ({ presence: p }));
     updatePlayerList(peers);
-  }, 300);
-  toast('Player kicked');
+  }
+  updateOpponentsWrapVisibility();
+  if (isHost && gamePhase === 'playing') checkForWinner();
 }
 
 async function hostStartGame() {
@@ -2138,6 +2185,8 @@ function startSolo() {
 
   gamePhase = 'playing';
   document.getElementById('game-room-label').textContent = 'solo practice';
+  const ocSolo = document.getElementById('online-count');
+  if (ocSolo) ocSolo.textContent = 'solo practice';
   document.getElementById('my-waiting').style.display = 'none';
   document.getElementById('game-timer').classList.remove('hidden');
   showScreen('game');
@@ -2305,6 +2354,9 @@ function fullCleanup() {
   opponentStates = {};
   peerRoster = {};
   myReady = false;
+  // reset player count display
+  const ocEl = document.getElementById('online-count');
+  if (ocEl) ocEl.textContent = 'solo practice';
   document.getElementById('opponents').innerHTML = '';
   updateOpponentsWrapVisibility();
   document.getElementById('my-gameover').style.display = 'none';
@@ -2497,7 +2549,7 @@ function returnToWaitingRoom() {
   myReady = false;
   updateReadyButton();
   if (namedRoom && namedRoom.presenceData) {
-    namedRoom.presence({ id: myId, name: myName, alive: true, ready: false });
+    namedRoom.presence({ id: myId, name: myName, alive: true, ready: false, host: isHost });
   }
 
   if (namedRoom) {
@@ -2776,7 +2828,7 @@ document.getElementById('header-name').addEventListener('click', () => {
     localStorage.setItem('blokk-name', myName);
     updateHeaderName();
     if (namedRoom && namedRoom.presenceData) {
-      namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady });
+      namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady, host: isHost });
     }
   }
 });
@@ -2807,7 +2859,7 @@ document.getElementById('ready-btn').addEventListener('click', () => {
   myReady = !myReady;
   updateReadyButton();
   if (namedRoom && namedRoom.presenceData) {
-    namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady });
+    namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady, host: isHost });
   }
 });
 
@@ -2870,4 +2922,4 @@ if (savedName) {
 }
 </script>
 </body>
-  </html>
+</html>
