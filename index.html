@@ -1070,8 +1070,22 @@ class TetrisGame {
       for (let c = 0; c < shape[r].length; c++) {
         if (!shape[r][c]) continue;
         const nx = tx + c, ny = ty + r;
-        if (nx < 0 || nx >= COLS || ny >= ROWS) return false;
+        if (nx < 0 || nx >= COLS) return false;
+        if (ny >= ROWS) return false;
+        // ny < 0 allowed only during spawn (piece entering from top)
+        // but NOT as result of a kick — we check that separately in rotate()
         if (ny >= 0 && this.board[ny][nx]) return false;
+      }
+    return true;
+  }
+  // same as valid() but also rejects any cell above row 0
+  validStrict(shape, tx, ty) {
+    for (let r = 0; r < shape.length; r++)
+      for (let c = 0; c < shape[r].length; c++) {
+        if (!shape[r][c]) continue;
+        const nx = tx + c, ny = ty + r;
+        if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS) return false;
+        if (this.board[ny][nx]) return false;
       }
     return true;
   }
@@ -1111,19 +1125,17 @@ class TetrisGame {
     const newShape = dir === 1 ? rotateCW(this.current.shape) : rotateCCW(this.current.shape);
     const table = this.current.key === 'I' ? KICKS_I : KICKS_JLSTZ;
     const kicks = table[from + '>' + to] || [[0, 0]];
+    // First try kicks that keep the piece fully inside the visible grid
     for (let i = 0; i < kicks.length; i++) {
       const tx = this.cx + kicks[i][0];
       const ty = this.cy - kicks[i][1];
-      if (this.valid(newShape, tx, ty)) {
+      if (this.validStrict(newShape, tx, ty)) {
         this.current.shape = newShape;
-        this.cx = tx;
-        // Clamp cy: piece must not go above the visible area completely
-        // (allow up to -2 for I-piece spawns but not further)
-        this.cy = Math.max(-2, ty);
-        this.rotation = to;
+        this.cx = tx; this.cy = ty; this.rotation = to;
         this.bumpLockDelay(); return true;
       }
     }
+    // No strict kick worked — piece cannot be rotated here
     return false;
   }
   holdPiece() {
@@ -1169,14 +1181,19 @@ class TetrisGame {
     if (!this.current || !this.alive) return 0;
     const { shape, color } = this.current;
     const lockedCells = [];
+    let hasVisibleCell = false;
     for (let r = 0; r < shape.length; r++)
       for (let c = 0; c < shape[r].length; c++) {
         if (!shape[r][c]) continue;
         const ny = this.cy + r, nx = this.cx + c;
+        // Cell above visible area = topped out
         if (ny < 0) { this.alive = false; return 0; }
         this.board[ny][nx] = color;
         lockedCells.push({ x: nx, y: ny, color: COLORS[color] });
+        hasVisibleCell = true;
       }
+    // Piece locked with no visible cells = bug, treat as topped out
+    if (!hasVisibleCell) { this.alive = false; return 0; }
     this.lockAnim = { cells: lockedCells, start: performance.now(), duration: LOCK_ANIM_MS };
 
     const clearCaptured = [];
@@ -1921,11 +1938,20 @@ async function enterRoom() {
       }
       if (gamePhase === 'playing') checkForWinner();
     }
-    // clean roster
+    // clean roster everywhere
     delete peerRoster[peerId];
     delete opponentStates[peerId];
+    namedRoom.roster.delete(peerId);
     const el = document.getElementById('opp-' + peerId);
     if (el) el.remove();
+    // always refresh the waiting room player list
+    if (gamePhase === 'waiting' || gamePhase === 'lobby') {
+      const peers = [...namedRoom.roster.values()]
+        .filter(p => p.id !== myId)
+        .map(p => ({ presence: p }));
+      updatePlayerList(peers);
+    }
+    updateOpponentsWrapVisibility();
   };
 
   gamePhase = 'waiting';
@@ -1998,8 +2024,12 @@ function updatePlayerList(peers) {
     list.appendChild(row);
   });
 
-  document.getElementById('online-count').textContent =
-    rows.length + ' player' + (rows.length !== 1 ? 's' : '') + ' in room';
+  const countText = rows.length + ' player' + (rows.length !== 1 ? 's' : '') + ' in room';
+  // update both the game header counter and the waiting room counter
+  const ocEl = document.getElementById('online-count');
+  if (ocEl) ocEl.textContent = countText;
+  const ocEl2 = document.getElementById('online-count-waiting');
+  if (ocEl2) ocEl2.textContent = countText;
 
   // update peerRoster
   const prevRoster = peerRoster;
@@ -2039,23 +2069,31 @@ function updateReadyButton() {
 
 function hostKick(peerId) {
   if (!isHost || !namedRoom) return;
-  // Send kick event directly to that peer AND broadcast (peer will filter by target)
-  const kickMsg = { type: 'event', event: 'kick', data: { target: peerId } };
   const conn = namedRoom.connections.get(peerId);
+  // 1. Send kick message directly to that peer's connection
   if (conn && conn.open) {
-    try { conn.send(kickMsg); } catch(e) {}
+    try {
+      conn.send({ type: 'event', event: 'kick', data: { target: peerId } });
+    } catch(e) {}
   }
-  // Also emit to all so others can update UI
+  // 2. Close the connection after a brief delay so the message arrives first
   setTimeout(() => {
-    if (conn) try { conn.close(); } catch(e) {}
-    delete peerRoster[peerId];
+    if (conn) {
+      try { conn.close(); } catch(e) {}
+    }
+    // 3. Manually clean up host-side state immediately (conn.close fires onPeerLeft async)
+    namedRoom.connections.delete(peerId);
     namedRoom.roster.delete(peerId);
+    delete peerRoster[peerId];
+    delete opponentStates[peerId];
     const el = document.getElementById('opp-' + peerId);
     if (el) el.remove();
-    updatePlayerList([...namedRoom.roster.values()]
+    // 4. Refresh player list
+    const peers = [...namedRoom.roster.values()]
       .filter(p => p.id !== myId)
-      .map(p => ({ presence: p })));
-  }, 350);
+      .map(p => ({ presence: p }));
+    updatePlayerList(peers);
+  }, 300);
   toast('Player kicked');
 }
 
@@ -2476,8 +2514,11 @@ function returnToWaitingRoom() {
       : 'Click Ready when you\'re set';
     updateStartButtonState();
     showScreen('waiting-room');
-    // refresh list
-    updatePlayerList([...namedRoom.roster.values()].slice(1).map(p => ({ presence: p })));
+    // Rebuild player list only from currently connected peers
+    const livePeers = [...namedRoom.roster.values()]
+      .filter(p => p.id !== myId)
+      .map(p => ({ presence: p }));
+    updatePlayerList(livePeers);
   } else {
     gameRunning = false;
     gamePhase = 'lobby';
