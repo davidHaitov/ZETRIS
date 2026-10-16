@@ -25,7 +25,6 @@
     --danger-glow: rgba(255,68,68,0.3);
     --success: #44ff88;
     --warn: #ffcc44;
-    /* piece colors stay vivid */
     --c1: #00f0ff; --c2: #ffd000; --c3: #a000ff;
     --c4: #00aaff; --c5: #ff2244; --c6: #ff8800; --c7: #00dd44;
     --cell: clamp(22px, calc((100vh - 160px) / 23), 34px);
@@ -33,7 +32,6 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── ANIMATED BACKGROUND ── */
   body {
     background: var(--bg); color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
@@ -52,7 +50,6 @@
       radial-gradient(ellipse 100% 100% at 50% 50%, rgba(255,255,255,0.008) 0%, transparent 70%);
     pointer-events: none;
   }
-  /* subtle grid overlay */
   body::after {
     content: '';
     position: fixed; inset: 0; z-index: 0;
@@ -351,7 +348,6 @@
     box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
   }
   .board-canvas { display: block; border-radius: 3px; overflow: hidden; }
-  .board-canvas { display: block; }
 
   .countdown-overlay {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -367,14 +363,32 @@
 
   .gameover-overlay {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: rgba(10,10,15,0.94); z-index: 12; flex-direction: column; gap: 10px;
-    text-align: center; padding: 10px;
+    background: rgba(0,0,0,0.88);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    z-index: 12; flex-direction: column; gap: 8px;
+    text-align: center; padding: 16px;
+    border-radius: 3px;
   }
   .gameover-title {
-    font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700;
-    color: var(--danger); letter-spacing: 0.1em;
+    font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700;
+    color: var(--danger); letter-spacing: 0.12em;
   }
-  .gameover-stat { font-size: 12px; color: var(--text-dim); }
+  .gameover-reason {
+    font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .gameover-stats {
+    display: flex; flex-direction: column; gap: 3px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 5px; padding: 10px 16px; margin-top: 4px;
+  }
+  .gameover-stat-row {
+    display: flex; justify-content: space-between; gap: 20px;
+    font-size: 12px; color: var(--text-dim);
+  }
+  .gameover-stat-row span:last-child {
+    font-family: 'Space Mono', monospace; color: var(--text); font-weight: 700;
+  }
 
   .waiting-overlay {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -522,7 +536,6 @@
     border-radius: 3px; padding: 2px 5px; color: var(--text-dim);
   }
 
-  /* ── ATTACK METER (заполняется линиями, шлёт гарбадж) ── */
   .attack-meter-wrap {
     display: flex; flex-direction: column; gap: 3px;
   }
@@ -551,7 +564,6 @@
     letter-spacing: 0.06em; text-align: center;
   }
 
-  /* ── GARBAGE BAR (входящий мусор) ── */
   .garbage-bar-wrap {
     position: absolute; left: -8px; bottom: 0; top: 0;
     width: 5px; pointer-events: none; z-index: 4;
@@ -566,36 +578,6 @@
   }
   @keyframes gbPulse { 0%,100%{box-shadow:0 0 6px var(--danger-glow)} 50%{box-shadow:0 0 18px rgba(255,68,68,0.7)} }
   .garbage-bar.pulse { animation: gbPulse 0.35s ease-out; }
-
-  /* ── GAMEOVER OVERLAY — enhanced ── */
-  .gameover-overlay {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: rgba(0,0,0,0.88);
-    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-    z-index: 12; flex-direction: column; gap: 8px;
-    text-align: center; padding: 16px;
-    border-radius: 3px;
-  }
-  .gameover-title {
-    font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700;
-    color: var(--danger); letter-spacing: 0.12em;
-  }
-  .gameover-reason {
-    font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em;
-    margin-bottom: 4px;
-  }
-  .gameover-stats {
-    display: flex; flex-direction: column; gap: 3px;
-    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
-    border-radius: 5px; padding: 10px 16px; margin-top: 4px;
-  }
-  .gameover-stat-row {
-    display: flex; justify-content: space-between; gap: 20px;
-    font-size: 12px; color: var(--text-dim);
-  }
-  .gameover-stat-row span:last-child {
-    font-family: 'Space Mono', monospace; color: var(--text); font-weight: 700;
-  }
 </style>
 </head>
 <body>
@@ -837,7 +819,7 @@ const PEER_CONFIG = {
 };
 
 // ══════════════════════════════════════════════════════════════════
-// SOUND — оставьте пути пустыми, вставьте свои
+// SOUND
 // ══════════════════════════════════════════════════════════════════
 const SOUND_FILES = {
   move:  '',
@@ -910,7 +892,7 @@ const Sound = {
 // ══════════════════════════════════════════════════════════════════
 // TETRIS CONSTANTS
 // ══════════════════════════════════════════════════════════════════
-const COLS = 10, ROWS = 20, BUFFER = 3; // 3 visible buffer rows above death line
+const COLS = 10, ROWS = 20, BUFFER = 3, TOTAL_ROWS = ROWS + BUFFER;
 const LOCK_ANIM_MS = 150;
 const CLEAR_ANIM_MS = 330;
 
@@ -1003,7 +985,8 @@ class TetrisGame {
     this.onLock = opts.onLock || null;
     this.experimental = !!opts.experimental;
     this.abilityUses = this.experimental ? 2 : 0;
-    this.board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+    // Board includes BUFFER rows above the death line
+    this.board = Array.from({ length: TOTAL_ROWS }, () => Array(COLS).fill(0));
     this.bag = []; this.current = null;
     this.cx = 0; this.cy = 0; this.rotation = 0;
     this.hold = null; this.holdUsed = false;
@@ -1017,9 +1000,9 @@ class TetrisGame {
     this.lockDelayTimer = null;
     this.lockDelayActive = false;
     this.lockResets = 0;
-    this.MAX_LOCK_RESETS = 15; // total move+rotate resets allowed
-    this.attackMeterLines = 0; // накопленные линии для метра атаки
-    this.ATTACK_METER_MAX = 4; // 4 линии = 1 гарбадж противнику
+    this.MAX_LOCK_RESETS = 15;
+    this.attackMeterLines = 0;
+    this.ATTACK_METER_MAX = 4;
 
     this.spawn();
   }
@@ -1034,19 +1017,10 @@ class TetrisGame {
     const key = this.bag.shift();
     this.current = this.makePiece(key);
     this.cx = Math.floor((COLS - this.current.shape[0].length) / 2);
+    this.cy = 0;  // top of the total board (inside buffer zone)
     this.rotation = 0;
     this.lockResets = 0;
     this.cancelLockDelay();
-    // Find how high the stack reaches — spawn above it in buffer zone if needed
-    let stackTop = ROWS;
-    for (let r = 0; r < ROWS; r++) {
-      if (this.board[r].some(v => v)) { stackTop = r; break; }
-    }
-    // Normal spawn at row 0 (just at death line). If stack reaches row 0,
-    // try spawning higher (up to -BUFFER) so player can still maneuver.
-    let spawnY = 0;
-    if (stackTop <= 2) spawnY = Math.max(-BUFFER, stackTop - 3);
-    this.cy = spawnY;
     if (!this.valid(this.current.shape, this.cx, this.cy)) this.alive = false;
   }
   startLockDelay() {
@@ -1064,40 +1038,25 @@ class TetrisGame {
   }
   bumpLockDelay() {
     if (!this.lockDelayActive) return;
-    // Bug fix: if piece can now fall freely after move/rotate, cancel lock entirely
+    // If piece can now fall freely after move/rotate, cancel lock entirely
     if (this.valid(this.current.shape, this.cx, this.cy + 1)) {
       this.cancelLockDelay();
       return;
     }
-    // Hard cap: combined move+rotate resets
     if (this.lockResets >= this.MAX_LOCK_RESETS) return;
     this.lockResets++;
     this.cancelLockDelay();
     this.startLockDelay();
   }
+  // Valid: piece must fit inside TOTAL_ROWS (buffer + visible)
   valid(shape, tx, ty) {
     for (let r = 0; r < shape.length; r++)
       for (let c = 0; c < shape[r].length; c++) {
         if (!shape[r][c]) continue;
         const nx = tx + c, ny = ty + r;
         if (nx < 0 || nx >= COLS) return false;
-        if (ny >= ROWS) return false;
-        // ny < 0 allowed only during spawn (piece entering from top)
-        // but NOT as result of a kick — we check that separately in rotate()
-        if (ny >= 0 && this.board[ny][nx]) return false;
-      }
-    return true;
-  }
-  // Stricter valid: allows buffer zone (ny >= -BUFFER) but not beyond
-  validStrict(shape, tx, ty) {
-    for (let r = 0; r < shape.length; r++)
-      for (let c = 0; c < shape[r].length; c++) {
-        if (!shape[r][c]) continue;
-        const nx = tx + c, ny = ty + r;
-        if (nx < 0 || nx >= COLS) return false;
-        if (ny >= ROWS) return false;
-        if (ny < -BUFFER) return false; // can't go above buffer zone
-        if (ny >= 0 && this.board[ny][nx]) return false;
+        if (ny < 0 || ny >= TOTAL_ROWS) return false;
+        if (this.board[ny][nx]) return false;
       }
     return true;
   }
@@ -1105,7 +1064,7 @@ class TetrisGame {
     if (!this.current) return this.cy;
     let gy = this.cy;
     while (this.valid(this.current.shape, this.cx, gy + 1)) gy++;
-    return gy; // may be negative if piece is in buffer zone — drawBoard handles this
+    return gy;
   }
   move(dx) {
     if (!this.current || !this.alive) return false;
@@ -1137,17 +1096,15 @@ class TetrisGame {
     const newShape = dir === 1 ? rotateCW(this.current.shape) : rotateCCW(this.current.shape);
     const table = this.current.key === 'I' ? KICKS_I : KICKS_JLSTZ;
     const kicks = table[from + '>' + to] || [[0, 0]];
-    // First try kicks that keep the piece fully inside the visible grid
     for (let i = 0; i < kicks.length; i++) {
       const tx = this.cx + kicks[i][0];
       const ty = this.cy - kicks[i][1];
-      if (this.validStrict(newShape, tx, ty)) {
+      if (this.valid(newShape, tx, ty)) {
         this.current.shape = newShape;
         this.cx = tx; this.cy = ty; this.rotation = to;
         this.bumpLockDelay(); return true;
       }
     }
-    // No strict kick worked — piece cannot be rotated here
     return false;
   }
   holdPiece() {
@@ -1169,12 +1126,12 @@ class TetrisGame {
   useAbility() {
     if (!this.experimental || this.abilityUses <= 0) return false;
     let top = -1;
-    for (let r = 0; r < ROWS; r++) {
+    for (let r = 0; r < TOTAL_ROWS; r++) {
       if (this.board[r].some(v => v)) { top = r; break; }
     }
     if (top === -1) return false;
     const captured = [];
-    const endRow = Math.min(top + 3, ROWS - 1);
+    const endRow = Math.min(top + 3, TOTAL_ROWS - 1);
     for (let r = top; r <= endRow; r++) {
       captured.push({ y: r, cells: this.board[r].slice() });
       this.board[r] = Array(COLS).fill(0);
@@ -1193,26 +1150,28 @@ class TetrisGame {
     if (!this.current || !this.alive) return 0;
     const { shape, color } = this.current;
     const lockedCells = [];
-    let hasVisibleCell = false;
+    let anyVisibleCell = false;
     for (let r = 0; r < shape.length; r++)
       for (let c = 0; c < shape[r].length; c++) {
         if (!shape[r][c]) continue;
         const ny = this.cy + r, nx = this.cx + c;
-        // Cell above death line (row 0) = topped out
-        if (ny < 0) { this.alive = false; return 0; }
+        if (ny < 0 || ny >= TOTAL_ROWS) continue;
         this.board[ny][nx] = color;
         lockedCells.push({ x: nx, y: ny, color: COLORS[color] });
-        hasVisibleCell = true;
+        if (ny >= BUFFER) anyVisibleCell = true;
       }
-    if (!hasVisibleCell) { this.alive = false; return 0; }
     this.lockAnim = { cells: lockedCells, start: performance.now(), duration: LOCK_ANIM_MS };
 
+    // Lock-out: piece landed entirely above death line
+    if (!anyVisibleCell) { this.alive = false; return 0; }
+
+    // Line clear: only rows in visible zone (>= BUFFER)
     const clearCaptured = [];
-    for (let r = ROWS - 1; r >= 0; r--) {
+    for (let r = TOTAL_ROWS - 1; r >= BUFFER; r--) {
       if (this.board[r].every(v => v)) clearCaptured.push({ y: r, cells: this.board[r].slice() });
     }
     let cleared = 0;
-    for (let r = ROWS - 1; r >= 0; r--) {
+    for (let r = TOTAL_ROWS - 1; r >= BUFFER; r--) {
       if (this.board[r].every(v => v)) {
         this.board.splice(r, 1);
         this.board.unshift(Array(COLS).fill(0));
@@ -1246,9 +1205,7 @@ class TetrisGame {
 
     if (cleared > 0) {
       this.pendingGarbage = Math.max(0, this.pendingGarbage - cleared);
-      // Накапливаем линии в метр атаки
       this.attackMeterLines += cleared;
-      // Каждые ATTACK_METER_MAX линий — 1 гарбадж линия (поверх attack)
       const meterBonus = Math.floor(this.attackMeterLines / this.ATTACK_METER_MAX);
       this.attackMeterLines = this.attackMeterLines % this.ATTACK_METER_MAX;
       if (meterBonus > 0) attack += meterBonus;
@@ -1303,22 +1260,19 @@ function drawGhostCell(ctx, px, py, size, color) {
   ctx.strokeRect(px + 1.5, py + 1.5, size - 3, size - 3);
   ctx.globalAlpha = 1;
 }
-function boardY(row) { return (row + BUFFER) * arguments[1]; } // unused helper — inline below
 function drawBoard(canvas, game, cell) {
   const w = COLS * cell;
-  const h = (ROWS + BUFFER) * cell; // canvas taller by BUFFER rows
+  const h = TOTAL_ROWS * cell;
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   const ctx = canvas.getContext('2d');
 
-  // ── Background ──
-  // Buffer zone (above death line) — slightly lighter dark
+  // Background — buffer slightly different
   ctx.fillStyle = 'rgba(12,12,18,0.85)';
   ctx.fillRect(0, 0, w, BUFFER * cell);
-  // Main play area
   ctx.fillStyle = 'rgba(0,0,0,0.72)';
   ctx.fillRect(0, BUFFER * cell, w, ROWS * cell);
 
-  // ── Grid — only in play area ──
+  // Grid — only in visible area
   ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 0.5;
   for (let r = 0; r <= ROWS; r++) {
     const y = (r + BUFFER) * cell + 0.25;
@@ -1328,48 +1282,45 @@ function drawBoard(canvas, game, cell) {
     ctx.beginPath(); ctx.moveTo(c*cell+0.25, BUFFER*cell); ctx.lineTo(c*cell+0.25, h); ctx.stroke();
   }
 
-  // ── RED DEATH LINE ──
+  // Red death line
   ctx.strokeStyle = 'rgba(255,60,60,0.75)'; ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.moveTo(0, BUFFER*cell); ctx.lineTo(w, BUFFER*cell); ctx.stroke();
-  // subtle danger tint in buffer
   ctx.fillStyle = 'rgba(255,30,30,0.04)';
   ctx.fillRect(0, 0, w, BUFFER * cell);
-  // skull / warning label
   ctx.fillStyle = 'rgba(255,60,60,0.30)';
   ctx.font = `${Math.max(8, Math.round(cell * 0.35))}px Space Mono, monospace`;
   ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
   ctx.fillText('▲ DEATH LINE', w - 4, BUFFER*cell - 3);
   ctx.textAlign = 'left';
 
-  // ── Board cells ──
-  for (let r = 0; r < ROWS; r++)
+  // Board cells — all TOTAL_ROWS
+  for (let r = 0; r < TOTAL_ROWS; r++)
     for (let c = 0; c < COLS; c++) {
       const v = game.board[r][c];
       if (!v) continue;
-      drawCell(ctx, c*cell, (r + BUFFER)*cell, cell, v === 8 ? GARBAGE_COLOR : COLORS[v]);
+      drawCell(ctx, c*cell, r*cell, cell, v === 8 ? GARBAGE_COLOR : COLORS[v]);
     }
 
   if (game.current && game.alive) {
-    // ── Ghost ──
+    // Ghost
     const gy = game.ghostY();
     for (let r = 0; r < game.current.shape.length; r++)
       for (let c = 0; c < game.current.shape[r].length; c++) {
         if (!game.current.shape[r][c]) continue;
         const nx = game.cx + c, ny = gy + r;
         if (ny >= 0)
-          drawGhostCell(ctx, nx*cell, (ny + BUFFER)*cell, cell, COLORS[game.current.color]);
+          drawGhostCell(ctx, nx*cell, ny*cell, cell, COLORS[game.current.color]);
       }
-    // ── Current piece — visible even in buffer zone ──
+    // Current piece
     for (let r = 0; r < game.current.shape.length; r++)
       for (let c = 0; c < game.current.shape[r].length; c++) {
         if (!game.current.shape[r][c]) continue;
         const nx = game.cx + c, ny = game.cy + r;
-        // Draw in buffer zone too (ny < 0 = above death line, still render it)
-        drawCell(ctx, nx*cell, (ny + BUFFER)*cell, cell, COLORS[game.current.color]);
+        if (ny >= 0) drawCell(ctx, nx*cell, ny*cell, cell, COLORS[game.current.color]);
       }
   }
 
-  // ── Lock animation ──
+  // Lock animation
   if (game.lockAnim) {
     const t = (performance.now() - game.lockAnim.start) / game.lockAnim.duration;
     if (t < 1) {
@@ -1379,7 +1330,7 @@ function drawBoard(canvas, game, cell) {
       for (const c of game.lockAnim.cells) {
         const size = cell * scale;
         const ox = c.x * cell + (cell - size) / 2;
-        const oy = (c.y + BUFFER) * cell + (cell - size) / 2;
+        const oy = c.y * cell + (cell - size) / 2;
         drawCell(ctx, ox, oy, size, c.color, alpha);
         const glow = (1 - t) * 0.55;
         if (glow > 0.01) {
@@ -1391,12 +1342,12 @@ function drawBoard(canvas, game, cell) {
     } else game.lockAnim = null;
   }
 
-  // ── Clear animation ──
+  // Clear animation
   if (game.clearAnim) {
     const t = Math.min(1, (performance.now() - game.clearAnim.start) / game.clearAnim.duration);
     if (t < 1) {
       for (const row of game.clearAnim.rows) {
-        const y = (row.y + BUFFER) * cell;
+        const y = row.y * cell;
         const flashAlpha = Math.max(0, 1 - t * 2.8);
         if (flashAlpha > 0.01) {
           ctx.fillStyle = `rgba(255,255,255,${flashAlpha})`;
@@ -1462,8 +1413,9 @@ function drawSmallBoard(canvas, boardData, cell, current) {
     for (let c = 0; c <= COLS; c++) { ctx.beginPath(); ctx.moveTo(c*cell+0.25, 0); ctx.lineTo(c*cell+0.25, h); ctx.stroke(); }
   }
   if (boardData) {
+    // boardData has TOTAL_ROWS rows; only draw visible ones
     for (let r = 0; r < ROWS; r++) {
-      const row = boardData[r]; if (!row) continue;
+      const row = boardData[r + BUFFER]; if (!row) continue;
       for (let c = 0; c < COLS; c++) {
         const v = row[c]; if (!v) continue;
         ctx.fillStyle = v === 8 ? 'rgba(85,85,102,0.6)' : COLORS[v] + 'aa';
@@ -1476,8 +1428,9 @@ function drawSmallBoard(canvas, boardData, cell, current) {
     for (let r = 0; r < shape.length; r++)
       for (let c = 0; c < shape[r].length; c++) {
         if (!shape[r][c]) continue;
-        if (cy + r < 0) continue;
-        const x = (cx + c) * cell, y = (cy + r) * cell;
+        const ny = cy + r;
+        if (ny < BUFFER) continue;   // skip buffer rows in mini view
+        const x = (cx + c) * cell, y = (ny - BUFFER) * cell;
         ctx.fillStyle = COLORS[color];
         ctx.fillRect(x, y, cell - 0.5, cell - 0.5);
         if (cell >= 6) {
@@ -1760,7 +1713,7 @@ let runtimeReady = null;
 let gameStartTime = 0;
 let speedBoost = 0;
 let opponentStates = {};
-let peerRoster = {};   // id -> { name, ready }
+let peerRoster = {};
 let returnScheduled = false;
 
 const GRAVITY_INTERVALS = [800,720,630,550,470,380,300,220,140,100,80,70,60,50];
@@ -1873,11 +1826,9 @@ async function enterRoom() {
     const remainingPeers = [...namedRoom.roster.keys()].filter(id => id !== myId);
     const allIds = [myId, ...remainingPeers].sort();
     if (allIds[0] === myId) {
-      // We become the new host
       isHost = true;
       roomCode = namedRoom.roomCode;
       toast('You are now the host');
-      // Update UI
       document.getElementById('start-btn').style.display = 'block';
       document.getElementById('ready-btn').style.display = 'none';
       document.getElementById('start-hint').textContent = 'All players must be ready to start';
@@ -1885,7 +1836,6 @@ async function enterRoom() {
       updatePlayerList([...namedRoom.roster.values()]
         .filter(p => p.id !== myId)
         .map(p => ({ presence: p })));
-      // Broadcast new host presence
       namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady, host: true });
     } else {
       toast('Host left — waiting for new host');
@@ -1943,7 +1893,6 @@ async function enterRoom() {
     if (typeof data.lines === 'number') st.lines = data.lines;
     if (typeof data.level === 'number') st.level = data.level;
     opponentStates[data.id] = st;
-    // remove card from view and grow others
     rerenderAliveOpponents();
     if (gamePhase === 'playing') checkForWinner();
   });
@@ -1960,7 +1909,6 @@ async function enterRoom() {
   namedRoom.on('kick', ({ target }) => {
     if (target !== myId) return;
     toast('You were kicked from the room');
-    // If in a match, register as defeat first
     if (gamePhase === 'playing' || gamePhase === 'countdown') {
       if (game && game.alive) {
         game.alive = false;
@@ -1975,9 +1923,8 @@ async function enterRoom() {
     }, 1800);
   });
 
-  // Non-host clients learn about kicked peers via this broadcast
   namedRoom.on('peer_kicked', ({ id }) => {
-    if (id === myId) return; // handled by 'kick' event above
+    if (id === myId) return;
     _removePeer(id);
   });
 
@@ -1990,7 +1937,7 @@ async function enterRoom() {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// PLAYER LIST (with ready + kick)
+// PLAYER LIST
 // ══════════════════════════════════════════════════════════════════
 function updatePlayerList(peers) {
   const list = document.getElementById('players-list');
@@ -2018,7 +1965,6 @@ function updatePlayerList(peers) {
       row.appendChild(you);
     }
 
-    // Host flag: me if isHost, others only if their presence.host === true
     const isRowHost = p.isMe ? isHost : !!p.host;
     if (isRowHost) {
       const host = document.createElement('span');
@@ -2030,7 +1976,6 @@ function updatePlayerList(peers) {
     spacer.className = 'spacer';
     row.appendChild(spacer);
 
-    // Host doesn't need a ready tag — they control the start
     if (!isRowHost) {
       const ready = document.createElement('span');
       ready.className = 'ready-tag' + (p.ready ? ' ready' : '');
@@ -2054,23 +1999,15 @@ function updatePlayerList(peers) {
   });
 
   const countText = rows.length + ' player' + (rows.length !== 1 ? 's' : '') + ' in room';
-  // update both the game header counter and the waiting room counter
   const ocEl = document.getElementById('online-count');
   if (ocEl) ocEl.textContent = countText;
-  const ocEl2 = document.getElementById('online-count-waiting');
-  if (ocEl2) ocEl2.textContent = countText;
 
-  // update peerRoster
-  const prevRoster = peerRoster;
   peerRoster = {};
   rows.forEach(r => {
     if (!r.isMe) peerRoster[r.id] = { name: r.name, ready: r.ready };
   });
 
-  // sync opponent board states only if roster changed structurally
   syncOpponentRoster(rows);
-
-  // update start button state
   updateStartButtonState();
 }
 
@@ -2099,13 +2036,10 @@ function updateReadyButton() {
 function hostKick(peerId) {
   if (!isHost || !namedRoom) return;
   const conn = namedRoom.connections.get(peerId);
-  // 1. Send kick directly to that peer so they know they were kicked
   if (conn && conn.open) {
     try { conn.send({ type: 'event', event: 'kick', data: { target: peerId } }); } catch(e) {}
   }
-  // 2. Broadcast to all others that this peer was removed
   namedRoom.emit('peer_kicked', { id: peerId });
-  // 3. Clean up after brief delay (message needs to arrive first)
   setTimeout(() => {
     if (conn) { try { conn.close(); } catch(e) {} }
     _removePeer(peerId);
@@ -2113,12 +2047,11 @@ function hostKick(peerId) {
   toast('Player kicked');
 }
 
-// Central peer removal used by kick and onPeerLeft
 function _removePeer(peerId) {
+  if (!namedRoom) return;
   namedRoom.connections.delete(peerId);
   namedRoom.roster.delete(peerId);
   delete peerRoster[peerId];
-  // If game in progress, host emits player_died for this peer
   if (isHost && (gamePhase === 'playing' || gamePhase === 'countdown')) {
     const st = opponentStates[peerId] || {};
     namedRoom.emit('player_died', {
@@ -2203,7 +2136,6 @@ function startGame() {
   returnScheduled = false;
   Sound.startMusic();
 
-  // preserve roster, reset per-round state
   const rosterSnapshot = Object.entries(opponentStates).map(([id, st]) => ({ id, name: st.name }));
   opponentStates = {};
   document.getElementById('opponents').innerHTML = '';
@@ -2229,8 +2161,7 @@ function startGame() {
   game = new TetrisGame({
     experimental: gameSettings.experimental,
     onLock: (attack, g, cleared) => {
-      if (cleared > 0) Sound.playLock();
-      else Sound.playLock();
+      Sound.playLock();
       if (attack > 0) sendAttack(attack);
       broadcastBoard(true);
       if (!g.alive) endGame();
@@ -2289,9 +2220,7 @@ function startRenderLoop() {
     updateStat('level-val', game.level);
     updateStat('atk-val', game.totalAttack);
     updateStat('inc-val', game.pendingGarbage);
-    // attack meter
     updateAttackMeter(game.attackMeterLines, game.ATTACK_METER_MAX);
-    // garbage bar
     updateGarbageBar(game.pendingGarbage);
     if (game.experimental) {
       const left = game.abilityUses;
@@ -2354,7 +2283,6 @@ function fullCleanup() {
   opponentStates = {};
   peerRoster = {};
   myReady = false;
-  // reset player count display
   const ocEl = document.getElementById('online-count');
   if (ocEl) ocEl.textContent = 'solo practice';
   document.getElementById('opponents').innerHTML = '';
@@ -2369,10 +2297,8 @@ function fullCleanup() {
   title.textContent = 'GAME OVER'; title.style.color = '';
   const reason = document.getElementById('gameover-reason');
   if (reason) reason.textContent = '';
-  // reset garbage bar
   const gbar = document.getElementById('garbage-bar');
   if (gbar) gbar.style.height = '0%';
-  // reset attack meter
   const mf = document.getElementById('attack-meter-fill');
   if (mf) { mf.style.width = '0%'; mf.classList.remove('ready'); }
   const ml = document.getElementById('attack-meter-label');
@@ -2388,11 +2314,10 @@ function endGame() {
   cleanupTimers();
   Sound.stopMusic();
 
-  // Determine cause of death
   let reason = '';
   if (game) {
-    // Check if top row has any blocks (topped out)
-    const toppedOut = game.board[0].some(v => v) || game.board[1].some(v => v);
+    // Top-out = есть блоки в буферной зоне (выше death line)
+    const toppedOut = game.board.slice(0, BUFFER).some(row => row.some(v => v));
     reason = toppedOut ? 'Topped out' : 'Block overflow';
   }
   const stats = game ? { score: game.score, lines: game.lines, level: game.level, attack: game.totalAttack } : null;
@@ -2489,7 +2414,6 @@ function applyRoundEnd(data) {
   Sound.stopMusic();
   renderLeaderboard(data);
   showScreen('leaderboard-screen');
-  // no auto-return — user presses button
 }
 
 function renderLeaderboard(data) {
@@ -2532,7 +2456,6 @@ function returnToWaitingRoom() {
   title.textContent = 'GAME OVER';
   title.style.color = '';
 
-  // reset per-round state
   Object.keys(opponentStates).forEach(id => {
     opponentStates[id].board = null;
     opponentStates[id].current = null;
@@ -2545,7 +2468,6 @@ function returnToWaitingRoom() {
   updateOpponentsWrapVisibility();
   document.getElementById('ability-box').style.display = 'none';
 
-  // reset ready
   myReady = false;
   updateReadyButton();
   if (namedRoom && namedRoom.presenceData) {
@@ -2566,7 +2488,6 @@ function returnToWaitingRoom() {
       : 'Click Ready when you\'re set';
     updateStartButtonState();
     showScreen('waiting-room');
-    // Rebuild player list only from currently connected peers
     const livePeers = [...namedRoom.roster.values()]
       .filter(p => p.id !== myId)
       .map(p => ({ presence: p }));
@@ -2593,7 +2514,6 @@ function updateOpponentsWrapVisibility() {
 function syncOpponentRoster(rows) {
   const rosterIds = new Set();
   rows.forEach(r => { if (!r.isMe) rosterIds.add(r.id); });
-  // remove opponents not in roster
   Object.keys(opponentStates).forEach(id => {
     if (!rosterIds.has(id)) {
       delete opponentStates[id];
@@ -2601,7 +2521,6 @@ function syncOpponentRoster(rows) {
       if (el) el.remove();
     }
   });
-  // add new opponents
   rows.forEach(r => {
     if (r.isMe) return;
     if (!opponentStates[r.id])
@@ -2615,7 +2534,6 @@ function syncOpponentRoster(rows) {
 function rerenderAliveOpponents() {
   const container = document.getElementById('opponents');
   container.innerHTML = '';
-  // only alive opponents are shown
   Object.entries(opponentStates).forEach(([id, state]) => {
     if (state.alive === false) return;
     renderOpponentCard(id, state);
@@ -2636,7 +2554,6 @@ function updateOpponent(id, name, board, current, score, lines, level, alive) {
     alive: alive !== false,
     pending: false,
   };
-  // only render if alive (dead ones are hidden)
   if (opponentStates[id].alive) {
     renderOpponentCard(id, opponentStates[id]);
   }
@@ -2676,7 +2593,7 @@ function renderOpponentCard(id, state) {
   if (state.board) drawSmallBoard(canvas, state.board, cell, state.current);
   else {
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#0e0e15';
+    ctx.fillStyle = 'rgba(0,0,0,0.72)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
   updateOpponentsWrapVisibility();
@@ -2922,4 +2839,4 @@ if (savedName) {
 }
 </script>
 </body>
-</html>
+  </html>
