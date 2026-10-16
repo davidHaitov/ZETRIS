@@ -1146,31 +1146,31 @@ class TetrisGame {
     return true;
   }
   lock() {
-    this.cancelLockDelay();
-    if (!this.current || !this.alive) return 0;
-    const { shape, color } = this.current;
-    const lockedCells = [];
-    let anyVisibleCell = false;
-    for (let r = 0; r < shape.length; r++)
-      for (let c = 0; c < shape[r].length; c++) {
-        if (!shape[r][c]) continue;
-        const ny = this.cy + r, nx = this.cx + c;
-        if (ny < 0 || ny >= TOTAL_ROWS) continue;
-        this.board[ny][nx] = color;
-        lockedCells.push({ x: nx, y: ny, color: COLORS[color] });
-        if (ny >= BUFFER) anyVisibleCell = true;
-      }
-    this.lockAnim = { cells: lockedCells, start: performance.now(), duration: LOCK_ANIM_MS };
+  this.cancelLockDelay();
+  if (!this.current || !this.alive) return 0;
+  const { shape, color } = this.current;
+  const lockedCells = [];
+  let anyVisibleCell = false;
+  for (let r = 0; r < shape.length; r++)
+    for (let c = 0; c < shape[r].length; c++) {
+      if (!shape[r][c]) continue;
+      const ny = this.cy + r, nx = this.cx + c;
+      if (ny < 0 || ny >= TOTAL_ROWS) continue;
+      this.board[ny][nx] = color;
+      lockedCells.push({ x: nx, y: ny, color: COLORS[color] });
+      if (ny >= BUFFER) anyVisibleCell = true;
+    }
+  this.lockAnim = { cells: lockedCells, start: performance.now(), duration: LOCK_ANIM_MS };
 
-    // Lock-out: piece landed entirely above death line
-    if (!anyVisibleCell) { this.alive = false; return 0; }
+  let attack = 0;
+  let cleared = 0;
 
-    // Line clear: only rows in visible zone (>= BUFFER)
+  if (anyVisibleCell) {
+    // ── Обычная ветка: часть фигуры в видимой зоне ──
     const clearCaptured = [];
     for (let r = TOTAL_ROWS - 1; r >= BUFFER; r--) {
       if (this.board[r].every(v => v)) clearCaptured.push({ y: r, cells: this.board[r].slice() });
     }
-    let cleared = 0;
     for (let r = TOTAL_ROWS - 1; r >= BUFFER; r--) {
       if (this.board[r].every(v => v)) {
         this.board.splice(r, 1);
@@ -1182,7 +1182,6 @@ class TetrisGame {
       this.clearAnim = { rows: clearCaptured, start: performance.now(), duration: CLEAR_ANIM_MS, count: cleared };
     }
 
-    let attack = 0;
     if (cleared > 0) {
       this.combo++;
       const comboPts = this.combo > 1 ? (this.combo - 1) * 50 : 0;
@@ -1216,8 +1215,14 @@ class TetrisGame {
 
     this.holdUsed = false;
     this.spawn();
-    if (this.onLock) this.onLock(attack, this, cleared);
-    return attack;
+  } else {
+    // ── Lock-out: вся фигура легла выше death line ──
+    this.alive = false;
+  }
+
+  // onLock вызывается ВСЕГДА, чтобы endGame() сработал корректно
+  if (this.onLock) this.onLock(attack, this, cleared);
+  return attack;
   }
   addGarbage(n) {
     const hole = Math.floor(Math.random() * COLS);
