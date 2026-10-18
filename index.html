@@ -1465,12 +1465,13 @@ class PeerAdapter {
     });
   }
   presence(data) {
-    this.presenceData = { ...data, id: this.myId };
-    this.roster.set(this.myId, this.presenceData);
-    const msg = { type: 'presence', data: this.presenceData };
-    for (const conn of this.connections.values())
-      if (conn.open) { try { conn.send(msg); } catch(e){} }
-    this._notifyPeers('presence', { peer: { presence: this.presenceData } });
+  const myPeerId = this.peer ? this.peer.id : this.myId;
+  this.presenceData = { ...data, id: myPeerId };
+  this.roster.set(myPeerId, this.presenceData);
+  const msg = { type: 'presence', data: this.presenceData };
+  for (const conn of this.connections.values())
+    if (conn.open) { try { conn.send(msg); } catch(e){} }
+  this._notifyPeers('presence', { peer: { presence: this.presenceData } });
   }
   async join(roomCode, asHost) {
     this.roomCode = roomCode;
@@ -1719,6 +1720,8 @@ async function enterRoom() {
     return;
   }
 
+  myId = namedRoom.peer.id;
+
   namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady, host: isHost });
   namedRoom.onPeers(({ peers }) => updatePlayerList(peers || []));
 
@@ -1915,7 +1918,7 @@ function hostKick(peerId) {
   setTimeout(() => {
     if (conn) { try { conn.close(); } catch(e) {} }
     _removePeer(peerId);
-  }, 300);
+  }, 600);
   toast('Player kicked');
 }
 
