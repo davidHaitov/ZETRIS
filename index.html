@@ -26,40 +26,85 @@
     --board-blur-bg: rgba(0,0,0,0.55);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── PARALLAX BACKGROUND ── */
+  #bg-parallax {
+    position: fixed; inset: -8% -5%; z-index: 0;
+    background: url('img/mountain_tetris.jpg') center center / cover no-repeat;
+    will-change: transform;
+    transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+
+  /* ── BLUR + DIM OVERLAY ── */
+  #bg-overlay {
+    position: fixed; inset: 0; z-index: 1;
+    background: rgba(0,0,0,0.48);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: background 0.6s ease;
+    pointer-events: none;
+  }
+  /* danger state — overlay reddens as stack rises */
+  #bg-overlay.danger { background: rgba(60,0,0,0.58); }
+  #bg-overlay.critical { background: rgba(100,0,0,0.70); }
+  /* gameover state */
+  #bg-overlay.gameover { background: rgba(80,0,0,0.75); }
+
   body {
-    background: var(--bg); color: var(--text);
+    background: transparent; color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
     min-height: 100vh; display: flex; flex-direction: column; align-items: center;
     user-select: none; -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
     overflow: hidden; position: relative;
   }
-  body::before {
-    content: ''; position: fixed; inset: 0; z-index: 0;
-    background:
-      radial-gradient(ellipse 80% 60% at 15% 20%, rgba(255,255,255,0.025) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 80% at 85% 75%, rgba(255,255,255,0.018) 0%, transparent 55%);
-    pointer-events: none;
-  }
-  body::after {
-    content: ''; position: fixed; inset: 0; z-index: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-    background-size: 48px 48px;
-    pointer-events: none;
-  }
-  header.site-header, .screen { position: relative; z-index: 1; }
+  header.site-header, .screen { position: relative; z-index: 2; }
   .site-header {
     width: 100%; padding: 12px 24px;
     display: flex; align-items: center; justify-content: space-between;
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.35);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
   .site-header.hidden { display: none; }
+  /* In-game top bar replaces the header */
+  #game-topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 18px; pointer-events: none;
+  }
+  #game-topbar.hidden { display: none; }
+  #game-topbar > * { pointer-events: auto; }
+  .topbar-left {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .topbar-room-label {
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    color: rgba(255,255,255,0.4); letter-spacing: 0.08em;
+    background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);
+    padding: 4px 10px; border-radius: 4px;
+  }
+  .topbar-timer {
+    font-family: 'Space Mono', monospace; font-size: 12px;
+    color: rgba(255,255,255,0.5); letter-spacing: 0.1em;
+  }
+  .topbar-online {
+    font-size: 11px; color: rgba(255,255,255,0.35);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .topbar-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--success); }
+  .topbar-quit {
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.5); padding: 5px 12px; border-radius: 4px;
+    cursor: pointer; letter-spacing: 0.08em;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .topbar-quit:hover { border-color: var(--danger); color: var(--danger); }
+  /* game screen has no padding-top normally — topbar is fixed overlay */
+  #game { padding-top: 44px; }
   .header-mode {
     font-family: 'Space Mono', monospace;
     font-size: 11px; letter-spacing: 0.18em;
@@ -280,13 +325,10 @@
 
   .board-wrap {
     position: relative;
-    background: var(--board-blur-bg);
-    backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
-    border: 1px solid var(--border-strong);
+    background: transparent;
     border-radius: 4px; overflow: visible;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
   }
-  .board-canvas { display: block; border-radius: 3px; overflow: hidden; }
+  .board-canvas { display: block; }
 
   .countdown-overlay {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -450,6 +492,21 @@
 </style>
 </head>
 <body>
+<div id="bg-parallax"></div>
+<div id="bg-overlay"></div>
+
+<!-- In-game floating top bar -->
+<div id="game-topbar" class="hidden">
+  <div class="topbar-left">
+    <span class="topbar-room-label" id="topbar-room">solo</span>
+    <span class="topbar-online" id="topbar-online" style="display:none">
+      <span class="topbar-dot"></span>
+      <span id="topbar-count">1 player</span>
+    </span>
+    <span class="topbar-timer hidden" id="topbar-timer">0:00</span>
+  </div>
+  <div class="topbar-quit" id="topbar-quit-btn">QUIT</div>
+</div>
 
 <header class="site-header hidden" id="app-header">
   <div class="header-mode" id="header-mode">MENU</div>
@@ -557,15 +614,13 @@
   </div>
 </div>
 
+<!-- hidden helpers so old JS references don't break -->
+<span id="game-room-label" style="display:none"></span>
+<span id="online-count" style="display:none"></span>
+<span id="game-timer" class="hidden" style="display:none"></span>
+<button id="quit-btn" style="display:none"></button>
+
 <div class="screen" id="game">
-  <div class="game-header">
-    <div class="room-id-display" id="game-room-label" title="Click to copy">room: ----</div>
-    <div class="players-count"><div class="dot"></div><span id="online-count">1 player</span></div>
-    <div class="game-timer hidden" id="game-timer">0:00</div>
-    <div style="margin-left:auto; display:flex; gap:8px;">
-      <button class="btn btn-ghost btn-sm" id="quit-btn">Quit</button>
-    </div>
-  </div>
 
   <div class="arena">
     <div class="my-section" id="my-section">
@@ -1143,10 +1198,14 @@ function drawBoard(canvas, game, cell) {
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   const ctx = canvas.getContext('2d');
 
-  ctx.fillStyle = 'rgba(12,12,18,0.85)';
+  // Clear to transparent — bg-overlay behind shows blurred photo
+  ctx.clearRect(0, 0, w, h);
+  // Very subtle dark tint over the whole board
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillRect(0, 0, w, h);
+  // Buffer zone slightly darker
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
   ctx.fillRect(0, 0, w, BUFFER * cell);
-  ctx.fillStyle = 'rgba(0,0,0,0.72)';
-  ctx.fillRect(0, BUFFER * cell, w, ROWS * cell);
 
   ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 0.5;
   for (let r = 0; r <= ROWS; r++) {
@@ -1157,15 +1216,16 @@ function drawBoard(canvas, game, cell) {
     ctx.beginPath(); ctx.moveTo(c*cell+0.25, BUFFER*cell); ctx.lineTo(c*cell+0.25, h); ctx.stroke();
   }
 
-  ctx.strokeStyle = 'rgba(255,60,60,0.75)'; ctx.lineWidth = 1.5;
+  // Danger tint in buffer zone — intensifies when stack is high (set via canvas dataset)
+  const dangerAlpha = parseFloat(canvas.dataset.danger || '0');
+  if (dangerAlpha > 0) {
+    ctx.fillStyle = `rgba(255,30,30,${dangerAlpha * 0.18})`;
+    ctx.fillRect(0, 0, w, BUFFER * cell);
+  }
+  // Death line — thin, subtle, always present
+  const lineAlpha = 0.25 + dangerAlpha * 0.55;
+  ctx.strokeStyle = `rgba(255,60,60,${lineAlpha})`; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(0, BUFFER*cell); ctx.lineTo(w, BUFFER*cell); ctx.stroke();
-  ctx.fillStyle = 'rgba(255,30,30,0.04)';
-  ctx.fillRect(0, 0, w, BUFFER * cell);
-  ctx.fillStyle = 'rgba(255,60,60,0.30)';
-  ctx.font = `${Math.max(8, Math.round(cell * 0.35))}px Space Mono, monospace`;
-  ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
-  ctx.fillText('▲ DEATH LINE', w - 4, BUFFER*cell - 3);
-  ctx.textAlign = 'left';
 
   for (let r = 0; r < TOTAL_ROWS; r++)
     for (let c = 0; c < COLS; c++) {
@@ -2000,6 +2060,8 @@ function startSolo() {
   document.getElementById('my-waiting').style.display = 'none';
   document.getElementById('game-timer').classList.remove('hidden');
   showScreen('game');
+  // show topbar
+  showGameTopbar('solo', false, '', true);
   startGame();
 }
 
@@ -2012,6 +2074,15 @@ function startGame() {
   speedBoost = 0;
   returnScheduled = false;
   Sound.startMusic();
+  // topbar
+  const isMP = !!namedRoom;
+  const playerCount = isMP ? (Object.keys(opponentStates).length + 1) : 1;
+  showGameTopbar(
+    isMP ? 'room: ' + roomCode : 'solo',
+    isMP,
+    playerCount + ' player' + (playerCount !== 1 ? 's' : ''),
+    true
+  );
 
   const rosterSnapshot = Object.entries(opponentStates).map(([id, st]) => ({ id, name: st.name }));
   opponentStates = {};
@@ -2663,6 +2734,9 @@ document.getElementById('leave-btn').addEventListener('click', () => {
 document.getElementById('quit-btn').addEventListener('click', () => {
   fullCleanup(); leaveRoom(); showScreen('main-menu');
 });
+document.getElementById('topbar-quit-btn').addEventListener('click', () => {
+  fullCleanup(); leaveRoom(); showScreen('main-menu');
+});
 
 document.getElementById('lb-return-btn').addEventListener('click', () => {
   if (namedRoom) namedRoom.emit('return_to_room', {});
@@ -2714,6 +2788,161 @@ if (savedName) {
   showScreen('name-screen');
   setTimeout(() => document.getElementById('name-input').focus(), 100);
 }
+
+// ══════════════════════════════════════════════════════════════════
+// PARALLAX BACKGROUND
+// ══════════════════════════════════════════════════════════════════
+const bgParallax = document.getElementById('bg-parallax');
+const bgOverlay  = document.getElementById('bg-overlay');
+let parallaxX = 0, parallaxY = 0;
+let parallaxTargetX = 0;
+const PARALLAX_STRENGTH = 18; // px max shift
+const PARALLAX_MOVE_STEP = 8; // px per keypress
+
+function setParallax(tx) {
+  parallaxTargetX = Math.max(-PARALLAX_STRENGTH, Math.min(PARALLAX_STRENGTH, tx));
+}
+function animateParallax() {
+  parallaxX += (parallaxTargetX - parallaxX) * 0.12;
+  bgParallax.style.transform = `translate(${parallaxX}px, ${parallaxY}px)`;
+  requestAnimationFrame(animateParallax);
+}
+animateParallax();
+
+// Hook into key input for parallax — runs after existing keydown
+window.addEventListener('keydown', (e) => {
+  if (gamePhase !== 'playing') return;
+  if (e.code === 'ArrowLeft')  setParallax(parallaxTargetX + PARALLAX_MOVE_STEP);
+  if (e.code === 'ArrowRight') setParallax(parallaxTargetX - PARALLAX_MOVE_STEP);
+}, { capture: false });
+window.addEventListener('keyup', (e) => {
+  if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+    // Spring back toward center
+    setParallax(0);
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// DANGER OVERLAY — updates every render frame
+// ══════════════════════════════════════════════════════════════════
+let _lastDangerClass = '';
+function updateDangerOverlay() {
+  if (!game || !gameRunning) {
+    if (_lastDangerClass !== '') {
+      bgOverlay.className = '';
+      _lastDangerClass = '';
+      const canvas = document.getElementById('my-canvas');
+      if (canvas) canvas.dataset.danger = '0';
+    }
+    return;
+  }
+  // Find highest occupied row
+  let topRow = TOTAL_ROWS;
+  for (let r = 0; r < TOTAL_ROWS; r++) {
+    if (game.board[r] && game.board[r].some(v => v)) { topRow = r; break; }
+  }
+  // BUFFER rows = death zone. topRow < BUFFER means blocks above death line.
+  // danger starts when within 6 rows of death line (topRow < BUFFER + 6)
+  let cls = '';
+  let dangerAmt = 0;
+  if (topRow <= BUFFER) {
+    cls = 'critical'; dangerAmt = 1.0;
+  } else if (topRow <= BUFFER + 4) {
+    cls = 'danger'; dangerAmt = (BUFFER + 4 - topRow) / 4;
+  }
+  if (cls !== _lastDangerClass) {
+    bgOverlay.className = cls;
+    _lastDangerClass = cls;
+  }
+  const canvas = document.getElementById('my-canvas');
+  if (canvas) canvas.dataset.danger = dangerAmt.toFixed(2);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TOPBAR — show/hide and update
+// ══════════════════════════════════════════════════════════════════
+const gameTopbar = document.getElementById('game-topbar');
+
+function showGameTopbar(roomLabel, showOnline, countText, showTimer) {
+  gameTopbar.classList.remove('hidden');
+  document.getElementById('topbar-room').textContent = roomLabel || 'solo';
+  const onlineEl = document.getElementById('topbar-online');
+  if (showOnline) {
+    onlineEl.style.display = 'flex';
+    document.getElementById('topbar-count').textContent = countText || '';
+  } else {
+    onlineEl.style.display = 'none';
+  }
+  const timerEl = document.getElementById('topbar-timer');
+  if (showTimer) timerEl.classList.remove('hidden'); else timerEl.classList.add('hidden');
+}
+function hideGameTopbar() {
+  gameTopbar.classList.add('hidden');
+}
+
+// Patch showScreen to manage topbar and header visibility
+const _origShowScreen = showScreen;
+window.showScreen = function(id) {
+  _origShowScreen(id);
+  if (id === 'game') {
+    document.getElementById('app-header').classList.add('hidden');
+    // topbar is shown by startGame/startSoloGame
+  } else {
+    document.getElementById('app-header').classList.remove('hidden');
+    hideGameTopbar();
+    bgOverlay.className = '';
+    _lastDangerClass = '';
+    const canvas = document.getElementById('my-canvas');
+    if (canvas) canvas.dataset.danger = '0';
+  }
+};
+
+// Patch updateDangerOverlay into render loop
+const _origRenderFrame = window._renderFrameHook;
+// We add it via a periodic check since render loop is inside closure
+setInterval(() => { if (gameRunning) updateDangerOverlay(); }, 150);
+
+// Update topbar timer — mirror game-timer
+const _origTimerUpdate = setInterval; // keep existing timer, just mirror
+setInterval(() => {
+  const gt = document.getElementById('game-timer');
+  const tb = document.getElementById('topbar-timer');
+  if (gt && tb) tb.textContent = gt.textContent;
+}, 500);
+
+// Patch updatePlayerList to also update topbar
+const _origUpdatePlayerList = window.updatePlayerList;
+window.updatePlayerList = function(peers) {
+  _origUpdatePlayerList(peers);
+  const oc = document.getElementById('online-count');
+  if (oc) {
+    document.getElementById('topbar-count').textContent = oc.textContent || '';
+  }
+};
+
+// Gameover state on overlay
+const _origShowOverlay = window.showOverlay;
+window.showOverlay = function(title, reason, color, stats) {
+  _origShowOverlay(title, reason, color, stats);
+  bgOverlay.className = 'gameover';
+};
+const _origFullCleanup = window.fullCleanup;
+window.fullCleanup = function() {
+  _origFullCleanup();
+  bgOverlay.className = '';
+  _lastDangerClass = '';
+  hideGameTopbar();
+  document.getElementById('app-header').classList.remove('hidden');
+};
+
+// Show topbar when solo game starts
+document.addEventListener('soloGameStart', () => {
+  showGameTopbar('solo practice', false, '', true);
+});
+// Show topbar when multiplayer game starts
+document.addEventListener('mpGameStart', (e) => {
+  showGameTopbar('room: ' + (e.detail?.code || ''), true, '2 players', true);
+});
 </script>
 </body>
 </html>
