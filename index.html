@@ -10,9 +10,7 @@
 <style>
   :root {
     --bg: #080808;
-    --bg2: #0f0f0f;
     --surface: rgba(255,255,255,0.04);
-    --surface-solid: #111111;
     --surface2: rgba(255,255,255,0.06);
     --border: rgba(255,255,255,0.10);
     --border-strong: rgba(255,255,255,0.18);
@@ -20,39 +18,31 @@
     --text-dim: #888;
     --text-muted: #444;
     --accent: #ffffff;
-    --accent-glow: rgba(255,255,255,0.15);
     --danger: #ff4444;
     --danger-glow: rgba(255,68,68,0.3);
     --success: #44ff88;
     --warn: #ffcc44;
-    --c1: #00f0ff; --c2: #ffd000; --c3: #a000ff;
-    --c4: #00aaff; --c5: #ff2244; --c6: #ff8800; --c7: #00dd44;
     --cell: clamp(22px, calc((100vh - 160px) / 23), 34px);
     --board-blur-bg: rgba(0,0,0,0.55);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     background: var(--bg); color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
     min-height: 100vh; display: flex; flex-direction: column; align-items: center;
     user-select: none; -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
-    overflow: hidden;
-    position: relative;
+    overflow: hidden; position: relative;
   }
   body::before {
-    content: '';
-    position: fixed; inset: 0; z-index: 0;
+    content: ''; position: fixed; inset: 0; z-index: 0;
     background:
       radial-gradient(ellipse 80% 60% at 15% 20%, rgba(255,255,255,0.025) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 80% at 85% 75%, rgba(255,255,255,0.018) 0%, transparent 55%),
-      radial-gradient(ellipse 100% 100% at 50% 50%, rgba(255,255,255,0.008) 0%, transparent 70%);
+      radial-gradient(ellipse 60% 80% at 85% 75%, rgba(255,255,255,0.018) 0%, transparent 55%);
     pointer-events: none;
   }
   body::after {
-    content: '';
-    position: fixed; inset: 0; z-index: 0;
+    content: ''; position: fixed; inset: 0; z-index: 0;
     background-image:
       linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
@@ -92,10 +82,7 @@
   .screen { display: none; width: 100%; flex: 1; min-height: 0; }
   .screen.active { display: flex; }
 
-  #name-screen {
-    flex-direction: column; align-items: center; justify-content: center;
-    gap: 28px; padding: 40px 20px;
-  }
+  #name-screen { flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 40px 20px; }
   .name-brand {
     font-family: 'Space Mono', monospace;
     font-size: clamp(40px, 6vw, 64px);
@@ -103,18 +90,10 @@
     margin-bottom: 8px;
   }
   .name-brand .accent { color: var(--accent); }
-  .name-card {
-    display: flex; flex-direction: column; gap: 16px;
-    width: 100%; max-width: 360px; text-align: center;
-  }
-  .name-question {
-    font-size: 13px; color: var(--text-dim);
-    letter-spacing: 0.05em; text-transform: uppercase;
-  }
-  .name-hint {
-    font-size: 11px; color: var(--text-muted);
-    letter-spacing: 0.03em; margin-top: 4px;
-  }
+  .name-card { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 360px; text-align: center; }
+  .name-question { font-size: 13px; color: var(--text-dim); letter-spacing: 0.05em; text-transform: uppercase; }
+  .name-hint { font-size: 11px; color: var(--text-muted); letter-spacing: 0.03em; margin-top: 4px; }
+
   #main-menu, #mp-menu, #join-screen {
     flex-direction: column; align-items: center; justify-content: center;
     gap: 32px; padding: 40px 20px;
@@ -126,15 +105,8 @@
     color: var(--text); text-align: center;
   }
   .menu-hero .accent { color: var(--accent); }
-  .menu-hero-sub {
-    font-size: 12px; color: var(--text-dim);
-    letter-spacing: 0.06em; text-transform: uppercase;
-    margin-top: 6px;
-  }
-  .menu-buttons {
-    display: flex; flex-direction: column; gap: 10px;
-    width: 100%; max-width: 320px;
-  }
+  .menu-hero-sub { font-size: 12px; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 6px; }
+  .menu-buttons { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 320px; }
   .menu-btn {
     padding: 15px 20px;
     font-family: 'Space Grotesk', sans-serif;
@@ -149,11 +121,7 @@
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
   .menu-btn:hover:not(:disabled) { border-color: var(--border-strong); background: rgba(255,255,255,0.09); }
-  .menu-btn.primary {
-    background: var(--text); color: #000;
-    border-color: var(--text);
-    font-weight: 700;
-  }
+  .menu-btn.primary { background: var(--text); color: #000; border-color: var(--text); font-weight: 700; }
   .menu-btn.primary:hover:not(:disabled) { opacity: 0.88; }
   .menu-btn:active { transform: scale(0.98); }
   .menu-btn:disabled { opacity: 0.35; cursor: not-allowed; }
@@ -186,10 +154,7 @@
     display: flex; flex-direction: column; gap: 16px;
   }
   .room-panel h2 { font-size: 16px; font-weight: 600; }
-  .room-tabs {
-    display: flex; gap: 4px; background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border); border-radius: 6px; padding: 3px;
-  }
+  .room-tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 3px; }
   .room-tab {
     flex: 1; background: transparent; border: none; border-radius: 4px;
     color: var(--text-dim); font-family: 'Space Grotesk', sans-serif;
@@ -207,10 +172,7 @@
     padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
     gap: 10px;
   }
-  .room-code {
-    font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700;
-    letter-spacing: 0.2em; color: var(--text);
-  }
+  .room-code { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; letter-spacing: 0.2em; color: var(--text); }
   .players-list { display: flex; flex-direction: column; gap: 6px; }
   .player-row {
     display: flex; align-items: center; gap: 8px; padding: 7px 10px;
@@ -228,10 +190,7 @@
     border: 1px solid var(--border); color: var(--text-muted);
     background: transparent;
   }
-  .player-row .ready-tag.ready {
-    color: var(--success); border-color: var(--success);
-    background: rgba(91,246,160,0.1);
-  }
+  .player-row .ready-tag.ready { color: var(--success); border-color: var(--success); background: rgba(91,246,160,0.1); }
   .player-row .spacer { margin-left: auto; }
   .player-row .kick-btn {
     width: 22px; height: 22px; padding: 0;
@@ -241,16 +200,10 @@
     align-items: center; justify-content: center;
     transition: border-color 0.15s, color 0.15s, background 0.15s;
   }
-  .player-row .kick-btn:hover {
-    border-color: var(--danger); color: var(--danger);
-    background: rgba(246,91,91,0.08);
-  }
+  .player-row .kick-btn:hover { border-color: var(--danger); color: var(--danger); background: rgba(246,91,91,0.08); }
   .start-hint { font-size: 11px; color: var(--text-muted); text-align: center; }
 
-  .speed-tabs {
-    display: flex; gap: 3px; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 5px; padding: 3px;
-  }
+  .speed-tabs { display: flex; gap: 3px; background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; padding: 3px; }
   .speed-tab {
     flex: 1; background: transparent; border: none; border-radius: 3px;
     color: var(--text-dim); font-family: 'Space Grotesk', sans-serif;
@@ -266,10 +219,7 @@
     border-radius: 5px; transition: border-color 0.15s;
   }
   .checkbox-row:hover { border-color: var(--text-muted); }
-  .checkbox-row input {
-    margin-top: 2px; accent-color: var(--accent);
-    width: 16px; height: 16px; cursor: pointer;
-  }
+  .checkbox-row input { margin-top: 2px; accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
   .checkbox-content { display: flex; flex-direction: column; gap: 3px; flex: 1; }
   .checkbox-label { font-size: 13px; font-weight: 600; color: var(--text); }
   .checkbox-hint { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
@@ -281,18 +231,11 @@
     border-radius: 4px; border: 1px dashed var(--border);
   }
 
-  #game {
-    flex-direction: column; align-items: center;
-    padding: 14px 16px 20px; gap: 12px;
-  }
-  .game-header {
-    width: 100%; max-width: 1400px;
-    display: flex; align-items: center; gap: 12px;
-    flex-shrink: 0;
-  }
+  #game { flex-direction: column; align-items: center; padding: 14px 16px 20px; gap: 12px; }
+  .game-header { width: 100%; max-width: 1400px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
   .room-id-display {
     font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-dim);
-    background: var(--surface); border: 1px solid var(--border); padding: 4px 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 4px 10px;
     border-radius: 4px; cursor: pointer; transition: border-color 0.15s, color 0.15s;
   }
   .room-id-display:hover { border-color: var(--accent); color: var(--accent); }
@@ -301,18 +244,14 @@
   .game-timer {
     font-family: 'Space Mono', monospace; font-size: 12px;
     color: var(--text-dim); letter-spacing: 0.08em;
-    background: var(--surface); border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
     border-radius: 4px; padding: 3px 10px;
     display: flex; align-items: center; gap: 5px;
   }
   .game-timer::before { content: '⏱'; font-size: 11px; opacity: 0.7; }
   .game-timer.hidden { display: none; }
 
-  .arena {
-    display: flex; flex-direction: row; align-items: center;
-    justify-content: center; gap: 28px;
-    width: 100%; flex: 1; min-height: 0;
-  }
+  .arena { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 28px; width: 100%; flex: 1; min-height: 0; }
   .my-section { display: flex; gap: 10px; align-items: flex-start; flex-shrink: 0; }
   .side-panel { display: flex; flex-direction: column; gap: 8px; width: 84px; flex-shrink: 0; }
   .mini-label {
@@ -366,59 +305,30 @@
     background: rgba(0,0,0,0.88);
     backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
     z-index: 12; flex-direction: column; gap: 8px;
-    text-align: center; padding: 16px;
-    border-radius: 3px;
+    text-align: center; padding: 16px; border-radius: 3px;
   }
-  .gameover-title {
-    font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700;
-    color: var(--danger); letter-spacing: 0.12em;
-  }
-  .gameover-reason {
-    font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em;
-    margin-bottom: 4px;
-  }
+  .gameover-title { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: var(--danger); letter-spacing: 0.12em; }
+  .gameover-reason { font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em; margin-bottom: 4px; }
   .gameover-stats {
     display: flex; flex-direction: column; gap: 3px;
     background: rgba(255,255,255,0.04); border: 1px solid var(--border);
     border-radius: 5px; padding: 10px 16px; margin-top: 4px;
   }
-  .gameover-stat-row {
-    display: flex; justify-content: space-between; gap: 20px;
-    font-size: 12px; color: var(--text-dim);
-  }
-  .gameover-stat-row span:last-child {
-    font-family: 'Space Mono', monospace; color: var(--text); font-weight: 700;
-  }
+  .gameover-stat-row { display: flex; justify-content: space-between; gap: 20px; font-size: 12px; color: var(--text-dim); }
+  .gameover-stat-row span:last-child { font-family: 'Space Mono', monospace; color: var(--text); font-weight: 700; }
 
   .waiting-overlay {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
     background: rgba(10,10,15,0.92); z-index: 10; flex-direction: column; gap: 8px;
   }
-  .waiting-text {
-    font-family: 'Space Mono', monospace; font-size: 13px; color: var(--text-dim);
-    letter-spacing: 0.08em; animation: blink 1.4s ease-in-out infinite;
-  }
+  .waiting-text { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--text-dim); letter-spacing: 0.08em; animation: blink 1.4s ease-in-out infinite; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  .opponents-wrap {
-    display: none; flex-direction: column; gap: 10px;
-    align-items: center; flex-shrink: 0;
-  }
+  .opponents-wrap { display: none; flex-direction: column; gap: 10px; align-items: center; flex-shrink: 0; }
   .opponents-wrap.visible { display: flex; }
-  .opponents-title {
-    font-size: 10px; letter-spacing: 0.18em;
-    color: var(--text-muted); text-transform: uppercase;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .opponents-title::before,
-  .opponents-title::after {
-    content: ''; height: 1px; width: 16px; background: var(--border);
-  }
-  .opponents {
-    display: flex; flex-direction: column; gap: 12px;
-    align-items: center; justify-content: center;
-    padding: 2px;
-  }
+  .opponents-title { font-size: 10px; letter-spacing: 0.18em; color: var(--text-muted); text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+  .opponents-title::before, .opponents-title::after { content: ''; height: 1px; width: 16px; background: var(--border); }
+  .opponents { display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; padding: 2px; }
   .opponent-card {
     background: rgba(255,255,255,0.04);
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -427,11 +337,7 @@
     display: flex; flex-direction: column; align-items: center; gap: 5px;
     flex-shrink: 0;
   }
-  .opp-name {
-    font-size: 11px; font-weight: 600; color: var(--text);
-    max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    letter-spacing: 0.02em;
-  }
+  .opp-name { font-size: 11px; font-weight: 600; color: var(--text); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.02em; }
   .opp-score { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text-dim); line-height: 1; }
   .opp-canvas { display: block; border-radius: 2px; }
 
@@ -458,10 +364,7 @@
   #toast.show { opacity: 1; }
   #toast.boost { border-color: var(--warn); color: var(--warn); font-weight: 600; }
 
-  #leaderboard-screen {
-    flex-direction: column; align-items: center; justify-content: center;
-    padding: 40px 20px;
-  }
+  #leaderboard-screen { flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; }
   .lb-panel {
     background: rgba(255,255,255,0.04);
     backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
@@ -469,50 +372,23 @@
     padding: 32px 36px; width: 100%; max-width: 560px;
     display: flex; flex-direction: column; gap: 18px;
   }
-  .lb-title {
-    font-family: 'Space Mono', monospace;
-    font-size: 22px; font-weight: 700;
-    letter-spacing: 0.12em; text-align: center;
-    color: var(--text);
-  }
+  .lb-title { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; letter-spacing: 0.12em; text-align: center; color: var(--text); }
   .lb-winner {
-    text-align: center;
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    color: var(--success);
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
+    text-align: center; font-family: 'Space Mono', monospace; font-size: 13px;
+    color: var(--success); letter-spacing: 0.18em; text-transform: uppercase;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
   }
-  .lb-table {
-    width: 100%; border-collapse: collapse;
-    font-family: 'Space Grotesk', sans-serif;
-  }
+  .lb-table { width: 100%; border-collapse: collapse; font-family: 'Space Grotesk', sans-serif; }
   .lb-table th {
-    font-size: 10px; letter-spacing: 0.15em;
-    color: var(--text-muted); text-transform: uppercase;
-    text-align: left; padding: 8px 6px;
-    border-bottom: 1px solid var(--border);
-    font-weight: 500;
+    font-size: 10px; letter-spacing: 0.15em; color: var(--text-muted);
+    text-transform: uppercase; text-align: left; padding: 8px 6px;
+    border-bottom: 1px solid var(--border); font-weight: 500;
   }
-  .lb-table td {
-    padding: 11px 6px;
-    font-size: 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-  }
+  .lb-table td { padding: 11px 6px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
   .lb-table tr.me td { color: var(--text); font-weight: 600; }
   .lb-table tr.winner td { color: var(--success); font-weight: 700; }
-  .lb-table td.place {
-    font-family: 'Space Mono', monospace;
-    font-size: 13px; font-weight: 700;
-    width: 44px;
-  }
-  .lb-table td.score,
-  .lb-table td.lines {
-    font-family: 'Space Mono', monospace;
-    text-align: right; letter-spacing: -0.02em;
-  }
+  .lb-table td.place { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; width: 44px; }
+  .lb-table td.score, .lb-table td.lines { font-family: 'Space Mono', monospace; text-align: right; letter-spacing: -0.02em; }
   .lb-table td.lines { color: var(--text-dim); width: 70px; }
 
   .btn {
@@ -536,15 +412,12 @@
     border-radius: 3px; padding: 2px 5px; color: var(--text-dim);
   }
 
-  .attack-meter-wrap {
-    display: flex; flex-direction: column; gap: 3px;
-  }
+  .attack-meter-wrap { display: flex; flex-direction: column; gap: 3px; }
   .attack-meter-track {
     width: 100%; height: 6px;
     background: rgba(255,255,255,0.07);
     border: 1px solid var(--border);
-    border-radius: 3px; overflow: hidden;
-    position: relative;
+    border-radius: 3px; overflow: hidden; position: relative;
   }
   .attack-meter-fill {
     height: 100%; width: 0%;
@@ -558,11 +431,7 @@
     animation: meterPulse 0.5s ease-in-out infinite;
   }
   @keyframes meterPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
-  .attack-meter-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 9px; color: var(--text-muted);
-    letter-spacing: 0.06em; text-align: center;
-  }
+  .attack-meter-label { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--text-muted); letter-spacing: 0.06em; text-align: center; }
 
   .garbage-bar-wrap {
     position: absolute; left: -8px; bottom: 0; top: 0;
@@ -819,13 +688,13 @@ const PEER_CONFIG = {
 };
 
 // ══════════════════════════════════════════════════════════════════
-// SOUND
+// SOUND — путь можно заменить на свой, если файлы лежат иначе
 // ══════════════════════════════════════════════════════════════════
 const SOUND_FILES = {
-  move:  '',
-  lock:  '',
-  click: '',
-  music: '',
+  move:  'sound/move.mp3',
+  lock:  'sound/lock.mp3',
+  click: 'sound/click.mp3',
+  music: 'sound/music.mp3',
 };
 
 class SoundPool {
@@ -833,8 +702,16 @@ class SoundPool {
     this.volume = volume; this.pool = []; this.index = 0;
     if (!src) return;
     for (let i = 0; i < size; i++) {
-      const a = new Audio(src);
-      a.preload = 'auto'; a.volume = volume;
+      const a = new Audio();
+      a.preload = 'auto';
+      a.volume = volume;
+      a.addEventListener('error', () => {
+        if (!a._warned) {
+          a._warned = true;
+          console.warn('[blokk sound] failed to load:', src);
+        }
+      });
+      a.src = src;
       this.pool.push(a);
     }
   }
@@ -858,7 +735,11 @@ const Sound = {
     this.lock  = new SoundPool(SOUND_FILES.lock,  0.65, 3);
     this.click = new SoundPool(SOUND_FILES.click, 0.55, 3);
     if (SOUND_FILES.music) {
-      this.musicEl = new Audio(SOUND_FILES.music);
+      this.musicEl = new Audio();
+      this.musicEl.addEventListener('error', () => {
+        console.warn('[blokk sound] failed to load music:', SOUND_FILES.music);
+      });
+      this.musicEl.src = SOUND_FILES.music;
       this.musicEl.loop = true;
       this.musicEl.volume = 0.22;
       this.musicEl.preload = 'auto';
@@ -913,8 +794,6 @@ function cellSize() {
   const v = getComputedStyle(document.documentElement).getPropertyValue('--cell');
   return parseInt(v) || 30;
 }
-
-// Dynamic opponent cell — grows when others die
 function computeOppCell() {
   const alive = Object.values(opponentStates).filter(s => s.alive !== false).length;
   if (alive <= 1) return 20;
@@ -922,7 +801,6 @@ function computeOppCell() {
   if (alive === 3) return 11;
   return 9;
 }
-
 function easeOutBack(t) {
   const c1 = 1.70158, c3 = c1 + 1;
   return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
@@ -985,7 +863,6 @@ class TetrisGame {
     this.onLock = opts.onLock || null;
     this.experimental = !!opts.experimental;
     this.abilityUses = this.experimental ? 2 : 0;
-    // Board includes BUFFER rows above the death line
     this.board = Array.from({ length: TOTAL_ROWS }, () => Array(COLS).fill(0));
     this.bag = []; this.current = null;
     this.cx = 0; this.cy = 0; this.rotation = 0;
@@ -1017,7 +894,7 @@ class TetrisGame {
     const key = this.bag.shift();
     this.current = this.makePiece(key);
     this.cx = Math.floor((COLS - this.current.shape[0].length) / 2);
-    this.cy = 0;  // top of the total board (inside buffer zone)
+    this.cy = 0;
     this.rotation = 0;
     this.lockResets = 0;
     this.cancelLockDelay();
@@ -1038,7 +915,6 @@ class TetrisGame {
   }
   bumpLockDelay() {
     if (!this.lockDelayActive) return;
-    // If piece can now fall freely after move/rotate, cancel lock entirely
     if (this.valid(this.current.shape, this.cx, this.cy + 1)) {
       this.cancelLockDelay();
       return;
@@ -1048,7 +924,6 @@ class TetrisGame {
     this.cancelLockDelay();
     this.startLockDelay();
   }
-  // Valid: piece must fit inside TOTAL_ROWS (buffer + visible)
   valid(shape, tx, ty) {
     for (let r = 0; r < shape.length; r++)
       for (let c = 0; c < shape[r].length; c++) {
@@ -1146,83 +1021,80 @@ class TetrisGame {
     return true;
   }
   lock() {
-  this.cancelLockDelay();
-  if (!this.current || !this.alive) return 0;
-  const { shape, color } = this.current;
-  const lockedCells = [];
-  let anyVisibleCell = false;
-  for (let r = 0; r < shape.length; r++)
-    for (let c = 0; c < shape[r].length; c++) {
-      if (!shape[r][c]) continue;
-      const ny = this.cy + r, nx = this.cx + c;
-      if (ny < 0 || ny >= TOTAL_ROWS) continue;
-      this.board[ny][nx] = color;
-      lockedCells.push({ x: nx, y: ny, color: COLORS[color] });
-      if (ny >= BUFFER) anyVisibleCell = true;
-    }
-  this.lockAnim = { cells: lockedCells, start: performance.now(), duration: LOCK_ANIM_MS };
-
-  let attack = 0;
-  let cleared = 0;
-
-  if (anyVisibleCell) {
-    // ── Обычная ветка: часть фигуры в видимой зоне ──
-    const clearCaptured = [];
-    for (let r = TOTAL_ROWS - 1; r >= BUFFER; r--) {
-      if (this.board[r].every(v => v)) clearCaptured.push({ y: r, cells: this.board[r].slice() });
-    }
-    for (let r = TOTAL_ROWS - 1; r >= BUFFER; r--) {
-      if (this.board[r].every(v => v)) {
-        this.board.splice(r, 1);
-        this.board.unshift(Array(COLS).fill(0));
-        cleared++; r++;
+    this.cancelLockDelay();
+    if (!this.current || !this.alive) return 0;
+    const { shape, color } = this.current;
+    const lockedCells = [];
+    let anyVisibleCell = false;
+    for (let r = 0; r < shape.length; r++)
+      for (let c = 0; c < shape[r].length; c++) {
+        if (!shape[r][c]) continue;
+        const ny = this.cy + r, nx = this.cx + c;
+        if (ny < 0 || ny >= TOTAL_ROWS) continue;
+        this.board[ny][nx] = color;
+        lockedCells.push({ x: nx, y: ny, color: COLORS[color] });
+        if (ny >= BUFFER) anyVisibleCell = true;
       }
-    }
-    if (cleared > 0) {
-      this.clearAnim = { rows: clearCaptured, start: performance.now(), duration: CLEAR_ANIM_MS, count: cleared };
-    }
+    this.lockAnim = { cells: lockedCells, start: performance.now(), duration: LOCK_ANIM_MS };
 
-    if (cleared > 0) {
-      this.combo++;
-      const comboPts = this.combo > 1 ? (this.combo - 1) * 50 : 0;
-      if (cleared === 4) {
-        this.b2b++;
-        attack = 4;
-        if (this.b2b > 1) attack += 1;
-        this.score += 800 * this.level + comboPts;
-      } else {
-        if (this.b2b > 0) this.b2b = 0;
-        const pts = [0, 100, 300, 500, 800];
-        attack = [0, 0, 1, 2, 4][cleared] || 0;
-        this.score += pts[cleared] * this.level + comboPts;
+    let attack = 0;
+    let cleared = 0;
+
+    if (anyVisibleCell) {
+      const clearCaptured = [];
+      for (let r = TOTAL_ROWS - 1; r >= BUFFER; r--) {
+        if (this.board[r].every(v => v)) clearCaptured.push({ y: r, cells: this.board[r].slice() });
       }
-      if (this.combo > 1) attack += Math.floor(this.combo / 2);
-      this.lines += cleared;
-      this.level = Math.floor(this.lines / 10) + 1;
-      this.totalAttack += attack;
-    } else { this.combo = 0; }
+      for (let r = TOTAL_ROWS - 1; r >= BUFFER; r--) {
+        if (this.board[r].every(v => v)) {
+          this.board.splice(r, 1);
+          this.board.unshift(Array(COLS).fill(0));
+          cleared++; r++;
+        }
+      }
+      if (cleared > 0) {
+        this.clearAnim = { rows: clearCaptured, start: performance.now(), duration: CLEAR_ANIM_MS, count: cleared };
+      }
 
-    if (cleared > 0) {
-      this.pendingGarbage = Math.max(0, this.pendingGarbage - cleared);
-      this.attackMeterLines += cleared;
-      const meterBonus = Math.floor(this.attackMeterLines / this.ATTACK_METER_MAX);
-      this.attackMeterLines = this.attackMeterLines % this.ATTACK_METER_MAX;
-      if (meterBonus > 0) attack += meterBonus;
-    } else if (this.pendingGarbage > 0) {
-      this.addGarbage(this.pendingGarbage);
-      this.pendingGarbage = 0;
+      if (cleared > 0) {
+        this.combo++;
+        const comboPts = this.combo > 1 ? (this.combo - 1) * 50 : 0;
+        if (cleared === 4) {
+          this.b2b++;
+          attack = 4;
+          if (this.b2b > 1) attack += 1;
+          this.score += 800 * this.level + comboPts;
+        } else {
+          if (this.b2b > 0) this.b2b = 0;
+          const pts = [0, 100, 300, 500, 800];
+          attack = [0, 0, 1, 2, 4][cleared] || 0;
+          this.score += pts[cleared] * this.level + comboPts;
+        }
+        if (this.combo > 1) attack += Math.floor(this.combo / 2);
+        this.lines += cleared;
+        this.level = Math.floor(this.lines / 10) + 1;
+        this.totalAttack += attack;
+      } else { this.combo = 0; }
+
+      if (cleared > 0) {
+        this.pendingGarbage = Math.max(0, this.pendingGarbage - cleared);
+        this.attackMeterLines += cleared;
+        const meterBonus = Math.floor(this.attackMeterLines / this.ATTACK_METER_MAX);
+        this.attackMeterLines = this.attackMeterLines % this.ATTACK_METER_MAX;
+        if (meterBonus > 0) attack += meterBonus;
+      } else if (this.pendingGarbage > 0) {
+        this.addGarbage(this.pendingGarbage);
+        this.pendingGarbage = 0;
+      }
+
+      this.holdUsed = false;
+      this.spawn();
+    } else {
+      this.alive = false;
     }
 
-    this.holdUsed = false;
-    this.spawn();
-  } else {
-    // ── Lock-out: вся фигура легла выше death line ──
-    this.alive = false;
-  }
-
-  // onLock вызывается ВСЕГДА, чтобы endGame() сработал корректно
-  if (this.onLock) this.onLock(attack, this, cleared);
-  return attack;
+    if (this.onLock) this.onLock(attack, this, cleared);
+    return attack;
   }
   addGarbage(n) {
     const hole = Math.floor(Math.random() * COLS);
@@ -1271,13 +1143,11 @@ function drawBoard(canvas, game, cell) {
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   const ctx = canvas.getContext('2d');
 
-  // Background — buffer slightly different
   ctx.fillStyle = 'rgba(12,12,18,0.85)';
   ctx.fillRect(0, 0, w, BUFFER * cell);
   ctx.fillStyle = 'rgba(0,0,0,0.72)';
   ctx.fillRect(0, BUFFER * cell, w, ROWS * cell);
 
-  // Grid — only in visible area
   ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 0.5;
   for (let r = 0; r <= ROWS; r++) {
     const y = (r + BUFFER) * cell + 0.25;
@@ -1287,7 +1157,6 @@ function drawBoard(canvas, game, cell) {
     ctx.beginPath(); ctx.moveTo(c*cell+0.25, BUFFER*cell); ctx.lineTo(c*cell+0.25, h); ctx.stroke();
   }
 
-  // Red death line
   ctx.strokeStyle = 'rgba(255,60,60,0.75)'; ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.moveTo(0, BUFFER*cell); ctx.lineTo(w, BUFFER*cell); ctx.stroke();
   ctx.fillStyle = 'rgba(255,30,30,0.04)';
@@ -1298,7 +1167,6 @@ function drawBoard(canvas, game, cell) {
   ctx.fillText('▲ DEATH LINE', w - 4, BUFFER*cell - 3);
   ctx.textAlign = 'left';
 
-  // Board cells — all TOTAL_ROWS
   for (let r = 0; r < TOTAL_ROWS; r++)
     for (let c = 0; c < COLS; c++) {
       const v = game.board[r][c];
@@ -1307,7 +1175,6 @@ function drawBoard(canvas, game, cell) {
     }
 
   if (game.current && game.alive) {
-    // Ghost
     const gy = game.ghostY();
     for (let r = 0; r < game.current.shape.length; r++)
       for (let c = 0; c < game.current.shape[r].length; c++) {
@@ -1316,7 +1183,6 @@ function drawBoard(canvas, game, cell) {
         if (ny >= 0)
           drawGhostCell(ctx, nx*cell, ny*cell, cell, COLORS[game.current.color]);
       }
-    // Current piece
     for (let r = 0; r < game.current.shape.length; r++)
       for (let c = 0; c < game.current.shape[r].length; c++) {
         if (!game.current.shape[r][c]) continue;
@@ -1325,7 +1191,6 @@ function drawBoard(canvas, game, cell) {
       }
   }
 
-  // Lock animation
   if (game.lockAnim) {
     const t = (performance.now() - game.lockAnim.start) / game.lockAnim.duration;
     if (t < 1) {
@@ -1347,7 +1212,6 @@ function drawBoard(canvas, game, cell) {
     } else game.lockAnim = null;
   }
 
-  // Clear animation
   if (game.clearAnim) {
     const t = Math.min(1, (performance.now() - game.clearAnim.start) / game.clearAnim.duration);
     if (t < 1) {
@@ -1418,7 +1282,6 @@ function drawSmallBoard(canvas, boardData, cell, current) {
     for (let c = 0; c <= COLS; c++) { ctx.beginPath(); ctx.moveTo(c*cell+0.25, 0); ctx.lineTo(c*cell+0.25, h); ctx.stroke(); }
   }
   if (boardData) {
-    // boardData has TOTAL_ROWS rows; only draw visible ones
     for (let r = 0; r < ROWS; r++) {
       const row = boardData[r + BUFFER]; if (!row) continue;
       for (let c = 0; c < COLS; c++) {
@@ -1434,7 +1297,7 @@ function drawSmallBoard(canvas, boardData, cell, current) {
       for (let c = 0; c < shape[r].length; c++) {
         if (!shape[r][c]) continue;
         const ny = cy + r;
-        if (ny < BUFFER) continue;   // skip buffer rows in mini view
+        if (ny < BUFFER) continue;
         const x = (cx + c) * cell, y = (ny - BUFFER) * cell;
         ctx.fillStyle = COLORS[color];
         ctx.fillRect(x, y, cell - 0.5, cell - 0.5);
@@ -1720,6 +1583,7 @@ let speedBoost = 0;
 let opponentStates = {};
 let peerRoster = {};
 let returnScheduled = false;
+let iAmKicked = false;
 
 const GRAVITY_INTERVALS = [800,720,630,550,470,380,300,220,140,100,80,70,60,50];
 function getGravity(level, boost, settings) {
@@ -1802,6 +1666,7 @@ async function joinRoom() {
 }
 
 async function enterRoom() {
+  iAmKicked = false;
   showScreen('waiting-room');
   document.getElementById('display-code').textContent = roomCode;
   document.getElementById('game-room-label').textContent = 'room: ' + roomCode;
@@ -1826,25 +1691,15 @@ async function enterRoom() {
     await namedRoom.init();
   }
 
+  // ── Host lost: only applies to clients. Kicked players skip this. ──
   namedRoom.onHostLost = () => {
-    // Promote: the peer with the lexicographically smallest id becomes new host
-    const remainingPeers = [...namedRoom.roster.keys()].filter(id => id !== myId);
-    const allIds = [myId, ...remainingPeers].sort();
-    if (allIds[0] === myId) {
-      isHost = true;
-      roomCode = namedRoom.roomCode;
-      toast('You are now the host');
-      document.getElementById('start-btn').style.display = 'block';
-      document.getElementById('ready-btn').style.display = 'none';
-      document.getElementById('start-hint').textContent = 'All players must be ready to start';
-      setSettingsEditable(true);
-      updatePlayerList([...namedRoom.roster.values()]
-        .filter(p => p.id !== myId)
-        .map(p => ({ presence: p })));
-      namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady, host: true });
-    } else {
-      toast('Host left — waiting for new host');
-    }
+    if (iAmKicked) return;
+    toast('Host left the room');
+    setTimeout(() => {
+      fullCleanup();
+      leaveRoom();
+      showScreen('main-menu');
+    }, 900);
   };
 
   try {
@@ -1911,9 +1766,12 @@ async function enterRoom() {
     returnToWaitingRoom();
   });
 
+  // ── KICK — critical fix ──
   namedRoom.on('kick', ({ target }) => {
     if (target !== myId) return;
-    toast('You were kicked from the room');
+    iAmKicked = true;
+
+    // If in game, mark as eliminated locally
     if (gamePhase === 'playing' || gamePhase === 'countdown') {
       if (game && game.alive) {
         game.alive = false;
@@ -1921,11 +1779,17 @@ async function enterRoom() {
           game ? { score: game.score, lines: game.lines, level: game.level, attack: game.totalAttack } : null);
       }
     }
+
+    toast('You were kicked by the host');
+    Sound.stopMusic();
+    cleanupTimers();
+
     setTimeout(() => {
       fullCleanup();
       leaveRoom();
       showScreen('main-menu');
-    }, 1800);
+      toast('You were kicked from the room');
+    }, 1400);
   });
 
   namedRoom.on('peer_kicked', ({ id }) => {
@@ -2041,19 +1905,24 @@ function updateReadyButton() {
 function hostKick(peerId) {
   if (!isHost || !namedRoom) return;
   const conn = namedRoom.connections.get(peerId);
+  // 1. Send kick directly to target so they know WHY they left
   if (conn && conn.open) {
     try { conn.send({ type: 'event', event: 'kick', data: { target: peerId } }); } catch(e) {}
   }
+  // 2. Notify remaining peers so their lists update immediately
   namedRoom.emit('peer_kicked', { id: peerId });
+  // 3. Close connection after short delay (kick message must be delivered first)
   setTimeout(() => {
     if (conn) { try { conn.close(); } catch(e) {} }
     _removePeer(peerId);
-  }, 350);
+  }, 300);
   toast('Player kicked');
 }
 
 function _removePeer(peerId) {
   if (!namedRoom) return;
+  const conn = namedRoom.connections.get(peerId);
+  if (conn) { try { conn.close(); } catch(e) {} }
   namedRoom.connections.delete(peerId);
   namedRoom.roster.delete(peerId);
   delete peerRoster[peerId];
@@ -2321,7 +2190,6 @@ function endGame() {
 
   let reason = '';
   if (game) {
-    // Top-out = есть блоки в буферной зоне (выше death line)
     const toppedOut = game.board.slice(0, BUFFER).some(row => row.some(v => v));
     reason = toppedOut ? 'Topped out' : 'Block overflow';
   }
@@ -2800,6 +2668,7 @@ document.getElementById('lb-return-btn').addEventListener('click', () => {
 
 function leaveRoom() {
   roomCode = ''; isHost = false; gamePhase = 'lobby';
+  iAmKicked = false;
   if (namedRoom) { try { namedRoom.leave(); } catch(e){} namedRoom = null; }
 }
 
@@ -2844,4 +2713,4 @@ if (savedName) {
 }
 </script>
 </body>
-  </html>
+</html>
