@@ -1218,7 +1218,7 @@ function drawBoard(canvas, game, cell) {
   ctx.fillRect(0, BUFFER * cell, w, ROWS * cell);
 
   // Grid in buffer zone — dimmer
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 0.5;
+  ctx.strokeStyle = 'rgba(255,255,255,0.00)'; ctx.lineWidth = 0.5;
   for (let r = 0; r <= BUFFER; r++) {
     const y = r * cell + 0.25;
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
