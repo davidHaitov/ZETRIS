@@ -38,17 +38,15 @@
   /* ── BLUR + DIM OVERLAY ── */
   #bg-overlay {
     position: fixed; inset: 0; z-index: 1;
-    background: rgba(0,0,0,0.48);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: rgba(0,0,0,0.50);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     transition: background 0.6s ease;
     pointer-events: none;
   }
-  /* danger state — overlay reddens as stack rises */
-  #bg-overlay.danger { background: rgba(60,0,0,0.58); }
-  #bg-overlay.critical { background: rgba(100,0,0,0.70); }
-  /* gameover state */
-  #bg-overlay.gameover { background: rgba(80,0,0,0.75); }
+  #bg-overlay.danger   { background: rgba(50,0,0,0.55); }
+  #bg-overlay.critical { background: rgba(90,0,0,0.65); }
+  #bg-overlay.gameover { background: rgba(70,0,0,0.70); }
 
   body {
     background: transparent; color: var(--text);
@@ -327,15 +325,17 @@
     position: relative;
     background: transparent;
     border-radius: 4px;
-    /* clip buffer zone: only show ROWS*cell = 660px, hide the top BUFFER rows */
-    overflow: hidden;
-    height: calc(var(--cell) * 20);   /* 33 * 20 = 660px */
-    width:  calc(var(--cell) * 10);   /* 33 * 10 = 330px */
+    overflow: visible;
+    /* Explicit dimensions = play area only (330×660). Canvas overflows upward into buffer. */
+    width:  calc(var(--cell) * 10);
+    height: calc(var(--cell) * 20);
   }
   .board-canvas {
     display: block;
-    /* shift canvas up by BUFFER rows so play area fills the wrap exactly */
-    margin-top: calc(var(--cell) * -3);
+    /* Canvas is taller by BUFFER rows — pull it up so play area aligns with board-wrap */
+    position: absolute;
+    top: calc(var(--cell) * -3);
+    left: 0;
   }
 
   .countdown-overlay {
@@ -1207,9 +1207,26 @@ function drawBoard(canvas, game, cell) {
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   const ctx = canvas.getContext('2d');
 
-  // Transparent canvas — bg-overlay (blur+dim) shows through
   ctx.clearRect(0, 0, w, h);
 
+  // Buffer zone (above death line) — lighter tint so player can see blocks
+  ctx.fillStyle = 'rgba(0,0,0,0.40)';
+  ctx.fillRect(0, 0, w, BUFFER * cell);
+
+  // Play area — 80% dark so board reads clearly against photo
+  ctx.fillStyle = 'rgba(0,0,0,0.80)';
+  ctx.fillRect(0, BUFFER * cell, w, ROWS * cell);
+
+  // Grid in buffer zone — dimmer
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 0.5;
+  for (let r = 0; r <= BUFFER; r++) {
+    const y = r * cell + 0.25;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+  for (let c = 0; c <= COLS; c++) {
+    ctx.beginPath(); ctx.moveTo(c*cell+0.25, 0); ctx.lineTo(c*cell+0.25, BUFFER*cell); ctx.stroke();
+  }
+  // Grid in play area — normal
   ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 0.5;
   for (let r = 0; r <= ROWS; r++) {
     const y = (r + BUFFER) * cell + 0.25;
@@ -1219,8 +1236,11 @@ function drawBoard(canvas, game, cell) {
     ctx.beginPath(); ctx.moveTo(c*cell+0.25, BUFFER*cell); ctx.lineTo(c*cell+0.25, h); ctx.stroke();
   }
 
-  // Death line drawn at BUFFER*cell — hidden by overflow:hidden on .board-wrap
-  // (bg-overlay handles danger red tint — no need to draw on canvas)
+  // Death line — thin red at boundary between buffer and play area
+  const dangerAlpha = parseFloat(canvas.dataset.danger || '0');
+  const lineAlpha = 0.30 + dangerAlpha * 0.50;
+  ctx.strokeStyle = `rgba(255,60,60,${lineAlpha})`; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0, BUFFER*cell); ctx.lineTo(w, BUFFER*cell); ctx.stroke();
 
   for (let r = 0; r < TOTAL_ROWS; r++)
     for (let c = 0; c < COLS; c++) {
