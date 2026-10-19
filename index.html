@@ -1210,7 +1210,7 @@ function drawBoard(canvas, game, cell) {
   ctx.clearRect(0, 0, w, h);
 
   // Buffer zone (above death line) — lighter tint so player can see blocks
-  ctx.fillStyle = 'rgba(0,0,0,0.40)';
+  ctx.fillStyle = 'rgba(0,0,0,0.0)';
   ctx.fillRect(0, 0, w, BUFFER * cell);
 
   // Play area — 80% dark so board reads clearly against photo
