@@ -22,7 +22,7 @@
     --danger-glow: rgba(255,68,68,0.3);
     --success: #44ff88;
     --warn: #ffcc44;
-    --cell: clamp(22px, calc((100vh - 160px) / 23), 34px);
+    --cell: 33px;
     --board-blur-bg: rgba(0,0,0,0.55);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -296,9 +296,9 @@
   .game-timer::before { content: '⏱'; font-size: 11px; opacity: 0.7; }
   .game-timer.hidden { display: none; }
 
-  .arena { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 28px; width: 100%; flex: 1; min-height: 0; }
+  .arena { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 20px; width: 100%; flex: 1; min-height: 0; }
   .my-section { display: flex; gap: 10px; align-items: flex-start; flex-shrink: 0; }
-  .side-panel { display: flex; flex-direction: column; gap: 8px; width: 84px; flex-shrink: 0; }
+  .side-panel { display: flex; flex-direction: column; gap: 8px; width: 88px; flex-shrink: 0; max-height: 660px; overflow: hidden; }
   .mini-label {
     font-size: 9px; letter-spacing: 0.1em; color: var(--text-muted);
     text-transform: uppercase; margin-bottom: 4px; white-space: nowrap;
@@ -326,13 +326,23 @@
   .board-wrap {
     position: relative;
     background: transparent;
-    border-radius: 4px; overflow: visible;
+    border-radius: 4px;
+    /* clip buffer zone: only show ROWS*cell = 660px, hide the top BUFFER rows */
+    overflow: hidden;
+    height: calc(var(--cell) * 20);   /* 33 * 20 = 660px */
+    width:  calc(var(--cell) * 10);   /* 33 * 10 = 330px */
   }
-  .board-canvas { display: block; }
+  .board-canvas {
+    display: block;
+    /* shift canvas up by BUFFER rows so play area fills the wrap exactly */
+    margin-top: calc(var(--cell) * -3);
+  }
 
   .countdown-overlay {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: rgba(10,10,15,0.85); z-index: 10; flex-direction: column; gap: 8px;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    z-index: 10; flex-direction: column; gap: 8px;
   }
   .countdown-num {
     font-family: 'Space Mono', monospace; font-size: 72px; font-weight: 700;
@@ -361,7 +371,9 @@
 
   .waiting-overlay {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: rgba(10,10,15,0.92); z-index: 10; flex-direction: column; gap: 8px;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    z-index: 10; flex-direction: column; gap: 8px;
   }
   .waiting-text { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--text-dim); letter-spacing: 0.08em; animation: blink 1.4s ease-in-out infinite; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
@@ -845,10 +857,7 @@ const PIECE_KEYS = Object.keys(PIECES);
 const COLORS = [null,'#00f0ff','#ffd000','#aa22ff','#0099ff','#ff2244','#ff8800','#00dd44'];
 const GARBAGE_COLOR = '#404040';
 
-function cellSize() {
-  const v = getComputedStyle(document.documentElement).getPropertyValue('--cell');
-  return parseInt(v) || 30;
-}
+function cellSize() { return 33; }
 function computeOppCell() {
   const alive = Object.values(opponentStates).filter(s => s.alive !== false).length;
   if (alive <= 1) return 20;
@@ -1198,16 +1207,10 @@ function drawBoard(canvas, game, cell) {
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   const ctx = canvas.getContext('2d');
 
-  // Clear to transparent — bg-overlay behind shows blurred photo
+  // Transparent canvas — bg-overlay (blur+dim) shows through
   ctx.clearRect(0, 0, w, h);
-  // Very subtle dark tint over the whole board
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  ctx.fillRect(0, 0, w, h);
-  // Buffer zone slightly darker
-  ctx.fillStyle = 'rgba(0,0,0,0.15)';
-  ctx.fillRect(0, 0, w, BUFFER * cell);
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 0.5;
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 0.5;
   for (let r = 0; r <= ROWS; r++) {
     const y = (r + BUFFER) * cell + 0.25;
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
@@ -1216,16 +1219,8 @@ function drawBoard(canvas, game, cell) {
     ctx.beginPath(); ctx.moveTo(c*cell+0.25, BUFFER*cell); ctx.lineTo(c*cell+0.25, h); ctx.stroke();
   }
 
-  // Danger tint in buffer zone — intensifies when stack is high (set via canvas dataset)
-  const dangerAlpha = parseFloat(canvas.dataset.danger || '0');
-  if (dangerAlpha > 0) {
-    ctx.fillStyle = `rgba(255,30,30,${dangerAlpha * 0.18})`;
-    ctx.fillRect(0, 0, w, BUFFER * cell);
-  }
-  // Death line — thin, subtle, always present
-  const lineAlpha = 0.25 + dangerAlpha * 0.55;
-  ctx.strokeStyle = `rgba(255,60,60,${lineAlpha})`; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(0, BUFFER*cell); ctx.lineTo(w, BUFFER*cell); ctx.stroke();
+  // Death line drawn at BUFFER*cell — hidden by overflow:hidden on .board-wrap
+  // (bg-overlay handles danger red tint — no need to draw on canvas)
 
   for (let r = 0; r < TOTAL_ROWS; r++)
     for (let c = 0; c < COLS; c++) {
