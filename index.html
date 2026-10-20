@@ -14,8 +14,8 @@
     --border: rgba(0,255,213,0.18);
     --border-mid: rgba(0,255,213,0.32);
     --text: #e8fff9;
-    --text-dim: #7a8a97;
-    --text-muted: #3d4752;
+    --text-dim: #9aa8b8;
+    --text-muted: #5a6a7a;
     --cyan: #00ffd5;
     --magenta: #ff2d95;
     --lime: #b4ff3a;
@@ -23,7 +23,8 @@
     --danger: #ff3860;
     --warn: #ffcc44;
     --cell: 40px;
-    --rail-w: 190px;
+    --rail-w: 250px;
+    --bar-w: 20px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
@@ -455,25 +456,23 @@
   kbd { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; background: rgba(0,255,213,0.08); border: 1px solid var(--border-mid); color: var(--cyan); padding: 2px 6px; letter-spacing: 0.06em; }
 
   /* ═══════════════════════════════════════════════════════════════ */
-  /* ═══ GAME SCREEN — FULLSCREEN RAIL LAYOUT ═════════════════════ */
+  /* ═══ GAME SCREEN ═══ */
   /* ═══════════════════════════════════════════════════════════════ */
   #game {
-    display: flex;
     flex-direction: row;
-    width: 100%;
     height: 100vh;
     padding: 0;
     gap: 0;
     overflow: hidden;
   }
 
-  /* LEFT RAIL — 190px wide, full height */
+  /* LEFT RAIL */
   .left-rail {
     width: var(--rail-w);
     flex-shrink: 0;
     height: 100vh;
     padding: 12px;
-    background: rgba(4,5,10,0.78);
+    background: rgba(4,5,10,0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-right: 1px solid var(--border);
@@ -483,14 +482,16 @@
     overflow-y: auto;
     overflow-x: hidden;
   }
+  .left-rail::-webkit-scrollbar { width: 4px; }
+  .left-rail::-webkit-scrollbar-thumb { background: var(--border-mid); }
 
-  /* RIGHT RAIL — 190px wide, full height */
+  /* RIGHT RAIL */
   .right-rail {
     width: var(--rail-w);
     flex-shrink: 0;
     height: 100vh;
     padding: 12px;
-    background: rgba(4,5,10,0.78);
+    background: rgba(4,5,10,0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-left: 1px solid var(--border);
@@ -501,7 +502,45 @@
     overflow-x: hidden;
   }
 
-  /* CENTER — everything else */
+  /* ═══ ATTACK BARS (20px columns) ═══ */
+  .attack-bar {
+    width: var(--bar-w);
+    height: 100vh;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.7);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    transition: opacity 0.4s;
+  }
+  .attack-bar-fill {
+    width: 100%;
+    height: 0%;
+    transition: height 0.15s ease-out;
+    position: relative;
+  }
+  .attack-bar.attack-out .attack-bar-fill {
+    background: linear-gradient(180deg, var(--cyan), var(--lime));
+    box-shadow: 0 0 20px rgba(0,255,213,0.7);
+  }
+  .attack-bar.attack-out .attack-bar-fill.ready {
+    background: linear-gradient(180deg, var(--lime), #e0ff6a);
+    animation: barPulse 0.5s ease-in-out infinite;
+  }
+  .attack-bar.attack-in .attack-bar-fill {
+    background: linear-gradient(180deg, var(--danger), var(--magenta));
+    box-shadow: 0 0 20px rgba(255,56,96,0.7);
+  }
+  .attack-bar.attack-in .attack-bar-fill.pulse {
+    animation: barPulse 0.35s ease-out;
+  }
+  @keyframes barPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+  /* ═══ ARENA ═══ */
   .arena {
     flex: 1;
     min-width: 0;
@@ -516,17 +555,17 @@
     transition: gap 0.5s;
   }
 
-  /* Panels — larger now */
+  /* Panels */
   .panel {
     background: rgba(0,0,0,0.55);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid var(--border);
-    padding: 10px 12px;
+    padding: 12px 14px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     position: relative;
     flex-shrink: 0;
     transition: border-color 0.2s;
@@ -541,19 +580,18 @@
 
   .panel-label {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 9px; font-weight: 700;
-    color: var(--text-dim);
-    letter-spacing: 0.22em;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(0,255,213,0.85);
+    letter-spacing: 0.24em;
     text-transform: uppercase;
     align-self: flex-start;
     width: 100%;
+    text-shadow: 0 0 8px rgba(0,255,213,0.3);
   }
 
-  /* Room info top of left rail */
-  .panel-roominfo {
-    padding: 8px 10px;
-    gap: 4px;
-  }
+  /* Room info */
+  .panel-roominfo { padding: 10px 12px; gap: 6px; }
   .roominfo-row {
     display: flex;
     justify-content: space-between;
@@ -563,45 +601,45 @@
   }
   .roominfo-label {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 8px;
-    color: var(--text-muted);
-    letter-spacing: 0.16em;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     font-weight: 700;
   }
   .roominfo-value {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 800;
     color: var(--cyan);
     letter-spacing: 0.06em;
-    text-shadow: 0 0 8px rgba(0,255,213,0.5);
+    text-shadow: 0 0 10px rgba(0,255,213,0.6);
   }
   .roominfo-value.timer {
     color: var(--text);
     font-weight: 800;
-    font-size: 13px;
+    font-size: 17px;
     letter-spacing: 0.1em;
   }
 
   .panel-hold { padding: 12px; }
-  .panel-hold .panel-label { margin-bottom: 4px; }
   .panel-hold canvas {
     display: block;
-    width: 154px;
-    height: 154px;
-    background: rgba(0,0,0,0.35);
-    border: 1px solid rgba(0,255,213,0.12);
+    width: 200px;
+    height: 200px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(0,255,213,0.15);
   }
 
   .panel-stat {
-    padding: 8px 12px;
+    padding: 10px 14px;
     align-items: flex-start;
-    gap: 2px;
+    gap: 3px;
   }
   .panel-stat .panel-value {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 22px; font-weight: 800;
+    font-size: 26px;
+    font-weight: 800;
     color: var(--text);
     line-height: 1.05;
     letter-spacing: -0.02em;
@@ -609,78 +647,49 @@
     overflow: hidden;
     max-width: 100%;
     display: block;
+    text-shadow: 0 0 10px rgba(255,255,255,0.2);
   }
-  .panel-stat .panel-value.danger { color: var(--danger); text-shadow: 0 0 12px rgba(255,56,96,0.6); }
-  .panel-stat .panel-value.lime { color: var(--lime); text-shadow: 0 0 12px rgba(180,255,58,0.5); }
-  .panel-stat .panel-value.magenta { color: var(--magenta); text-shadow: 0 0 12px rgba(255,45,149,0.5); }
-  .panel-stat .panel-value.cyan { color: var(--cyan); text-shadow: 0 0 12px rgba(0,255,213,0.5); }
-  .panel-stat .panel-value.big { font-size: 26px; }
+  .panel-stat .panel-value.danger { color: var(--danger); text-shadow: 0 0 14px rgba(255,56,96,0.7); }
+  .panel-stat .panel-value.lime { color: var(--lime); text-shadow: 0 0 14px rgba(180,255,58,0.6); }
+  .panel-stat .panel-value.magenta { color: var(--magenta); text-shadow: 0 0 14px rgba(255,45,149,0.6); }
+  .panel-stat .panel-value.cyan { color: var(--cyan); text-shadow: 0 0 14px rgba(0,255,213,0.6); }
+  .panel-stat .panel-value.big { font-size: 32px; }
 
   .panel-ability {
     background: rgba(180,255,58,0.05);
     border-color: rgba(180,255,58,0.32);
   }
   .panel-ability::before, .panel-ability::after { border-color: var(--lime); }
-  .panel-ability .panel-label { color: var(--lime); }
-  .panel-ability .panel-value { color: var(--lime); text-shadow: 0 0 12px rgba(180,255,58,0.6); font-size: 22px; }
+  .panel-ability .panel-label { color: var(--lime); text-shadow: 0 0 8px rgba(180,255,58,0.4); }
+  .panel-ability .panel-value { color: var(--lime); text-shadow: 0 0 14px rgba(180,255,58,0.7); font-size: 26px; }
   .panel-ability.depleted { opacity: 0.35; }
   .panel-ability.depleted .panel-label,
   .panel-ability.depleted .panel-value { color: var(--text-muted); text-shadow: none; }
-  .panel-ability kbd { font-size: 8px; padding: 1px 4px; color: var(--lime); border-color: rgba(180,255,58,0.5); background: rgba(180,255,58,0.1); margin-left: 4px; }
+  .panel-ability kbd { font-size: 9px; padding: 1px 4px; color: var(--lime); border-color: rgba(180,255,58,0.5); background: rgba(180,255,58,0.1); margin-left: 4px; }
 
-  .panel-attack { padding: 8px 12px; align-items: stretch; }
-  .attack-meter-track {
-    width: 100%; height: 8px;
-    background: rgba(0,0,0,0.6);
-    border: 1px solid var(--border);
-    overflow: hidden; position: relative;
-    margin-top: 2px;
-  }
-  .attack-meter-fill {
-    height: 100%; width: 0%;
-    background: linear-gradient(90deg, var(--cyan), var(--lime));
-    transition: width 0.12s ease-out;
-    box-shadow: 0 0 8px rgba(0,255,213,0.6);
-  }
-  .attack-meter-fill.ready {
-    background: linear-gradient(90deg, var(--magenta), var(--orange));
-    box-shadow: 0 0 12px rgba(255,45,149,0.8);
-    animation: meterPulse 0.5s ease-in-out infinite;
-  }
-  @keyframes meterPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
-  .attack-meter-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px; font-weight: 700;
-    color: var(--text-dim);
-    letter-spacing: 0.1em; text-align: center;
-    margin-top: 4px;
-  }
-
-  /* NEXT panel — right rail, fills height */
+  /* NEXT panel */
   .panel-next {
     flex: 1;
     min-height: 0;
     padding: 12px;
+    display: flex;
+    flex-direction: column;
   }
-  .panel-next .panel-label { margin-bottom: 4px; }
   .panel-next canvas {
     display: block;
     width: 100%;
     flex: 1;
     min-height: 0;
-    background: rgba(0,0,0,0.35);
-    border: 1px solid rgba(0,255,213,0.12);
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(0,255,213,0.15);
   }
 
   /* QUIT button */
-  .panel-quit {
-    padding: 0;
-    background: transparent;
-    border: none;
-  }
-  .panel-quit .game-quit-btn {
+  .panel-quit { padding: 0; background: transparent; border: none; }
+  .panel-quit::before, .panel-quit::after { display: none; }
+  .game-quit-btn {
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     background: rgba(0,0,0,0.55);
     border: 1px solid var(--border);
     color: var(--text-dim);
@@ -690,14 +699,14 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-  .panel-quit .game-quit-btn:hover {
+  .game-quit-btn:hover {
     border-color: var(--danger);
     color: var(--danger);
     background: rgba(255,56,96,0.08);
     box-shadow: 0 0 16px rgba(255,56,96,0.35);
   }
 
-  /* Center — board */
+  /* Center board */
   .my-section {
     display: flex;
     flex-direction: column;
@@ -707,8 +716,8 @@
   }
   .board-wrap {
     position: relative;
-    width: calc(var(--cell) * 10);   /* 400px */
-    height: calc(var(--cell) * 20);  /* 800px */
+    width: calc(var(--cell) * 10);
+    height: calc(var(--cell) * 20);
     transition: box-shadow 0.3s;
   }
   .board-wrap:not(.critical) { box-shadow: 0 0 30px rgba(0,255,213,0.2); }
@@ -719,7 +728,7 @@
   }
   .board-canvas {
     display: block; position: absolute;
-    top: calc(var(--cell) * -3);   /* -120px buffer */
+    top: calc(var(--cell) * -3);
     left: 0;
     filter: drop-shadow(0 0 30px rgba(0,255,213,0.15));
   }
@@ -731,7 +740,7 @@
     z-index: 8;
   }
 
-  /* Opponents — right of board, horizontal row */
+  /* Opponents */
   .opponents-wrap {
     display: none;
     flex-direction: column;
@@ -790,9 +799,16 @@
   }
   .opp-canvas { display: block; }
 
-  /* ═══ Spectator Mode — full arena for opponents ═══ */
+  /* ═══ SOLO MODE — hide multiplayer stuff ═══ */
+  body.solo-mode .attack-bar { display: none; }
+  body.solo-mode .panel-attack,
+  body.solo-mode .panel-inc,
+  body.solo-mode .panel-sent { display: none; }
+
+  /* ═══ Spectator ═══ */
   body.spectating .left-rail,
   body.spectating .right-rail,
+  body.spectating .attack-bar,
   body.spectating .my-section {
     width: 0 !important;
     padding: 0 !important;
@@ -803,31 +819,12 @@
     border-width: 0 !important;
     transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
   }
-  body.spectating .arena {
-    gap: 0;
-    padding: 24px;
-  }
-  body.spectating .opponents-wrap {
-    flex: 1;
-    width: 100%;
-    align-items: center;
-    justify-content: center;
-  }
-  body.spectating .opponents {
-    justify-content: center;
-    align-items: center;
-    gap: 32px;
-  }
-  body.spectating .opponent-card {
-    box-shadow: 0 0 30px rgba(255,45,149,0.25);
-  }
-  body.spectating .opp-name {
-    font-size: 14px;
-    letter-spacing: 0.1em;
-  }
-  body.spectating .opp-score {
-    font-size: 16px;
-  }
+  body.spectating .arena { gap: 0; padding: 24px; }
+  body.spectating .opponents-wrap { flex: 1; width: 100%; align-items: center; justify-content: center; }
+  body.spectating .opponents { justify-content: center; align-items: center; gap: 32px; }
+  body.spectating .opponent-card { box-shadow: 0 0 30px rgba(255,45,149,0.25); }
+  body.spectating .opp-name { font-size: 14px; letter-spacing: 0.1em; }
+  body.spectating .opp-score { font-size: 16px; }
 
   /* Eliminated banner */
   .eliminated-banner {
@@ -853,31 +850,20 @@
   }
   .eb-tag {
     font-family: 'Orbitron', sans-serif;
-    font-size: 18px;
-    font-weight: 900;
+    font-size: 18px; font-weight: 900;
     color: var(--danger);
     letter-spacing: 0.24em;
     text-shadow: 0 0 20px rgba(255,56,96,0.7);
   }
-  .eb-reason {
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-  .eb-stats {
-    font-size: 11px;
-    color: var(--cyan);
-    letter-spacing: 0.08em;
-    margin-top: 2px;
-  }
+  .eb-reason { font-size: 10px; color: var(--text-dim); letter-spacing: 0.14em; text-transform: uppercase; }
+  .eb-stats { font-size: 11px; color: var(--cyan); letter-spacing: 0.08em; margin-top: 2px; }
 
   /* ═══ Overlays ═══ */
   .countdown-overlay {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
     background: rgba(0,0,0,0.9);
-    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
     z-index: 10; flex-direction: column; overflow: hidden;
   }
   .countdown-num {
@@ -921,22 +907,32 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
+  /* Game over — moved to arena level, covers whole arena */
   .gameover-overlay {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: rgba(0,0,0,0.94);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    z-index: 12; flex-direction: column; gap: 12px;
-    text-align: center; padding: 20px;
+    backdrop-filter: blur(12px);
+    z-index: 12;
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+    padding: 40px;
     animation: goFadeIn 0.4s ease-out;
-    border-radius: 4px;
   }
   @keyframes goFadeIn { from { opacity: 0; } to { opacity: 1; } }
   .gameover-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 26px; font-weight: 900; color: var(--danger);
-    letter-spacing: 0.16em;
-    text-shadow: 0 0 24px rgba(255,56,96,0.8), 0 0 60px rgba(255,56,96,0.4);
+    font-size: 52px;
+    font-weight: 900;
+    color: var(--danger);
+    letter-spacing: 0.2em;
+    text-shadow:
+      0 0 40px rgba(255,56,96,0.8),
+      0 0 100px rgba(255,56,96,0.5);
     animation: goTitlePop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   }
   @keyframes goTitlePop {
@@ -946,23 +942,41 @@
   }
   .gameover-reason {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: var(--text-dim);
-    letter-spacing: 0.15em; text-transform: uppercase;
+    font-size: 14px;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
   }
   .gameover-stats {
-    display: flex; flex-direction: column; gap: 5px;
-    background: rgba(0,0,0,0.55);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(0,0,0,0.6);
     border: 1px solid var(--border);
-    padding: 12px 22px; margin-top: 8px;
+    padding: 24px 40px;
+    margin-top: 16px;
     font-family: 'JetBrains Mono', monospace;
-    min-width: 220px;
+    min-width: 360px;
+    box-shadow: 0 0 30px rgba(255,56,96,0.2);
   }
   .gameover-stat-row {
-    display: flex; justify-content: space-between; gap: 24px;
-    font-size: 11px; color: var(--text-dim);
-    letter-spacing: 0.08em; text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    font-size: 14px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
   }
-  .gameover-stat-row span:last-child { color: var(--cyan); font-weight: 800; }
+  .gameover-stat-row:last-child { border-bottom: none; }
+  .gameover-stat-row span:last-child {
+    color: var(--cyan);
+    font-weight: 800;
+    font-size: 18px;
+    text-shadow: 0 0 12px rgba(0,255,213,0.5);
+  }
 
   .waiting-overlay {
     position: absolute; inset: 0;
@@ -981,7 +995,7 @@
   }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  /* ═══ Attack / Speed flash ═══ */
+  /* Flash effects */
   .attack-flash {
     position: absolute; inset: 0;
     background: radial-gradient(circle at center, rgba(255,56,96,0.5), transparent 70%);
@@ -997,21 +1011,7 @@
   @keyframes speedPulse { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
   .speed-flash.fire { animation: speedPulse 0.9s ease-out forwards; }
 
-  .garbage-bar-wrap {
-    position: absolute; left: -14px; bottom: 0; top: 0;
-    width: 6px; pointer-events: none; z-index: 4;
-    display: flex; flex-direction: column; justify-content: flex-end;
-  }
-  .garbage-bar {
-    width: 100%; min-height: 0; height: 0%;
-    background: linear-gradient(180deg, var(--danger), var(--magenta));
-    transition: height 0.15s ease-out;
-    box-shadow: 0 0 12px rgba(255,56,96,0.6);
-  }
-  @keyframes gbPulse { 0%,100%{box-shadow:0 0 10px rgba(255,56,96,0.5)} 50%{box-shadow:0 0 24px rgba(255,56,96,0.9)} }
-  .garbage-bar.pulse { animation: gbPulse 0.35s ease-out; }
-
-  /* ═══ Toast ═══ */
+  /* Toast */
   #toast {
     position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
     background: rgba(13,15,26,0.95);
@@ -1031,7 +1031,7 @@
   #toast.show { opacity: 1; }
   #toast.boost { border-color: var(--lime); color: var(--lime); box-shadow: 0 0 30px rgba(180,255,58,0.5); }
 
-  /* ═══ Leaderboard ═══ */
+  /* Leaderboard */
   #leaderboard-screen { flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; }
   .lb-panel {
     background: rgba(8,10,18,0.85);
@@ -1055,34 +1055,26 @@
   .lb-table tr:nth-child(3) td.place::before { content: '🥉 '; }
   .lb-table td.score, .lb-table td.lines { text-align: right; font-weight: 700; letter-spacing: -0.02em; }
   .lb-table td.lines { color: var(--text-dim); width: 80px; }
-  .lb-table tr { transition: background 0.15s; }
-  .lb-table tr:hover td { background: rgba(0,255,213,0.03); }
 
-  /* ═══ Media queries for narrower screens ═══ */
-  @media (max-width: 1400px) {
-    :root { --rail-w: 160px; --cell: 34px; }
-    .panel-hold canvas { width: 128px; height: 128px; }
+  /* Media queries */
+  @media (max-width: 1600px) {
+    :root { --rail-w: 220px; --cell: 36px; }
+    .panel-hold canvas { width: 170px; height: 170px; }
   }
-  @media (max-width: 1100px) {
-    :root { --rail-w: 140px; --cell: 28px; }
-    .panel-hold canvas { width: 108px; height: 108px; }
-    .panel-stat .panel-value { font-size: 18px; }
-    .panel-stat .panel-value.big { font-size: 20px; }
+  @media (max-width: 1280px) {
+    :root { --rail-w: 180px; --cell: 30px; }
+    .panel-hold canvas { width: 140px; height: 140px; }
+    .panel-stat .panel-value { font-size: 20px; }
+    .panel-stat .panel-value.big { font-size: 26px; }
   }
   @media (max-width: 900px) {
     .mode-cards { flex-direction: column; gap: 16px; }
     .mode-card { min-width: unset; max-width: 100%; min-height: unset; padding: 24px; }
-    .mode-icon { width: 48px; height: 48px; font-size: 22px; }
     .lobby-container { grid-template-columns: 1fr; }
-    .lobby-panel { min-height: unset; }
     .mp-panel { padding: 28px 24px; }
-    .name-terminal { padding: 26px 22px; }
     .hud.bl, .hud.br { display: none; }
     #room-input { font-size: 34px; padding: 18px 16px 18px 28px; }
     .lobby-global-actions { flex-direction: column; }
-    .mp-panel-title { font-size: 24px; }
-    #main-menu .hero-title { font-size: clamp(60px, 14vw, 100px); }
-    .hero-tagline { margin-bottom: 32px; }
   }
 </style>
 </head>
@@ -1249,7 +1241,7 @@
 
 <!-- ═══ GAME ═══ -->
 <div class="screen" id="game">
-  <!-- LEFT RAIL: всё данные -->
+  <!-- LEFT RAIL: 250px all stats -->
   <div class="left-rail">
     <div class="panel panel-roominfo">
       <div class="roominfo-row">
@@ -1263,7 +1255,7 @@
     </div>
     <div class="panel panel-hold">
       <div class="panel-label">HOLD</div>
-      <canvas id="hold-canvas" width="154" height="154"></canvas>
+      <canvas id="hold-canvas" width="200" height="200"></canvas>
     </div>
     <div class="panel panel-ability" id="ability-box" style="display:none;">
       <div class="panel-label">ABILITY <kbd>F</kbd></div>
@@ -1281,24 +1273,22 @@
       <div class="panel-label">LINES</div>
       <div class="panel-value" id="lines-val">0</div>
     </div>
-    <div class="panel panel-attack">
-      <div class="panel-label">ATTACK</div>
-      <div class="attack-meter-track">
-        <div class="attack-meter-fill" id="attack-meter-fill"></div>
-      </div>
-      <div class="attack-meter-label" id="attack-meter-label">0 / 4</div>
-    </div>
-    <div class="panel panel-stat">
+    <div class="panel panel-stat panel-inc">
       <div class="panel-label">INCOMING</div>
       <div class="panel-value danger" id="inc-val">0</div>
     </div>
-    <div class="panel panel-stat">
+    <div class="panel panel-stat panel-sent">
       <div class="panel-label">SENT</div>
       <div class="panel-value magenta" id="atk-val">0</div>
     </div>
   </div>
 
-  <!-- CENTER: board + opponents -->
+  <!-- ATTACK OUT (20px) -->
+  <div class="attack-bar attack-out" id="attack-out-bar">
+    <div class="attack-bar-fill" id="attack-out-fill"></div>
+  </div>
+
+  <!-- CENTER: board + opponents + game over -->
   <div class="arena">
     <div class="my-section" id="my-section">
       <div class="board-wrap" id="my-board-wrap">
@@ -1306,9 +1296,6 @@
         <canvas id="fx-canvas"></canvas>
         <div class="attack-flash" id="my-flash"></div>
         <div class="speed-flash" id="my-speed-flash"></div>
-        <div class="garbage-bar-wrap">
-          <div class="garbage-bar" id="garbage-bar"></div>
-        </div>
         <div class="waiting-overlay" id="my-waiting">
           <div class="waiting-text">awaiting signal…</div>
         </div>
@@ -1317,16 +1304,6 @@
           <div class="countdown-num" id="countdown-num" data-v="3">3</div>
           <div class="countdown-label" id="countdown-label">Deploying</div>
         </div>
-        <div class="gameover-overlay" id="my-gameover" style="display:none">
-          <div class="gameover-title" id="gameover-title">GAME OVER</div>
-          <div class="gameover-reason" id="gameover-reason"></div>
-          <div class="gameover-stats" id="gameover-stats-box">
-            <div class="gameover-stat-row"><span>Score</span><span id="go-score">0</span></div>
-            <div class="gameover-stat-row"><span>Lines</span><span id="go-lines">0</span></div>
-            <div class="gameover-stat-row"><span>Level</span><span id="go-level">1</span></div>
-            <div class="gameover-stat-row"><span>Attack</span><span id="go-attack">0</span></div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -1334,13 +1311,30 @@
       <div class="opponents-title">// RIVALS</div>
       <div class="opponents" id="opponents"></div>
     </div>
+
+    <!-- Game over overlay — now covers entire arena -->
+    <div class="gameover-overlay" id="my-gameover" style="display:none">
+      <div class="gameover-title" id="gameover-title">GAME OVER</div>
+      <div class="gameover-reason" id="gameover-reason"></div>
+      <div class="gameover-stats" id="gameover-stats-box">
+        <div class="gameover-stat-row"><span>Score</span><span id="go-score">0</span></div>
+        <div class="gameover-stat-row"><span>Lines</span><span id="go-lines">0</span></div>
+        <div class="gameover-stat-row"><span>Level</span><span id="go-level">1</span></div>
+        <div class="gameover-stat-row"><span>Attack</span><span id="go-attack">0</span></div>
+      </div>
+    </div>
   </div>
 
-  <!-- RIGHT RAIL: NEXT × 5 + QUIT -->
+  <!-- ATTACK IN (20px) -->
+  <div class="attack-bar attack-in" id="attack-in-bar">
+    <div class="attack-bar-fill" id="attack-in-fill"></div>
+  </div>
+
+  <!-- RIGHT RAIL: 250px NEXT × 8 + QUIT -->
   <div class="right-rail">
     <div class="panel panel-next">
       <div class="panel-label">NEXT</div>
-      <canvas id="next-canvas" width="154" height="900"></canvas>
+      <canvas id="next-canvas" width="200" height="900"></canvas>
     </div>
     <div class="panel panel-quit">
       <button class="game-quit-btn" id="topbar-quit-btn">QUIT</button>
@@ -1348,7 +1342,7 @@
   </div>
 </div>
 
-<!-- Eliminated banner for multiplayer -->
+<!-- Eliminated banner -->
 <div class="eliminated-banner" id="eliminated-banner" style="display:none;">
   <div class="eb-tag">ELIMINATED</div>
   <div class="eb-reason" id="eliminated-reason">spectating</div>
@@ -1951,6 +1945,8 @@ function drawBoard(canvas, game, cell) {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, w, h);
 
+  if (!game) return;
+
   ctx.fillStyle = 'rgba(5,6,12,0.85)';
   ctx.fillRect(0, BUFFER * cell, w, ROWS * cell);
 
@@ -2171,14 +2167,14 @@ function drawPreviewCanvas(canvas, key) {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (!key) return;
-  drawPieceInBox(ctx, key, 0, 0, canvas.width, canvas.height, 32);
+  drawPieceInBox(ctx, key, 0, 0, canvas.width, canvas.height, 40);
 }
 function drawNextCanvas(canvas, keys) {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const n = Math.min(5, keys.length);
+  const n = Math.min(8, keys.length);
   const slot = canvas.height / n;
-  keys.slice(0, n).forEach((key, i) => drawPieceInBox(ctx, key, 0, i*slot, canvas.width, slot, 26));
+  keys.slice(0, n).forEach((key, i) => drawPieceInBox(ctx, key, 0, i*slot, canvas.width, slot, 30));
 }
 function drawSmallBoard(canvas, boardData, cell, current) {
   const w = COLS * cell, h = ROWS * cell;
@@ -2230,9 +2226,9 @@ function updateStat(id, value) {
   void el.offsetWidth;
   const avail = el.clientWidth, need = el.scrollWidth;
   if (avail > 0 && need > avail) {
-    const base = parseFloat(getComputedStyle(el).fontSize) || 22;
+    const base = parseFloat(getComputedStyle(el).fontSize) || 26;
     const ratio = avail / need;
-    el.style.fontSize = Math.max(10, Math.floor(base * ratio * 0.94)) + 'px';
+    el.style.fontSize = Math.max(12, Math.floor(base * ratio * 0.94)) + 'px';
   }
 }
 
@@ -2343,17 +2339,32 @@ class PeerAdapter {
     this._notifyPeers('presence', { peer: { presence: this.presenceData } });
   }
   async join(roomCode, asHost) {
-    this.roomCode = roomCode; this.isHost = !!asHost;
+    this.roomCode = roomCode;
+    this.isHost = !!asHost;
     const hostPeerId = 'zetris-' + roomCode;
+
+    // CRITICAL: destroy any existing peer BEFORE creating a new one
+    if (this.peer) {
+      for (const conn of this.connections.values()) { try { conn.close(); } catch(e){} }
+      this.connections.clear();
+      this.roster.clear();
+      this.presenceData = null;
+      try { this.peer.destroy(); } catch(e){}
+      this.peer = null;
+      // Wait for signaling to release the id/socket
+      await new Promise(r => setTimeout(r, 500));
+    }
+
     if (this.isHost) {
       this.peer = new Peer(hostPeerId, PEER_CONFIG);
       await new Promise((resolve, reject) => {
-        const t = setTimeout(() => reject(new Error('timeout')), 10000);
+        const t = setTimeout(() => reject(new Error('timeout')), 12000);
         const onOpen = () => { clearTimeout(t); this.peer.off('error', onErr); resolve(); };
         const onErr = (err) => {
           clearTimeout(t); this.peer.off('open', onOpen);
           if (err && err.type === 'unavailable-id') reject(new Error('room-taken'));
           else if (err && err.type === 'network') reject(new Error('network'));
+          else if (err && err.type === 'server-error') reject(new Error('server-error'));
           else reject(err);
         };
         this.peer.once('open', onOpen); this.peer.once('error', onErr);
@@ -2363,7 +2374,7 @@ class PeerAdapter {
     } else {
       this.peer = new Peer(PEER_CONFIG);
       await new Promise((resolve, reject) => {
-        const t = setTimeout(() => reject(new Error('timeout')), 10000);
+        const t = setTimeout(() => reject(new Error('timeout')), 12000);
         const onOpen = () => { clearTimeout(t); this.peer.off('error', onErr); resolve(); };
         const onErr = (err) => {
           clearTimeout(t); this.peer.off('open', onOpen);
@@ -2374,7 +2385,7 @@ class PeerAdapter {
       });
       const conn = this.peer.connect(hostPeerId, { reliable: true });
       await new Promise((resolve, reject) => {
-        const t = setTimeout(() => reject(new Error('host-timeout')), 10000);
+        const t = setTimeout(() => reject(new Error('host-timeout')), 12000);
         const onOpen = () => { clearTimeout(t); conn.off('error', onErr); resolve(); };
         const onErr = () => { clearTimeout(t); conn.off('open', onOpen); reject(new Error('host-closed')); };
         conn.once('open', onOpen); conn.once('error', onErr);
@@ -2463,6 +2474,7 @@ function showScreen(id) {
   } else {
     document.body.classList.remove('in-game');
     document.body.classList.remove('spectating');
+    document.body.classList.remove('solo-mode');
     document.getElementById('app-header').classList.remove('hidden');
     bgOverlay.className = '';
     _lastDangerClass = '';
@@ -2499,123 +2511,156 @@ function genCode() {
   return Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 async function createRoom() {
-  await runtimeReady;
-  if (!runtimeAvailable) { toast('Multiplayer unavailable'); return; }
-  roomCode = genCode(); isHost = true;
-  await enterRoom();
+  try {
+    await runtimeReady;
+    if (!runtimeAvailable || !window.__adapter) {
+      toast('Multiplayer unavailable');
+      return;
+    }
+    roomCode = genCode();
+    isHost = true;
+    await enterRoom();
+  } catch (err) {
+    console.error('[createRoom] error:', err);
+    toast('Failed: ' + (err?.message || 'unknown'));
+    leaveRoom();
+    showScreen('mp-menu');
+  }
 }
 async function joinRoom() {
-  await runtimeReady;
-  const code = document.getElementById('room-input').value.trim().toUpperCase();
-  if (code.length < 3) { toast('Enter a valid room code'); return; }
-  if (!runtimeAvailable) { toast('Multiplayer unavailable'); return; }
-  roomCode = code; isHost = false;
-  await enterRoom();
+  try {
+    await runtimeReady;
+    const code = document.getElementById('room-input').value.trim().toUpperCase();
+    if (code.length < 3) { toast('Enter a valid room code'); return; }
+    if (!runtimeAvailable || !window.__adapter) { toast('Multiplayer unavailable'); return; }
+    roomCode = code;
+    isHost = false;
+    await enterRoom();
+  } catch (err) {
+    console.error('[joinRoom] error:', err);
+    toast('Failed: ' + (err?.message || 'unknown'));
+    leaveRoom();
+    showScreen('mp-menu');
+  }
 }
 
 async function enterRoom() {
-  iAmKicked = false;
-  showScreen('waiting-room');
-  document.getElementById('display-code').textContent = roomCode;
-  document.getElementById('game-room-label').textContent = 'room: ' + roomCode;
-  document.getElementById('start-btn').style.display = isHost ? 'block' : 'none';
-  document.getElementById('ready-btn').style.display = isHost ? 'none' : 'block';
-  document.getElementById('start-hint').textContent = isHost
-    ? 'START WHEN ALL PLAYERS ARE READY' : 'CLICK READY WHEN YOU ARE SET';
-  setSettingsEditable(isHost);
-  applySettingsToUI();
-  myReady = false;
-  updateReadyButton();
-
-  const adapter = window.__adapter;
-  if (isHost) {
-    if (namedRoom && namedRoom !== adapter) { try { namedRoom.leave(); } catch(e){} }
-    namedRoom = adapter;
-  } else {
-    if (namedRoom) { try { namedRoom.leave(); } catch(e){} }
-    namedRoom = new PeerAdapter();
-    await namedRoom.init();
-  }
-
-  namedRoom.onHostLost = () => {
-    if (iAmKicked) return;
-    toast('Host left the room');
-    setTimeout(() => { fullCleanup(); leaveRoom(); showScreen('main-menu'); }, 900);
-  };
-
-  try { await namedRoom.join(roomCode, isHost); }
-  catch (e) {
-    console.error('[zetris] join failed:', e);
-    const code = e && e.message;
-    let msg = 'Could not join room';
-    if (code === 'room-taken') msg = 'Room code in use';
-    else if (code === 'host-timeout') msg = 'Room not found';
-    else if (code === 'host-closed') msg = 'Host closed the room';
-    else if (code === 'timeout') msg = 'Connection timeout';
-    else if (code === 'network') msg = 'Signaling unreachable';
-    toast(msg); leaveRoom(); showScreen('mp-menu'); return;
-  }
-
-  myId = namedRoom.peer.id;
-  namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady, host: isHost });
-  namedRoom.onPeers(({ peers }) => updatePlayerList(peers || []));
-
-  namedRoom.on('start_game', ({ countdown, settings }) => {
-    if (settings) gameSettings = sanitizeSettings(settings);
+  try {
+    iAmKicked = false;
+    showScreen('waiting-room');
+    document.getElementById('display-code').textContent = roomCode;
+    document.getElementById('game-room-label').textContent = 'room: ' + roomCode;
+    document.getElementById('start-btn').style.display = isHost ? 'block' : 'none';
+    document.getElementById('ready-btn').style.display = isHost ? 'none' : 'block';
+    document.getElementById('start-hint').textContent = isHost
+      ? 'START WHEN ALL PLAYERS ARE READY' : 'CLICK READY WHEN YOU ARE SET';
+    setSettingsEditable(isHost);
+    applySettingsToUI();
     myReady = false;
-    if (namedRoom && namedRoom.presenceData) {
-      namedRoom.presence({ id: myId, name: myName, alive: true, ready: false, host: isHost });
-    }
-    if (gamePhase === 'playing') return;
-    beginCountdown(countdown || 3);
-  });
-  namedRoom.on('attack', ({ from, to, lines }) => {
-    if (from === myId) return;
-    if (to && to !== myId) return;
-    if (game && game.alive && gameRunning) {
-      game.pendingGarbage += lines;
-      flashAttack();
-    }
-  });
-  namedRoom.on('board_update', ({ id, name, board, current, score, lines, level, alive }) => {
-    updateOpponent(id, name, board, current, score, lines, level, alive);
-  });
-  namedRoom.on('player_died', (data) => {
-    if (!data || data.id === myId) return;
-    const st = opponentStates[data.id] || {};
-    st.alive = false;
-    if (typeof data.score === 'number') st.score = data.score;
-    if (typeof data.lines === 'number') st.lines = data.lines;
-    if (typeof data.level === 'number') st.level = data.level;
-    opponentStates[data.id] = st;
-    rerenderAliveOpponents();
-    if (gamePhase === 'playing') checkForWinner();
-  });
-  namedRoom.on('round_end', (data) => { if (data) applyRoundEnd(data); });
-  namedRoom.on('return_to_room', () => returnToWaitingRoom());
-  namedRoom.on('kick', ({ target }) => {
-    if (target !== myId) return;
-    iAmKicked = true;
-    if (gamePhase === 'playing' || gamePhase === 'countdown') {
-      if (game && game.alive) {
-        game.alive = false;
-        showOverlay('KICKED', 'You were removed by the host', 'var(--danger)',
-          game ? { score: game.score, lines: game.lines, level: game.level, attack: game.totalAttack } : null);
-      }
-    }
-    toast('Kicked by host');
-    Sound.stopMusic();
-    cleanupTimers();
-    setTimeout(() => {
-      fullCleanup(); leaveRoom(); showScreen('main-menu');
-      toast('You were kicked from the room');
-    }, 1400);
-  });
-  namedRoom.on('peer_kicked', ({ id }) => { if (id !== myId) _removePeer(id); });
-  namedRoom.onPeerLeft = (peerId) => _removePeer(peerId);
+    updateReadyButton();
 
-  gamePhase = 'waiting';
-  updatePlayerList([]);
+    const adapter = window.__adapter;
+    if (!adapter) {
+      toast('Connection error — try again');
+      showScreen('main-menu');
+      return;
+    }
+
+    if (isHost) {
+      if (namedRoom && namedRoom !== adapter) { try { namedRoom.leave(); } catch(e){} }
+      namedRoom = adapter;
+    } else {
+      if (namedRoom) { try { namedRoom.leave(); } catch(e){} }
+      namedRoom = new PeerAdapter();
+      await namedRoom.init();
+    }
+
+    namedRoom.onHostLost = () => {
+      if (iAmKicked) return;
+      toast('Host left the room');
+      setTimeout(() => { fullCleanup(); leaveRoom(); showScreen('main-menu'); }, 900);
+    };
+
+    try { await namedRoom.join(roomCode, isHost); }
+    catch (e) {
+      console.error('[zetris] join failed:', e);
+      const code = e && e.message;
+      let msg = 'Could not join room';
+      if (code === 'room-taken') msg = 'Room code in use';
+      else if (code === 'host-timeout') msg = 'Room not found';
+      else if (code === 'host-closed') msg = 'Host closed the room';
+      else if (code === 'timeout') msg = 'Connection timeout';
+      else if (code === 'network') msg = 'Signaling unreachable';
+      else if (code === 'server-error') msg = 'Server error';
+      toast(msg); leaveRoom(); showScreen('mp-menu'); return;
+    }
+
+    myId = namedRoom.peer.id;
+    namedRoom.presence({ id: myId, name: myName, alive: true, ready: myReady, host: isHost });
+    namedRoom.onPeers(({ peers }) => updatePlayerList(peers || []));
+
+    namedRoom.on('start_game', ({ countdown, settings }) => {
+      if (settings) gameSettings = sanitizeSettings(settings);
+      myReady = false;
+      if (namedRoom && namedRoom.presenceData) {
+        namedRoom.presence({ id: myId, name: myName, alive: true, ready: false, host: isHost });
+      }
+      if (gamePhase === 'playing') return;
+      beginCountdown(countdown || 3);
+    });
+    namedRoom.on('attack', ({ from, to, lines }) => {
+      if (from === myId) return;
+      if (to && to !== myId) return;
+      if (game && game.alive && gameRunning) {
+        game.pendingGarbage += lines;
+        flashAttack();
+        pulseIncomingBar();
+      }
+    });
+    namedRoom.on('board_update', ({ id, name, board, current, score, lines, level, alive }) => {
+      updateOpponent(id, name, board, current, score, lines, level, alive);
+    });
+    namedRoom.on('player_died', (data) => {
+      if (!data || data.id === myId) return;
+      const st = opponentStates[data.id] || {};
+      st.alive = false;
+      if (typeof data.score === 'number') st.score = data.score;
+      if (typeof data.lines === 'number') st.lines = data.lines;
+      if (typeof data.level === 'number') st.level = data.level;
+      opponentStates[data.id] = st;
+      rerenderAliveOpponents();
+      if (gamePhase === 'playing') checkForWinner();
+    });
+    namedRoom.on('round_end', (data) => { if (data) applyRoundEnd(data); });
+    namedRoom.on('return_to_room', () => returnToWaitingRoom());
+    namedRoom.on('kick', ({ target }) => {
+      if (target !== myId) return;
+      iAmKicked = true;
+      if (gamePhase === 'playing' || gamePhase === 'countdown') {
+        if (game && game.alive) {
+          game.alive = false;
+          showOverlay('KICKED', 'You were removed by the host', 'var(--danger)',
+            game ? { score: game.score, lines: game.lines, level: game.level, attack: game.totalAttack } : null);
+        }
+      }
+      toast('Kicked by host');
+      Sound.stopMusic();
+      cleanupTimers();
+      setTimeout(() => {
+        fullCleanup(); leaveRoom(); showScreen('main-menu');
+        toast('You were kicked from the room');
+      }, 1400);
+    });
+    namedRoom.on('peer_kicked', ({ id }) => { if (id !== myId) _removePeer(id); });
+    namedRoom.onPeerLeft = (peerId) => _removePeer(peerId);
+
+    gamePhase = 'waiting';
+    updatePlayerList([]);
+  } catch (err) {
+    console.error('[enterRoom] error:', err);
+    toast('Failed: ' + (err?.message || 'unknown'));
+    showScreen('mp-menu');
+  }
 }
 
 function updatePlayerList(peers) {
@@ -2740,6 +2785,7 @@ function beginCountdown(n) {
   gamePhase = 'countdown';
   localPlayerDead = false;
   document.body.classList.remove('spectating');
+  document.body.classList.remove('solo-mode');
   document.getElementById('eliminated-banner').style.display = 'none';
   showScreen('game');
   document.getElementById('my-waiting').style.display = 'none';
@@ -2789,6 +2835,7 @@ function startSolo() {
   roomCode = '';
   opponentStates = {}; peerRoster = {};
   localPlayerDead = false;
+  document.body.classList.add('solo-mode');
   document.body.classList.remove('spectating');
   document.getElementById('eliminated-banner').style.display = 'none';
   document.getElementById('opponents').innerHTML = '';
@@ -2865,7 +2912,7 @@ function startGame() {
         if (labels[cleared]) {
           const isTetris = cleared === 4;
           fxFloat(bx, (BUFFER * cell) + (ROWS * cell) / 2,
-            labels[cleared], isTetris ? '#ff2d95' : '#b4ff3a', isTetris ? 48 : 32, -2);
+            labels[cleared], isTetris ? '#ff2d95' : '#b4ff3a', isTetris ? 52 : 34, -2);
         }
         if (cleared === 4) {
           fxBurst(bx, (BUFFER * cell) + (ROWS * cell) / 2, 60,
@@ -2873,7 +2920,7 @@ function startGame() {
             { speed: 7, size: 5, decay: 0.018 });
         }
         fxShake(cleared * 3.5 + (cleared === 4 ? 8 : 0));
-        fxShockwave(bx, (BUFFER * cell) + (ROWS * cell) / 2, 220 + cleared * 30,
+        fxShockwave(bx, (BUFFER * cell) + (ROWS * cell) / 2, 240 + cleared * 30,
           cleared === 4 ? '#ff2d95' : '#00ffd5');
       }
       if (g.lockAnim && g.lockAnim.cells.length) {
@@ -2928,14 +2975,13 @@ function startRenderLoop() {
     const cell = cellSize();
     drawBoard(document.getElementById('my-canvas'), game, cell);
     drawPreviewCanvas(document.getElementById('hold-canvas'), game.hold);
-    drawNextCanvas(document.getElementById('next-canvas'), game.getNext(5));
+    drawNextCanvas(document.getElementById('next-canvas'), game.getNext(8));
     updateStat('score-val', game.score.toLocaleString());
     updateStat('lines-val', game.lines);
     updateStat('level-val', game.level);
     updateStat('atk-val', game.totalAttack);
     updateStat('inc-val', game.pendingGarbage);
-    updateAttackMeter(game.attackMeterLines, game.ATTACK_METER_MAX);
-    updateGarbageBar(game.pendingGarbage);
+    updateAttackBars(game.attackMeterLines, game.pendingGarbage);
     if (game.experimental) {
       const left = game.abilityUses;
       document.getElementById('ability-val').textContent = left > 0 ? '×' + left : '—';
@@ -2952,6 +2998,29 @@ function startRenderLoop() {
     renderLoop = requestAnimationFrame(frame);
   }
   renderLoop = requestAnimationFrame(frame);
+}
+
+// Attack bars update
+function updateAttackBars(outLines, inLines) {
+  const outFill = document.getElementById('attack-out-fill');
+  const inFill = document.getElementById('attack-in-fill');
+  if (outFill) {
+    const pct = Math.min(100, (outLines / 4) * 100);
+    outFill.style.height = pct + '%';
+    outFill.classList.toggle('ready', outLines >= 4);
+  }
+  if (inFill) {
+    const pct = Math.min(100, (inLines / 20) * 100);
+    inFill.style.height = pct + '%';
+  }
+}
+function pulseIncomingBar() {
+  const inFill = document.getElementById('attack-in-fill');
+  if (inFill) {
+    inFill.classList.remove('pulse');
+    void inFill.offsetWidth;
+    inFill.classList.add('pulse');
+  }
 }
 
 let broadcastThrottle = 0;
@@ -2993,6 +3062,7 @@ function fullCleanup() {
   opponentStates = {}; peerRoster = {}; myReady = false;
   localPlayerDead = false;
   document.body.classList.remove('spectating');
+  document.body.classList.remove('solo-mode');
   document.getElementById('eliminated-banner').style.display = 'none';
   document.getElementById('opponents').innerHTML = '';
   updateOpponentsWrapVisibility();
@@ -3000,23 +3070,30 @@ function fullCleanup() {
   document.getElementById('my-countdown').style.display = 'none';
   document.getElementById('my-waiting').style.display = 'flex';
   document.getElementById('ability-box').style.display = 'none';
+
+  // Reset attack bars
+  const outFill = document.getElementById('attack-out-fill');
+  if (outFill) { outFill.style.height = '0%'; outFill.classList.remove('ready'); }
+  const inFill = document.getElementById('attack-in-fill');
+  if (inFill) { inFill.style.height = '0%'; inFill.classList.remove('pulse'); }
+
+  // CLEAR THE GAME BOARD CANVAS so it doesn't show in menu
+  const myCanvas = document.getElementById('my-canvas');
+  if (myCanvas) {
+    myCanvas.style.filter = '';
+    const ctx = myCanvas.getContext('2d');
+    ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
+  }
+  if (fxCtx && fxCanvas) fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+
   const title = document.getElementById('gameover-title');
   title.textContent = 'GAME OVER'; title.style.color = '';
   const reason = document.getElementById('gameover-reason');
   if (reason) reason.textContent = '';
-  const gbar = document.getElementById('garbage-bar');
-  if (gbar) gbar.style.height = '0%';
-  const mf = document.getElementById('attack-meter-fill');
-  if (mf) { mf.style.width = '0%'; mf.classList.remove('ready'); }
-  const ml = document.getElementById('attack-meter-label');
-  if (ml) ml.textContent = '0 / 4';
 
   fxParticles.length = 0; fxFloats.length = 0; fxShocks.length = 0; shakeAmt = 0;
   if (arenaEl) arenaEl.style.transform = '';
   if (boardWrapEl) boardWrapEl.classList.remove('critical');
-  const myCanvas = document.getElementById('my-canvas');
-  if (myCanvas) myCanvas.style.filter = '';
-  if (fxCtx && fxCanvas) fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
 }
 
 function endGame() {
@@ -3076,10 +3153,7 @@ function enterSpectatorMode(reason, stats) {
     `SCORE ${(stats.score || 0).toLocaleString()} · LINES ${stats.lines || 0} · LEVEL ${stats.level || 1}`;
   banner.style.display = 'flex';
   rerenderAliveOpponents();
-  showOverlay('ELIMINATED', reason, 'var(--danger)', stats);
-  setTimeout(() => {
-    document.getElementById('my-gameover').style.display = 'none';
-  }, 100);
+  document.getElementById('my-gameover').style.display = 'none';
 }
 
 function showOverlay(titleText, reasonText, color, statsObj) {
@@ -3180,6 +3254,7 @@ function returnToWaitingRoom() {
   document.getElementById('my-gameover').style.display = 'none';
   document.getElementById('eliminated-banner').style.display = 'none';
   document.body.classList.remove('spectating');
+  document.body.classList.remove('solo-mode');
   localPlayerDead = false;
   const title = document.getElementById('gameover-title');
   title.textContent = 'GAME OVER'; title.style.color = '';
@@ -3296,26 +3371,7 @@ function renderOpponentCard(id, state) {
   }
   updateOpponentsWrapVisibility();
 }
-function updateAttackMeter(current, max) {
-  const fill = document.getElementById('attack-meter-fill');
-  const label = document.getElementById('attack-meter-label');
-  if (!fill || !label) return;
-  const pct = Math.min(100, (current / max) * 100);
-  fill.style.width = pct + '%';
-  fill.classList.toggle('ready', current >= max);
-  label.textContent = current + ' / ' + max;
-}
 let lastGarbage = 0;
-function updateGarbageBar(pending) {
-  const bar = document.getElementById('garbage-bar');
-  if (!bar) return;
-  const pct = Math.min(100, (pending / 20) * 100);
-  bar.style.height = pct + '%';
-  if (pending > lastGarbage) {
-    bar.classList.remove('pulse'); void bar.offsetWidth; bar.classList.add('pulse');
-  }
-  lastGarbage = pending;
-}
 function flashAttack() {
   const el = document.getElementById('my-flash');
   el.classList.remove('fire'); void el.offsetWidth; el.classList.add('fire');
@@ -3435,18 +3491,14 @@ document.getElementById('header-name').addEventListener('click', () => {
 });
 document.getElementById('mp-btn').addEventListener('click', () => showScreen('mp-menu'));
 document.getElementById('sp-btn').addEventListener('click', () => startSolo());
-document.getElementById('create-btn').addEventListener('click', () => {
-  createRoom().catch(e => { console.error(e); toast('Failed to create room'); });
-});
+document.getElementById('create-btn').addEventListener('click', createRoom);
 document.getElementById('join-menu-btn').addEventListener('click', () => {
   document.getElementById('room-input').value = '';
   showScreen('join-screen');
   setTimeout(() => document.getElementById('room-input').focus(), 50);
 });
 document.getElementById('mp-back').addEventListener('click', () => showScreen('main-menu'));
-document.getElementById('join-confirm').addEventListener('click', () => {
-  joinRoom().catch(e => { console.error(e); toast('Failed to join room'); });
-});
+document.getElementById('join-confirm').addEventListener('click', joinRoom);
 document.getElementById('join-back').addEventListener('click', () => showScreen('mp-menu'));
 document.getElementById('room-input').addEventListener('keydown', e => {
   if (e.code === 'Enter') document.getElementById('join-confirm').click();
