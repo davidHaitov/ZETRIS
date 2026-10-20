@@ -1218,7 +1218,7 @@ function drawBoard(canvas, game, cell) {
   ctx.fillRect(0, BUFFER * cell, w, ROWS * cell);
 
   ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 10;
   // левая граница
   ctx.beginPath(); ctx.moveTo(0, BUFFER*cell); ctx.lineTo(0, h); ctx.stroke();
   // правая граница
