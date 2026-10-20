@@ -2662,8 +2662,8 @@ function onKeyDown(e) {
 }
 function onKeyUp(e) {
   held[e.code] = false;
-  if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') stopDAS();
-  if (e.code === 'ArrowDown' && softDropTimer) { clearInterval(softDropTimer); softDropTimer = null; }
+  if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'KeyA' || e.code === 'KeyD') stopDAS();
+  if (e.code === 'ArrowDown' || e.code === 'KeyS' && softDropTimer) { clearInterval(softDropTimer); softDropTimer = null; }
 }
 function startDAS(dir) {
   stopDAS(); dasDir = dir;
@@ -2793,7 +2793,7 @@ document.addEventListener('click', (e) => {
 
 window.addEventListener('keydown', e => {
   if (!gameRunning) return;
-  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) {
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyW','KeyA','KeyD','KeyS'].includes(e.code)) {
     if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
     e.preventDefault();
   }
