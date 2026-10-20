@@ -12,11 +12,11 @@
     --bg: #080808;
     --surface: rgba(255,255,255,0.04);
     --surface2: rgba(255,255,255,0.06);
-    --border: rgba(255,255,255,0.10);
+    --border: rgba(255,255,255);
     --border-strong: rgba(255,255,255,0.18);
     --text: #f0f0f0;
     --text-dim: #888;
-    --text-muted: #444;
+    --text-muted: #ffffff;
     --accent: #ffffff;
     --danger: #ff4444;
     --danger-glow: rgba(255,68,68,0.3);
@@ -295,17 +295,17 @@
   .game-timer.hidden { display: none; }
 
   .arena { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 20px; width: 100%; flex: 1; min-height: 0; }
-  .my-section { display: flex; gap: 10px; align-items: flex-start; flex-shrink: 0; }
-  .side-panel { display: flex; flex-direction: column; gap: 8px; width: 88px; flex-shrink: 0; max-height: 660px; overflow: hidden; }
+  .my-section { display: flex; gap: 0px; align-items: flex-start; flex-shrink: 0; }
+  .side-panel { display: flex; flex-direction: column; gap: 0px; width: 88px; flex-shrink: 0; max-height: 660px; overflow: hidden; }
   .mini-label {
     font-size: 9px; letter-spacing: 0.1em; color: var(--text-muted);
     text-transform: uppercase; margin-bottom: 4px; white-space: nowrap;
   }
   .stat-box {
-    background: rgba(255,255,255,0.04);
+    background: rgba(0,0,0,0.5);
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--border);
-    border-radius: 6px; padding: 8px 10px; overflow: hidden; min-width: 0;
+    border: 3px solid var(--border);
+    border-radius: 0px; padding: 8px 10px; overflow: hidden; min-width: 0;
   }
   .stat-val {
     font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700;
@@ -1218,7 +1218,7 @@ function drawBoard(canvas, game, cell) {
   ctx.fillRect(0, BUFFER * cell, w, ROWS * cell);
 
   ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 3;
   // левая граница
   ctx.beginPath(); ctx.moveTo(0, BUFFER*cell); ctx.lineTo(0, h); ctx.stroke();
   // правая граница
@@ -2610,6 +2610,7 @@ function setupInput() {
   document.removeEventListener('keyup', onKeyUp);
   document.addEventListener('keydown', onKeyDown);
   document.addEventListener('keyup', onKeyUp);
+
 }
 function onKeyDown(e) {
   if (e.code === 'KeyR' && gamePhase === 'gameover' && !namedRoom) {
@@ -2619,7 +2620,7 @@ function onKeyDown(e) {
     return;
   }
   if (!game || !gameRunning || !game.alive) return;
-  if (e.code === 'ArrowDown') {
+  if (e.code === 'ArrowDown' || e.code === 'keyS') {
     e.preventDefault();
     if (!held[e.code]) {
       held[e.code] = true;
@@ -2635,9 +2636,9 @@ function onKeyDown(e) {
   if (held[e.code]) return;
   held[e.code] = true;
   switch (e.code) {
-    case 'ArrowLeft': e.preventDefault(); if (game.move(-1)) Sound.playMove(); startDAS(-1); break;
-    case 'ArrowRight': e.preventDefault(); if (game.move(1)) Sound.playMove(); startDAS(1); break;
-    case 'ArrowUp': case 'KeyX': e.preventDefault(); if (game.rotate(1)) Sound.playMove(); break;
+    case 'ArrowLeft': case 'keyA': e.preventDefault(); if (game.move(-1)) Sound.playMove(); startDAS(-1); break;
+    case 'ArrowRight': case 'keyD': e.preventDefault(); if (game.move(1)) Sound.playMove(); startDAS(1); break;
+    case 'ArrowUp': case 'keyW': case 'KeyX': e.preventDefault(); if (game.rotate(1)) Sound.playMove(); break;
     case 'KeyZ': e.preventDefault(); if (game.rotate(-1)) Sound.playMove(); break;
     case 'Space': e.preventDefault(); game.hardDrop(); break;
     case 'KeyC': case 'ShiftLeft': case 'ShiftRight':
