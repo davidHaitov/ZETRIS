@@ -22,11 +22,10 @@
     --orange: #ff8a3a;
     --danger: #ff3860;
     --warn: #ffcc44;
-    --cell: 33px;
+    --cell: clamp(26px, calc((100vh - 220px) / 20), 36px);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
-
   body {
     background: var(--bg); color: var(--text);
     font-family: 'Space Grotesk', sans-serif;
@@ -76,22 +75,17 @@
     50%     { background: rgba(180,0,50,0.5); }
   }
 
-  /* ═══ HUD (заменяет шапку) ═══ */
+  /* ═══ HUD ═══ */
   .hud {
-    position: fixed;
-    pointer-events: none;
-    z-index: 5;
+    position: fixed; pointer-events: none; z-index: 5;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
     transition: opacity 0.25s;
   }
   .hud.tl { top: 20px; left: 24px; }
   .hud.tr { top: 20px; right: 24px; pointer-events: auto; }
   .hud.bl { bottom: 20px; left: 24px; }
   .hud.br { bottom: 20px; right: 24px; }
-
   .hud-status {
     color: var(--cyan);
     display: inline-flex; align-items: center; gap: 8px;
@@ -101,30 +95,23 @@
     text-shadow: 0 0 10px rgba(0,255,213,0.5);
   }
   .hud-status::before {
-    content: '';
-    width: 6px; height: 6px;
-    background: var(--lime);
+    content: ''; width: 6px; height: 6px; background: var(--lime);
     box-shadow: 0 0 10px var(--lime);
     animation: dotPulse 2s ease-in-out infinite;
   }
   .hud-status.offline { color: var(--text-muted); text-shadow: none; }
   .hud-status.offline::before { background: var(--text-muted); box-shadow: none; }
   @keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
   .hud-user {
     color: var(--magenta);
-    cursor: pointer;
-    padding: 7px 14px;
+    cursor: pointer; padding: 7px 14px;
     background: rgba(0,0,0,0.55);
     border: 1px solid rgba(255,45,149,0.25);
     text-shadow: 0 0 10px rgba(255,45,149,0.5);
     transition: all 0.2s;
     display: inline-block;
   }
-  .hud-user:hover {
-    border-color: var(--magenta);
-    box-shadow: 0 0 18px rgba(255,45,149,0.4);
-  }
+  .hud-user:hover { border-color: var(--magenta); box-shadow: 0 0 18px rgba(255,45,149,0.4); }
   .hud-hint {
     color: var(--text-muted);
     padding: 7px 14px;
@@ -133,27 +120,20 @@
     letter-spacing: 0.1em;
   }
   .hud-hint kbd {
-    font-family: inherit;
-    color: var(--cyan);
-    font-size: 9px;
-    padding: 1px 3px;
+    font-family: inherit; color: var(--cyan);
+    font-size: 9px; padding: 1px 3px;
     border: 1px solid var(--border-mid);
   }
-
   body.in-game .hud { opacity: 0; pointer-events: none; }
 
   /* ═══ SCREENS ═══ */
   .screen { display: none; width: 100%; flex: 1; min-height: 0; position: relative; z-index: 2; }
   .screen.active { display: flex; }
 
-  /* ═══ HERO TITLE ═══ */
+  /* ═══ HERO ═══ */
   .hero-title {
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 900;
-    letter-spacing: 0.06em;
-    line-height: 0.9;
-    color: var(--text);
-    position: relative;
+    font-family: 'Orbitron', sans-serif; font-weight: 900;
+    letter-spacing: 0.06em; line-height: 0.9; color: var(--text);
     text-shadow:
       0 0 40px rgba(0,255,213,0.8),
       0 0 100px rgba(0,255,213,0.3),
@@ -169,85 +149,51 @@
     97% { transform: translate(1px, 1px); }
   }
 
-  /* ═══ NAME SCREEN (терминал) ═══ */
-  #name-screen {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 48px;
-    padding: 40px 20px;
-  }
-  #name-screen .hero-title {
-    font-size: clamp(64px, 11vw, 128px);
-  }
+  /* ═══ NAME ═══ */
+  #name-screen { flex-direction: column; align-items: center; justify-content: center; gap: 48px; padding: 40px 20px; }
+  #name-screen .hero-title { font-size: clamp(64px, 11vw, 128px); }
   .name-terminal {
-    width: 100%;
-    max-width: 620px;
+    width: 100%; max-width: 620px;
     padding: 36px 40px;
     background: rgba(6,8,14,0.82);
     backdrop-filter: blur(20px);
     border: 1px solid var(--border-mid);
     font-family: 'JetBrains Mono', monospace;
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
+    display: flex; flex-direction: column; gap: 22px;
     clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
     position: relative;
     box-shadow: 0 0 60px rgba(0,255,213,0.15);
   }
   .name-terminal::before {
     content: '┌─ SYSTEM INIT ────────────────────────┐';
-    position: absolute;
-    top: -1px; left: 0; right: 0;
-    padding: 0 14px;
-    font-size: 9px;
-    color: var(--cyan);
-    background: var(--bg);
+    position: absolute; top: -1px; left: 0; right: 0;
+    padding: 0 14px; font-size: 9px;
+    color: var(--cyan); background: var(--bg);
     transform: translateY(-50%);
-    letter-spacing: 0.15em;
-    max-width: 320px;
+    letter-spacing: 0.15em; max-width: 320px;
   }
-  .terminal-line {
-    font-size: 12px;
-    color: var(--text-dim);
-    letter-spacing: 0.04em;
-  }
+  .terminal-line { font-size: 12px; color: var(--text-dim); letter-spacing: 0.04em; }
   .terminal-line.ok { color: var(--lime); }
   .terminal-line .prompt { color: var(--cyan); margin-right: 8px; font-weight: 700; }
   .name-input-wrap {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    display: flex; align-items: center; gap: 12px;
     padding: 16px 20px;
     background: rgba(0,255,213,0.04);
     border: 1px solid var(--border-mid);
     position: relative;
   }
   .name-input-wrap::before {
-    content: '>';
-    color: var(--cyan);
-    font-size: 22px;
-    font-weight: 800;
+    content: '>'; color: var(--cyan);
+    font-size: 22px; font-weight: 800;
     text-shadow: 0 0 12px var(--cyan);
   }
   #name-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    padding: 0;
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text); font-family: 'JetBrains Mono', monospace;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase; padding: 0;
   }
-  #name-input::placeholder {
-    color: var(--text-muted);
-    letter-spacing: 0.12em;
-    font-weight: 400;
-  }
+  #name-input::placeholder { color: var(--text-muted); letter-spacing: 0.12em; font-weight: 400; }
   .cursor-blink {
     width: 10px; height: 22px;
     background: var(--cyan);
@@ -255,14 +201,9 @@
     animation: cursorBlink 1.1s step-end infinite;
   }
   @keyframes cursorBlink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
-  .name-actions {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    margin-top: 6px;
-  }
+  .name-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 6px; }
 
-  /* ═══ BUTTONS (глобальные) ═══ */
+  /* ═══ BUTTONS ═══ */
   .btn {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     font-family: 'JetBrains Mono', monospace;
@@ -270,10 +211,8 @@
     letter-spacing: 0.16em; text-transform: uppercase;
     padding: 14px 24px;
     border: 1px solid var(--border-mid);
-    background: transparent;
-    color: var(--text);
-    cursor: pointer;
-    transition: all 0.15s;
+    background: transparent; color: var(--text);
+    cursor: pointer; transition: all 0.15s;
     clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
   }
   .btn:active { transform: scale(0.97); }
@@ -282,12 +221,8 @@
     background: var(--cyan); color: #000; border-color: var(--cyan);
     box-shadow: 0 0 22px rgba(0,255,213,0.45);
   }
-  .btn-primary:hover:not(:disabled) {
-    background: #00ffe2; box-shadow: 0 0 36px rgba(0,255,213,0.75);
-  }
-  .btn-ghost {
-    background: transparent; color: var(--text-dim); border-color: var(--border);
-  }
+  .btn-primary:hover:not(:disabled) { background: #00ffe2; box-shadow: 0 0 36px rgba(0,255,213,0.75); }
+  .btn-ghost { background: transparent; color: var(--text-dim); border-color: var(--border); }
   .btn-ghost:hover:not(:disabled) {
     color: var(--magenta); border-color: var(--magenta);
     box-shadow: 0 0 16px rgba(255,45,149,0.3);
@@ -296,208 +231,122 @@
     background: var(--lime); color: #000; border-color: var(--lime);
     box-shadow: 0 0 22px rgba(180,255,58,0.45);
   }
-  .btn-success:hover:not(:disabled) {
-    background: #c8ff5a; box-shadow: 0 0 36px rgba(180,255,58,0.75);
-  }
+  .btn-success:hover:not(:disabled) { background: #c8ff5a; box-shadow: 0 0 36px rgba(180,255,58,0.75); }
   .btn-sm { padding: 8px 14px; font-size: 10px; }
 
-  /* ═══ MAIN MENU (заставка с карточками) ═══ */
-  #main-menu {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
-    gap: 24px;
-  }
-  #main-menu .hero-title {
-    font-size: clamp(80px, 14vw, 160px);
-    margin-bottom: 0;
-  }
+  /* ═══ MAIN MENU ═══ */
+  #main-menu { flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; gap: 24px; }
+  #main-menu .hero-title { font-size: clamp(80px, 14vw, 160px); margin-bottom: 0; }
   .hero-tagline {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--magenta);
-    letter-spacing: 0.42em;
-    text-transform: uppercase;
+    font-size: 11px; color: var(--magenta);
+    letter-spacing: 0.42em; text-transform: uppercase;
     text-shadow: 0 0 14px rgba(255,45,149,0.6);
     margin-bottom: 48px;
   }
-  .mode-cards {
-    display: flex;
-    gap: 24px;
-    max-width: 800px;
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
+  .mode-cards { display: flex; gap: 24px; max-width: 800px; width: 100%; justify-content: center; flex-wrap: wrap; }
   .mode-card {
-    /* Reset button styles */
-    appearance: none;
-    -webkit-appearance: none;
-    font: inherit;
-    color: inherit;
-
-    flex: 1;
-    min-width: 280px;
-    max-width: 360px;
-    min-height: 300px;
+    appearance: none; -webkit-appearance: none; font: inherit; color: inherit;
+    flex: 1; min-width: 280px; max-width: 360px; min-height: 300px;
     padding: 32px 28px;
     background: rgba(10,12,20,0.78);
     backdrop-filter: blur(20px);
     border: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    text-align: left;
-    cursor: pointer;
-    position: relative;
+    display: flex; flex-direction: column; gap: 14px;
+    text-align: left; cursor: pointer; position: relative;
     transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
     clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
     overflow: hidden;
   }
   .mode-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
     background: linear-gradient(90deg, var(--cyan), var(--magenta));
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.35s;
+    transform: scaleX(0); transform-origin: left; transition: transform 0.35s;
   }
   .mode-card:hover::before { transform: scaleX(1); }
   .mode-card:hover {
     border-color: var(--cyan);
-    box-shadow:
-      0 0 45px rgba(0,255,213,0.28),
-      inset 0 0 60px rgba(0,255,213,0.04);
+    box-shadow: 0 0 45px rgba(0,255,213,0.28), inset 0 0 60px rgba(0,255,213,0.04);
     transform: translateY(-5px);
   }
-  .mode-card.mult::before {
-    background: linear-gradient(90deg, var(--magenta), var(--orange));
-  }
+  .mode-card.mult::before { background: linear-gradient(90deg, var(--magenta), var(--orange)); }
   .mode-card.mult:hover {
     border-color: var(--magenta);
-    box-shadow:
-      0 0 45px rgba(255,45,149,0.28),
-      inset 0 0 60px rgba(255,45,149,0.04);
+    box-shadow: 0 0 45px rgba(255,45,149,0.28), inset 0 0 60px rgba(255,45,149,0.04);
   }
   .mode-icon {
     width: 58px; height: 58px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(0,255,213,0.1);
-    border: 1px solid var(--border-mid);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 26px;
-    color: var(--cyan);
-    text-shadow: 0 0 18px var(--cyan);
+    background: rgba(0,255,213,0.1); border: 1px solid var(--border-mid);
+    font-family: 'Orbitron', sans-serif; font-size: 26px;
+    color: var(--cyan); text-shadow: 0 0 18px var(--cyan);
     margin-bottom: 4px;
   }
   .mode-card.mult .mode-icon {
-    background: rgba(255,45,149,0.1);
-    color: var(--magenta);
+    background: rgba(255,45,149,0.1); color: var(--magenta);
     text-shadow: 0 0 18px var(--magenta);
   }
   .mode-title {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: var(--text);
-    text-shadow: 0 0 12px rgba(0,255,213,0.3);
+    font-family: 'Orbitron', sans-serif; font-size: 22px;
+    font-weight: 700; letter-spacing: 0.12em;
+    color: var(--text); text-shadow: 0 0 12px rgba(0,255,213,0.3);
   }
   .mode-card.mult .mode-title { text-shadow: 0 0 12px rgba(255,45,149,0.3); }
   .mode-desc {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-dim);
-    line-height: 1.65;
-    letter-spacing: 0.03em;
+    font-size: 11px; color: var(--text-dim);
+    line-height: 1.65; letter-spacing: 0.03em;
   }
   .mode-action {
     margin-top: auto;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--cyan);
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
+    font-size: 10px; font-weight: 700;
+    color: var(--cyan); letter-spacing: 0.24em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 10px;
+    padding-top: 12px; border-top: 1px solid var(--border);
   }
   .mode-card.mult .mode-action { color: var(--magenta); }
-  .mode-action::after {
-    content: '→';
-    font-size: 14px;
-    transition: transform 0.2s;
-  }
-  .mode-card:hover .mode-action::after {
-    transform: translateX(8px);
-  }
+  .mode-action::after { content: '→'; font-size: 14px; transition: transform 0.2s; }
+  .mode-card:hover .mode-action::after { transform: translateX(8px); }
 
-  /* ═══ MP MENU / JOIN (терминальные панели) ═══ */
-  #mp-menu, #join-screen {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
-    padding: 40px 20px;
-  }
+  /* ═══ MP / JOIN ═══ */
+  #mp-menu, #join-screen { flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 40px 20px; }
   .mp-panel {
-    width: 100%;
-    max-width: 560px;
+    width: 100%; max-width: 560px;
     padding: 40px 44px;
     background: rgba(8,10,18,0.82);
     backdrop-filter: blur(20px);
     border: 1px solid var(--border-mid);
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+    display: flex; flex-direction: column; gap: 24px;
     clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
-    position: relative;
-    box-shadow: 0 0 60px rgba(0,255,213,0.12);
+    position: relative; box-shadow: 0 0 60px rgba(0,255,213,0.12);
   }
   .mp-panel-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 30px;
-    font-weight: 900;
-    letter-spacing: 0.14em;
-    color: var(--text);
+    font-size: 30px; font-weight: 900;
+    letter-spacing: 0.14em; color: var(--text);
     text-shadow: 0 0 26px rgba(0,255,213,0.5);
-    text-align: center;
-    margin-bottom: 2px;
+    text-align: center; margin-bottom: 2px;
   }
   .mp-panel-sub {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--magenta);
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
-    text-align: center;
-    margin-top: -16px;
-    margin-bottom: 8px;
+    font-size: 10px; color: var(--magenta);
+    letter-spacing: 0.32em; text-transform: uppercase;
+    text-align: center; margin-top: -16px; margin-bottom: 8px;
     text-shadow: 0 0 12px rgba(255,45,149,0.5);
   }
   .mp-actions { display: flex; flex-direction: column; gap: 12px; }
   .mp-action {
     appearance: none; font: inherit; color: inherit;
-    display: flex;
-    align-items: center;
-    gap: 18px;
+    display: flex; align-items: center; gap: 18px;
     padding: 20px 24px;
     background: rgba(0,255,213,0.03);
     border: 1px solid var(--border);
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: left;
-    position: relative;
+    cursor: pointer; transition: all 0.2s;
+    text-align: left; position: relative;
   }
   .mp-action:hover {
-    border-color: var(--cyan);
-    background: rgba(0,255,213,0.08);
+    border-color: var(--cyan); background: rgba(0,255,213,0.08);
     padding-left: 34px;
   }
   .mp-action-icon {
@@ -506,10 +355,8 @@
     display: flex; align-items: center; justify-content: center;
     color: var(--cyan);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 20px;
-    font-weight: 800;
-    flex-shrink: 0;
-    transition: all 0.2s;
+    font-size: 20px; font-weight: 800;
+    flex-shrink: 0; transition: all 0.2s;
   }
   .mp-action:hover .mp-action-icon {
     border-color: var(--cyan);
@@ -519,96 +366,59 @@
   .mp-action-text { display: flex; flex-direction: column; gap: 4px; }
   .mp-action-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: var(--text);
+    font-size: 15px; font-weight: 700;
+    letter-spacing: 0.12em; color: var(--text);
   }
   .mp-action-desc {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.06em;
+    font-size: 10px; color: var(--text-dim); letter-spacing: 0.06em;
   }
-
-  /* Room code input — PIN style */
   #room-input {
     width: 100%;
     background: rgba(0,0,0,0.6);
     border: 2px solid var(--border-mid);
     color: var(--cyan);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 44px;
-    font-weight: 800;
-    letter-spacing: 0.5em;
-    text-align: center;
+    font-size: 44px; font-weight: 800;
+    letter-spacing: 0.5em; text-align: center;
     padding: 22px 24px 22px 40px;
-    text-transform: uppercase;
-    outline: none;
+    text-transform: uppercase; outline: none;
     text-shadow: 0 0 24px rgba(0,255,213,0.7);
     transition: all 0.2s;
     caret-color: var(--magenta);
   }
   #room-input:focus {
     border-color: var(--cyan);
-    box-shadow:
-      0 0 30px rgba(0,255,213,0.4),
-      inset 0 0 30px rgba(0,255,213,0.06);
+    box-shadow: 0 0 30px rgba(0,255,213,0.4), inset 0 0 30px rgba(0,255,213,0.06);
   }
   #room-input::placeholder {
-    color: var(--text-muted);
-    letter-spacing: 0.5em;
-    text-shadow: none;
-    font-weight: 400;
+    color: var(--text-muted); letter-spacing: 0.5em;
+    text-shadow: none; font-weight: 400;
   }
 
-  /* ═══ WAITING ROOM (двухпанельное лобби) ═══ */
-  #waiting-room {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 24px 40px;
-    gap: 20px;
-  }
-  .lobby-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    width: 100%;
-    max-width: 960px;
-  }
+  /* ═══ WAITING ROOM ═══ */
+  #waiting-room { flex-direction: column; align-items: center; justify-content: center; padding: 60px 24px 40px; gap: 20px; }
+  .lobby-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 960px; }
   .lobby-panel {
     background: rgba(8,10,18,0.82);
     backdrop-filter: blur(20px);
     border: 1px solid var(--border-mid);
     padding: 22px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
+    display: flex; flex-direction: column; gap: 14px;
     clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
-    position: relative;
-    min-height: 400px;
+    position: relative; min-height: 400px;
     box-shadow: 0 0 40px rgba(0,255,213,0.08);
   }
   .lobby-panel-header {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--cyan);
-    letter-spacing: 0.26em;
-    text-transform: uppercase;
+    font-size: 10px; color: var(--cyan);
+    letter-spacing: 0.26em; text-transform: uppercase;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    display: flex; align-items: center; gap: 10px;
     font-weight: 700;
   }
-  .lobby-panel-header::before {
-    content: '▸';
-    color: var(--magenta);
-    font-size: 12px;
-  }
-
+  .lobby-panel-header::before { content: '▸'; color: var(--magenta); font-size: 12px; }
   .field-group { display: flex; flex-direction: column; gap: 8px; }
   .field-label {
     font-family: 'JetBrains Mono', monospace;
@@ -621,7 +431,6 @@
     font-size: 10px; color: var(--text-muted);
     letter-spacing: 0.04em;
   }
-
   .room-code-box {
     background: rgba(0,0,0,0.55);
     border: 1px solid var(--border-mid);
@@ -636,7 +445,6 @@
     color: var(--cyan);
     text-shadow: 0 0 20px rgba(0,255,213,0.6);
   }
-
   .players-list { display: flex; flex-direction: column; gap: 6px; flex: 1; }
   .player-row {
     display: flex; align-items: center; gap: 10px;
@@ -666,8 +474,7 @@
     font-size: 9px; padding: 2px 7px;
     letter-spacing: 0.1em; font-weight: 700;
     border: 1px solid var(--border);
-    color: var(--text-muted);
-    background: transparent;
+    color: var(--text-muted); background: transparent;
   }
   .player-row .ready-tag.ready {
     color: var(--lime);
@@ -678,22 +485,17 @@
   .player-row .spacer { margin-left: auto; }
   .player-row .kick-btn {
     width: 22px; height: 22px; padding: 0;
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    cursor: pointer;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer;
     font-size: 13px; line-height: 1;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.15s;
   }
   .player-row .kick-btn:hover {
-    border-color: var(--danger);
-    color: var(--danger);
+    border-color: var(--danger); color: var(--danger);
     background: rgba(255,56,96,0.1);
     box-shadow: 0 0 12px rgba(255,56,96,0.4);
   }
-
-  /* Settings inside lobby panel */
   .speed-tabs {
     display: flex; gap: 3px;
     background: rgba(0,0,0,0.4);
@@ -701,8 +503,7 @@
     padding: 3px;
   }
   .speed-tab {
-    flex: 1;
-    background: transparent; border: none;
+    flex: 1; background: transparent; border: none;
     color: var(--text-dim);
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px; font-weight: 700;
@@ -711,30 +512,21 @@
     transition: all 0.15s;
   }
   .speed-tab:hover { color: var(--text); }
-  .speed-tab.active {
-    background: var(--cyan); color: #000;
-    box-shadow: 0 0 12px rgba(0,255,213,0.5);
-  }
+  .speed-tab.active { background: var(--cyan); color: #000; box-shadow: 0 0 12px rgba(0,255,213,0.5); }
   .checkbox-row {
     display: flex; align-items: flex-start; gap: 12px;
-    cursor: pointer;
-    padding: 12px 14px;
+    cursor: pointer; padding: 12px 14px;
     background: rgba(0,0,0,0.35);
     border: 1px solid var(--border);
     transition: border-color 0.15s;
   }
   .checkbox-row:hover { border-color: var(--border-mid); }
-  .checkbox-row input {
-    margin-top: 3px;
-    accent-color: var(--cyan);
-    width: 16px; height: 16px; cursor: pointer;
-  }
+  .checkbox-row input { margin-top: 3px; accent-color: var(--cyan); width: 16px; height: 16px; cursor: pointer; }
   .checkbox-content { display: flex; flex-direction: column; gap: 4px; flex: 1; }
   .checkbox-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--text);
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--text);
   }
   .checkbox-hint {
     font-family: 'JetBrains Mono', monospace;
@@ -745,8 +537,7 @@
   .settings-locked {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px; color: var(--text-muted);
-    text-align: center;
-    padding: 10px;
+    text-align: center; padding: 10px;
     background: rgba(0,0,0,0.3);
     border: 1px dashed var(--border);
     letter-spacing: 0.1em; text-transform: uppercase;
@@ -754,161 +545,256 @@
   .start-hint {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px; color: var(--text-dim);
-    text-align: center;
-    letter-spacing: 0.12em;
+    text-align: center; letter-spacing: 0.12em;
     text-transform: uppercase;
-    padding: 10px;
-    border: 1px dashed var(--border);
+    padding: 10px; border: 1px dashed var(--border);
     background: rgba(0,0,0,0.25);
   }
-
-  .lobby-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: auto;
-    padding-top: 12px;
-  }
-  .lobby-actions.single { grid-template-columns: 1fr; }
-
-  .lobby-global-actions {
-    display: flex;
-    gap: 12px;
-    width: 100%;
-    max-width: 960px;
-  }
+  .lobby-global-actions { display: flex; gap: 12px; width: 100%; max-width: 960px; }
   .lobby-global-actions .btn { flex: 1; padding: 16px 20px; font-size: 12px; }
-
   kbd {
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px; font-weight: 700;
     background: rgba(0,255,213,0.08);
     border: 1px solid var(--border-mid);
     color: var(--cyan);
-    padding: 2px 6px;
-    letter-spacing: 0.06em;
+    padding: 2px 6px; letter-spacing: 0.06em;
   }
 
-  /* ═══ GAME TOP BAR ═══ */
-  #game-topbar {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 10;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 20px;
-    background: rgba(7,8,15,0.65);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-  }
-  #game-topbar.hidden { display: none !important; }
-  body:not(.in-game) #game-topbar { display: none !important; }
-  .topbar-left { display: flex; align-items: center; gap: 14px; }
-  .topbar-room-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; font-weight: 700;
-    color: var(--cyan); letter-spacing: 0.18em;
-    text-shadow: 0 0 10px rgba(0,255,213,0.5);
-  }
-  .topbar-timer {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px; font-weight: 800;
-    color: var(--text); letter-spacing: 0.1em;
-  }
-  .topbar-online {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: var(--text-dim);
-    display: flex; align-items: center; gap: 6px;
-    letter-spacing: 0.1em;
-  }
-  .topbar-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--lime);
-    box-shadow: 0 0 8px var(--lime);
-    animation: dotPulse 2s ease-in-out infinite;
-  }
-  .topbar-quit {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; font-weight: 700;
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    padding: 6px 14px;
-    cursor: pointer;
-    letter-spacing: 0.16em;
-    transition: all 0.15s;
-  }
-  .topbar-quit:hover {
-    border-color: var(--danger);
-    color: var(--danger);
-    box-shadow: 0 0 12px rgba(255,56,96,0.3);
-  }
-
-  /* ═══ GAME (unchanged structure) ═══ */
+  /* ═══════════════════════════════════════════════════════════════ */
+  /* ═══ GAME SCREEN — RAIL-BASED LAYOUT ═══════════════════════════ */
+  /* ═══════════════════════════════════════════════════════════════ */
   #game {
     flex-direction: column; align-items: center;
-    padding: 60px 16px 20px; gap: 12px;
+    padding: 60px 16px 20px;
     width: 100%;
+    position: relative;
   }
-  .arena {
-    display: flex; flex-direction: row; align-items: center; justify-content: center;
-    gap: 20px; width: 100%; flex: 1; min-height: 0;
+
+  /* In-game HUD corners */
+  .game-hud {
+    position: fixed;
+    z-index: 10;
+    pointer-events: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   }
-  .my-section { display: flex; gap: 0; align-items: flex-start; flex-shrink: 0; }
-  .side-panel { display: flex; flex-direction: column; width: 88px; flex-shrink: 0; max-height: 660px; overflow: hidden; }
-  .stat-box {
-    background: rgba(0,0,0,0.55);
-    backdrop-filter: blur(8px);
+  .game-hud.tl { top: 18px; left: 22px; display: flex; gap: 10px; align-items: center; }
+  .game-hud.tr { top: 18px; right: 22px; pointer-events: auto; }
+
+  .game-tag {
+    padding: 6px 12px;
+    background: rgba(0,0,0,0.6);
     border: 1px solid var(--border);
-    padding: 8px 10px;
-    overflow: hidden; min-width: 0;
+    color: var(--cyan);
+    text-shadow: 0 0 8px rgba(0,255,213,0.4);
+    font-weight: 700;
+  }
+  .game-timer-hud {
+    padding: 6px 12px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    font-size: 12px;
+  }
+  .game-quit-hud {
+    padding: 7px 16px;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .game-quit-hud:hover {
+    border-color: var(--danger); color: var(--danger);
+    box-shadow: 0 0 12px rgba(255,56,96,0.4);
+  }
+
+  /* Arena */
+  .arena {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    max-width: 1400px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Rails */
+  .left-rail, .right-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 108px;
+    flex-shrink: 0;
+    align-self: flex-start;
+  }
+
+  /* Panels */
+  .panel {
+    background: rgba(0,0,0,0.58);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
     position: relative;
     transition: border-color 0.2s;
   }
-  .stat-box::before, .stat-box::after {
+  .panel::before, .panel::after {
     content: ''; position: absolute;
     width: 8px; height: 8px;
-    border-color: var(--cyan);
-    opacity: 0.6;
+    border-color: var(--cyan); opacity: 0.7;
   }
-  .stat-box::before { top: 0; left: 0; border-top: 1px solid; border-left: 1px solid; }
-  .stat-box::after { bottom: 0; right: 0; border-bottom: 1px solid; border-right: 1px solid; }
-  .mini-label {
+  .panel::before { top: -1px; left: -1px; border-top: 1px solid; border-left: 1px solid; }
+  .panel::after { bottom: -1px; right: -1px; border-bottom: 1px solid; border-right: 1px solid; }
+
+  .panel-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    align-self: flex-start;
+    width: 100%;
+  }
+
+  .panel-hold { padding: 12px; }
+  .panel-hold .panel-label { margin-bottom: 4px; }
+  .panel-hold canvas {
+    display: block;
+    width: 78px;
+    height: 78px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(0,255,213,0.12);
+  }
+
+  .panel-next { padding: 12px; }
+  .panel-next .panel-label { margin-bottom: 4px; }
+  .panel-next canvas {
+    display: block;
+    width: 78px;
+    height: 240px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(0,255,213,0.12);
+  }
+
+  .panel-stat {
+    padding: 10px 12px;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .panel-stat .panel-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 100%;
+    display: block;
+  }
+  .panel-stat .panel-value.danger {
+    color: var(--danger);
+    text-shadow: 0 0 12px rgba(255,56,96,0.6);
+  }
+  .panel-stat .panel-value.lime {
+    color: var(--lime);
+    text-shadow: 0 0 12px rgba(180,255,58,0.5);
+  }
+  .panel-stat .panel-value.magenta {
+    color: var(--magenta);
+    text-shadow: 0 0 12px rgba(255,45,149,0.5);
+  }
+
+  /* Ability */
+  .panel-ability {
+    background: rgba(180,255,58,0.05);
+    border-color: rgba(180,255,58,0.32);
+  }
+  .panel-ability::before, .panel-ability::after { border-color: var(--lime); }
+  .panel-ability .panel-label { color: var(--lime); }
+  .panel-ability .panel-value {
+    color: var(--lime);
+    text-shadow: 0 0 12px rgba(180,255,58,0.6);
+    font-size: 22px;
+  }
+  .panel-ability.depleted {
+    opacity: 0.35;
+  }
+  .panel-ability.depleted .panel-label,
+  .panel-ability.depleted .panel-value {
+    color: var(--text-muted); text-shadow: none;
+  }
+  .panel-ability kbd {
+    font-size: 8px; padding: 1px 4px;
+    color: var(--lime); border-color: rgba(180,255,58,0.5);
+    background: rgba(180,255,58,0.1);
+    margin-left: 4px;
+  }
+
+  /* Attack meter panel */
+  .panel-attack { padding: 10px 12px; align-items: stretch; }
+  .attack-meter-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    position: relative;
+    margin-top: 2px;
+  }
+  .attack-meter-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--cyan), var(--lime));
+    transition: width 0.12s ease-out;
+    box-shadow: 0 0 8px rgba(0,255,213,0.6);
+  }
+  .attack-meter-fill.ready {
+    background: linear-gradient(90deg, var(--magenta), var(--orange));
+    box-shadow: 0 0 12px rgba(255,45,149,0.8);
+    animation: meterPulse 0.5s ease-in-out infinite;
+  }
+  @keyframes meterPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+  .attack-meter-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px; font-weight: 700;
-    letter-spacing: 0.16em;
     color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 4px; white-space: nowrap;
+    letter-spacing: 0.1em;
+    text-align: center;
+    margin-top: 4px;
   }
-  .stat-val {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 18px; font-weight: 800;
-    color: var(--text); line-height: 1.05;
-    white-space: nowrap; overflow: hidden;
-    letter-spacing: -0.02em; display: block;
-  }
-  .stat-val.big {
-    font-size: 22px; color: var(--cyan);
-    text-shadow: 0 0 12px rgba(0,255,213,0.4);
-  }
-  .preview-canvas { display: block; }
-  .ability-box {
-    background: rgba(180,255,58,0.06);
-    border-color: rgba(180,255,58,0.35);
-  }
-  .ability-box::before, .ability-box::after { border-color: var(--lime); }
-  .ability-box .mini-label { color: var(--lime); }
-  .ability-box .stat-val { color: var(--lime); text-shadow: 0 0 10px rgba(180,255,58,0.5); }
-  .ability-box.depleted { opacity: 0.35; }
-  .ability-box.depleted .mini-label,
-  .ability-box.depleted .stat-val { color: var(--text-muted); text-shadow: none; }
 
+  /* Center column */
+  .center-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  /* Board */
   .board-wrap {
     position: relative;
-    background: transparent;
     width: calc(var(--cell) * 10);
     height: calc(var(--cell) * 20);
     transition: box-shadow 0.3s;
   }
-  .board-wrap:not(.critical) { box-shadow: 0 0 20px rgba(0,255,213,0.15); }
+  .board-wrap:not(.critical) { box-shadow: 0 0 25px rgba(0,255,213,0.15); }
   .board-wrap.critical { animation: boardCritical 0.7s ease-in-out infinite; }
   @keyframes boardCritical {
     0%,100% { box-shadow: 0 0 15px rgba(255,45,149,0.5), 0 0 30px rgba(255,45,149,0.3); }
@@ -929,70 +815,164 @@
     z-index: 8;
   }
 
+  /* Score strip below board */
+  .score-strip {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 14px;
+    padding: 8px 24px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid var(--border-mid);
+    min-width: calc(var(--cell) * 10);
+    box-shadow: 0 0 20px rgba(0,255,213,0.1);
+  }
+  .score-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+  .score-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 30px;
+    font-weight: 900;
+    color: var(--cyan);
+    text-shadow:
+      0 0 20px rgba(0,255,213,0.6),
+      0 0 40px rgba(0,255,213,0.3);
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+
+  /* ═══ GAME OVERLAYS ═══ */
   .countdown-overlay {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(6px);
+    background: rgba(0,0,0,0.88);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
     z-index: 10;
-    flex-direction: column; gap: 8px;
+    flex-direction: column;
+    overflow: hidden;
   }
   .countdown-num {
     font-family: 'Orbitron', sans-serif;
-    font-size: 96px; font-weight: 900;
+    font-size: clamp(120px, 22vh, 200px);
+    font-weight: 900;
     color: var(--cyan);
-    text-shadow: 0 0 30px rgba(0,255,213,0.8), 0 0 60px rgba(0,255,213,0.5);
-    animation: countPulse 0.85s ease-in-out infinite;
+    text-shadow:
+      0 0 40px currentColor,
+      0 0 80px currentColor,
+      0 0 140px currentColor;
+    animation: countdownZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    line-height: 1;
+    z-index: 2;
   }
-  @keyframes countPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+  .countdown-num[data-v="3"] { color: var(--cyan); }
+  .countdown-num[data-v="2"] { color: var(--magenta); }
+  .countdown-num[data-v="1"] { color: var(--orange); }
+  .countdown-num[data-v="GO"] {
+    color: var(--lime);
+    font-size: clamp(100px, 18vh, 160px);
+    letter-spacing: 0.1em;
+  }
+  @keyframes countdownZoom {
+    0%   { transform: scale(2.8); opacity: 0; }
+    40%  { transform: scale(1);   opacity: 1; }
+    100% { transform: scale(0.9); opacity: 1; }
+  }
+  .countdown-ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 120px; height: 120px;
+    margin: -60px 0 0 -60px;
+    border: 2px solid var(--cyan);
+    border-radius: 50%;
+    opacity: 0;
+    animation: countdownRing 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  @keyframes countdownRing {
+    0%   { transform: scale(0.3); opacity: 0.9; }
+    100% { transform: scale(3.5); opacity: 0; }
+  }
   .countdown-label {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; font-weight: 700;
-    color: var(--magenta);
-    letter-spacing: 0.3em; text-transform: uppercase;
-    text-shadow: 0 0 12px rgba(255,45,149,0.6);
+    font-size: 12px; font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 0.4em; text-transform: uppercase;
+    margin-top: 16px;
+    z-index: 2;
+    animation: labelFade 0.4s ease-out;
   }
+  @keyframes labelFade {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
   .gameover-overlay {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(0,0,0,0.92);
-    backdrop-filter: blur(10px);
+    background: rgba(0,0,0,0.94);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     z-index: 12;
     flex-direction: column; gap: 12px;
     text-align: center; padding: 20px;
+    animation: goFadeIn 0.4s ease-out;
+  }
+  @keyframes goFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
   .gameover-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 24px; font-weight: 900;
+    font-size: 26px; font-weight: 900;
     color: var(--danger);
     letter-spacing: 0.16em;
-    text-shadow: 0 0 24px rgba(255,56,96,0.7);
+    text-shadow:
+      0 0 24px rgba(255,56,96,0.8),
+      0 0 60px rgba(255,56,96,0.4);
+    animation: goTitlePop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes goTitlePop {
+    0%   { transform: scale(0.5); opacity: 0; }
+    60%  { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
   }
   .gameover-reason {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: var(--text-dim);
-    letter-spacing: 0.1em; text-transform: uppercase;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
   }
   .gameover-stats {
     display: flex; flex-direction: column; gap: 5px;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.55);
     border: 1px solid var(--border);
-    padding: 12px 20px; margin-top: 6px;
+    padding: 12px 22px;
+    margin-top: 8px;
     font-family: 'JetBrains Mono', monospace;
+    min-width: 220px;
   }
   .gameover-stat-row {
     display: flex; justify-content: space-between; gap: 24px;
     font-size: 11px; color: var(--text-dim);
     letter-spacing: 0.08em; text-transform: uppercase;
   }
-  .gameover-stat-row span:last-child { color: var(--cyan); font-weight: 800; }
+  .gameover-stat-row span:last-child {
+    color: var(--cyan); font-weight: 800;
+  }
 
   .waiting-overlay {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
     background: rgba(0,0,0,0.75);
     backdrop-filter: blur(6px);
-    z-index: 10;
+    z-index: 9;
     flex-direction: column; gap: 8px;
   }
   .waiting-text {
@@ -1005,7 +985,12 @@
   }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  .opponents-wrap { display: none; flex-direction: column; gap: 10px; align-items: center; flex-shrink: 0; }
+  /* Opponents */
+  .opponents-wrap {
+    display: none; flex-direction: column; gap: 10px;
+    align-items: center; flex-shrink: 0;
+    align-self: flex-start;
+  }
   .opponents-wrap.visible { display: flex; }
   .opponents-title {
     font-family: 'JetBrains Mono', monospace;
@@ -1014,9 +999,13 @@
     text-transform: uppercase;
     text-shadow: 0 0 12px rgba(255,45,149,0.4);
   }
-  .opponents { display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; padding: 2px; }
+  .opponents {
+    display: flex; flex-direction: column; gap: 12px;
+    align-items: center; justify-content: center;
+    padding: 2px;
+  }
   .opponent-card {
-    background: rgba(0,0,0,0.55);
+    background: rgba(0,0,0,0.58);
     backdrop-filter: blur(8px);
     border: 1px solid var(--border);
     padding: 8px 10px 10px;
@@ -1027,11 +1016,10 @@
   .opponent-card::before, .opponent-card::after {
     content: ''; position: absolute;
     width: 10px; height: 10px;
-    border-color: var(--magenta);
-    opacity: 0.7;
+    border-color: var(--magenta); opacity: 0.7;
   }
-  .opponent-card::before { top: 0; left: 0; border-top: 1px solid; border-left: 1px solid; }
-  .opponent-card::after { bottom: 0; right: 0; border-bottom: 1px solid; border-right: 1px solid; }
+  .opponent-card::before { top: -1px; left: -1px; border-top: 1px solid; border-left: 1px solid; }
+  .opponent-card::after { bottom: -1px; right: -1px; border-bottom: 1px solid; border-right: 1px solid; }
   .opp-name {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px; font-weight: 700;
@@ -1049,7 +1037,7 @@
 
   .attack-flash {
     position: absolute; inset: 0;
-    background: radial-gradient(circle at center, rgba(255,56,96,0.4), transparent 70%);
+    background: radial-gradient(circle at center, rgba(255,56,96,0.5), transparent 70%);
     pointer-events: none; opacity: 0; z-index: 5;
   }
   @keyframes flashIn { 0%{opacity:1} 100%{opacity:0} }
@@ -1057,11 +1045,26 @@
   .speed-flash {
     position: absolute; inset: 0;
     pointer-events: none; opacity: 0; z-index: 6;
-    background: radial-gradient(circle at center, rgba(180,255,58,0.4) 0%, transparent 70%);
+    background: radial-gradient(circle at center, rgba(180,255,58,0.5) 0%, transparent 70%);
   }
   @keyframes speedPulse { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
   .speed-flash.fire { animation: speedPulse 0.9s ease-out forwards; }
 
+  .garbage-bar-wrap {
+    position: absolute; left: -12px; bottom: 0; top: 0;
+    width: 6px; pointer-events: none; z-index: 4;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .garbage-bar {
+    width: 100%; min-height: 0; height: 0%;
+    background: linear-gradient(180deg, var(--danger), var(--magenta));
+    transition: height 0.15s ease-out;
+    box-shadow: 0 0 12px rgba(255,56,96,0.6);
+  }
+  @keyframes gbPulse { 0%,100%{box-shadow:0 0 10px rgba(255,56,96,0.5)} 50%{box-shadow:0 0 24px rgba(255,56,96,0.9)} }
+  .garbage-bar.pulse { animation: gbPulse 0.35s ease-out; }
+
+  /* ═══ TOAST ═══ */
   #toast {
     position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
     background: rgba(13,15,26,0.95);
@@ -1082,10 +1085,8 @@
   #toast.show { opacity: 1; }
   #toast.boost { border-color: var(--lime); color: var(--lime); box-shadow: 0 0 30px rgba(180,255,58,0.5); }
 
-  #leaderboard-screen {
-    flex-direction: column; align-items: center; justify-content: center;
-    padding: 40px 20px;
-  }
+  /* ═══ LEADERBOARD ═══ */
+  #leaderboard-screen { flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; }
   .lb-panel {
     background: rgba(8,10,18,0.85);
     backdrop-filter: blur(20px);
@@ -1136,48 +1137,8 @@
   .lb-table tr { transition: background 0.15s; }
   .lb-table tr:hover td { background: rgba(0,255,213,0.03); }
 
-  .attack-meter-wrap { display: flex; flex-direction: column; gap: 4px; }
-  .attack-meter-track {
-    width: 100%; height: 6px;
-    background: rgba(0,0,0,0.6);
-    border: 1px solid var(--border);
-    overflow: hidden; position: relative;
-  }
-  .attack-meter-fill {
-    height: 100%; width: 0%;
-    background: linear-gradient(90deg, var(--cyan), var(--lime));
-    transition: width 0.12s ease-out;
-    box-shadow: 0 0 8px rgba(0,255,213,0.6);
-  }
-  .attack-meter-fill.ready {
-    background: linear-gradient(90deg, var(--magenta), var(--orange));
-    box-shadow: 0 0 12px rgba(255,45,149,0.8);
-    animation: meterPulse 0.5s ease-in-out infinite;
-  }
-  @keyframes meterPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
-  .attack-meter-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px; font-weight: 700;
-    color: var(--text-dim);
-    letter-spacing: 0.1em; text-align: center;
-  }
-
-  .garbage-bar-wrap {
-    position: absolute; left: -10px; bottom: 0; top: 0;
-    width: 6px; pointer-events: none; z-index: 4;
-    display: flex; flex-direction: column; justify-content: flex-end;
-  }
-  .garbage-bar {
-    width: 100%; min-height: 0; height: 0%;
-    background: linear-gradient(180deg, var(--danger), var(--magenta));
-    transition: height 0.15s ease-out;
-    box-shadow: 0 0 12px rgba(255,56,96,0.6);
-  }
-  @keyframes gbPulse { 0%,100%{box-shadow:0 0 10px rgba(255,56,96,0.5)} 50%{box-shadow:0 0 24px rgba(255,56,96,0.9)} }
-  .garbage-bar.pulse { animation: gbPulse 0.35s ease-out; }
-
-  /* Mobile */
-  @media (max-width: 860px) {
+  /* ═══ RESPONSIVE ═══ */
+  @media (max-width: 900px) {
     .mode-cards { flex-direction: column; gap: 16px; }
     .mode-card { min-width: unset; max-width: 100%; min-height: unset; padding: 24px; }
     .mode-icon { width: 48px; height: 48px; font-size: 22px; }
@@ -1192,6 +1153,19 @@
     #main-menu .hero-title { font-size: clamp(60px, 14vw, 100px); }
     .hero-tagline { margin-bottom: 32px; }
   }
+  @media (max-width: 720px) {
+    :root { --cell: clamp(20px, calc((100vh - 200px) / 20), 26px); }
+    .arena { gap: 8px; }
+    .left-rail, .right-rail { width: 68px; }
+    .panel-hold canvas, .panel-next canvas { width: 48px; }
+    .panel-hold canvas { height: 48px; }
+    .panel-next canvas { height: 150px; }
+    .panel-stat .panel-value { font-size: 15px; }
+    .score-value { font-size: 22px; }
+    .game-hud.tl { top: 14px; left: 14px; }
+    .game-hud.tr { top: 14px; right: 14px; }
+    #game { padding-top: 50px; }
+  }
 </style>
 </head>
 <body>
@@ -1200,20 +1174,16 @@
 <div id="bg-vignette"></div>
 <div id="bg-overlay"></div>
 
-<!-- In-game top bar -->
-<div id="game-topbar" class="hidden">
-  <div class="topbar-left">
-    <span class="topbar-room-label" id="topbar-room">SOLO</span>
-    <span class="topbar-online" id="topbar-online" style="display:none">
-      <span class="topbar-dot"></span>
-      <span id="topbar-count">1 player</span>
-    </span>
-    <span class="topbar-timer hidden" id="topbar-timer">0:00</span>
-  </div>
-  <div class="topbar-quit" id="topbar-quit-btn">QUIT</div>
+<!-- In-game HUD corners -->
+<div class="game-hud tl" id="game-hud-tl" style="display:none;">
+  <span class="game-tag" id="hud-room-tag">SOLO</span>
+  <span class="game-timer-hud" id="hud-timer">0:00</span>
+</div>
+<div class="game-hud tr" id="game-hud-tr" style="display:none;">
+  <div class="game-quit-hud" id="topbar-quit-btn">QUIT</div>
 </div>
 
-<!-- HUD (replaces site header) -->
+<!-- Out-of-game HUD -->
 <div class="hud tl">
   <div class="hud-status" id="hud-status">SYSTEM READY</div>
 </div>
@@ -1227,16 +1197,15 @@
   <div class="hud-hint">v2.0 · zetris</div>
 </div>
 
-<!-- Hidden helpers so old JS doesn't break -->
-<div id="app-header" style="display:none;">
-  <span id="header-mode" style="display:none;">MENU</span>
-</div>
+<!-- Hidden helpers -->
+<div id="app-header" style="display:none;"><span id="header-mode" style="display:none;">MENU</span></div>
 <span id="game-room-label" style="display:none"></span>
 <span id="online-count" style="display:none"></span>
 <span id="game-timer" class="hidden" style="display:none"></span>
 <button id="quit-btn" style="display:none"></button>
+<div id="game-topbar" class="hidden" style="display:none;"></div>
 
-<!-- ═══ NAME SCREEN (terminal) ═══ -->
+<!-- ═══ NAME SCREEN ═══ -->
 <div class="screen" id="name-screen">
   <div class="hero-title">ZETRIS</div>
   <div class="name-terminal">
@@ -1255,7 +1224,7 @@
   </div>
 </div>
 
-<!-- ═══ MAIN MENU (mode cards) ═══ -->
+<!-- ═══ MAIN MENU ═══ -->
 <div class="screen" id="main-menu">
   <div class="hero-title">ZETRIS</div>
   <div class="hero-tagline">// cyber · blocks · protocol</div>
@@ -1311,7 +1280,7 @@
   </div>
 </div>
 
-<!-- ═══ WAITING ROOM (2-panel lobby) ═══ -->
+<!-- ═══ WAITING ROOM ═══ -->
 <div class="screen" id="waiting-room">
   <div class="lobby-container">
     <div class="lobby-panel">
@@ -1355,15 +1324,11 @@
           <input type="checkbox" id="experimental-cb">
           <div class="checkbox-content">
             <div class="checkbox-label">Experimental mode</div>
-            <div class="checkbox-hint">
-              <kbd>F</kbd> clears top 4 rows · 2 uses per match
-            </div>
+            <div class="checkbox-hint"><kbd>F</kbd> clears top 4 rows · 2 uses per match</div>
           </div>
         </label>
       </div>
-      <div class="settings-locked" id="settings-locked" style="display:none;">
-        ⚠ HOST ONLY
-      </div>
+      <div class="settings-locked" id="settings-locked" style="display:none;">⚠ HOST ONLY</div>
     </div>
   </div>
   <div class="lobby-global-actions">
@@ -1376,41 +1341,28 @@
 <!-- ═══ GAME ═══ -->
 <div class="screen" id="game">
   <div class="arena">
-    <div class="my-section" id="my-section">
-      <div class="side-panel">
-        <div class="stat-box">
-          <div class="mini-label">Hold</div>
-          <canvas class="preview-canvas" id="hold-canvas" width="60" height="60"></canvas>
-        </div>
-        <div class="stat-box">
-          <div class="mini-label">Score</div>
-          <div class="stat-val big" id="score-val">0</div>
-        </div>
-        <div class="stat-box ability-box" id="ability-box" style="display:none">
-          <div class="mini-label">Ability <kbd>F</kbd></div>
-          <div class="stat-val" id="ability-val">×2</div>
-        </div>
-        <div class="stat-box">
-          <div class="mini-label">Lines</div>
-          <div class="stat-val" id="lines-val">0</div>
-        </div>
-        <div class="stat-box">
-          <div class="mini-label">Level</div>
-          <div class="stat-val" id="level-val">1</div>
-        </div>
-        <div class="stat-box attack-meter-wrap" id="attack-meter-box">
-          <div class="mini-label">Attack</div>
-          <div class="attack-meter-track">
-            <div class="attack-meter-fill" id="attack-meter-fill"></div>
-          </div>
-          <div class="attack-meter-label" id="attack-meter-label">0 / 4</div>
-        </div>
-        <div class="stat-box">
-          <div class="mini-label">Incoming</div>
-          <div class="stat-val" id="inc-val" style="color:var(--danger)">0</div>
-        </div>
+    <!-- Left rail -->
+    <div class="left-rail">
+      <div class="panel panel-hold">
+        <div class="panel-label">HOLD</div>
+        <canvas id="hold-canvas" width="78" height="78"></canvas>
       </div>
+      <div class="panel panel-ability" id="ability-box" style="display:none;">
+        <div class="panel-label">ABILITY <kbd>F</kbd></div>
+        <div class="panel-value" id="ability-val">×2</div>
+      </div>
+      <div class="panel panel-stat">
+        <div class="panel-label">LEVEL</div>
+        <div class="panel-value" id="level-val">1</div>
+      </div>
+      <div class="panel panel-stat">
+        <div class="panel-label">LINES</div>
+        <div class="panel-value" id="lines-val">0</div>
+      </div>
+    </div>
 
+    <!-- Center column -->
+    <div class="center-column">
       <div class="board-wrap" id="my-board-wrap">
         <canvas class="board-canvas" id="my-canvas" width="200" height="400"></canvas>
         <canvas id="fx-canvas"></canvas>
@@ -1423,8 +1375,9 @@
           <div class="waiting-text">awaiting signal…</div>
         </div>
         <div class="countdown-overlay" id="my-countdown" style="display:none">
-          <div class="countdown-num" id="countdown-num">3</div>
-          <div class="countdown-label">Deploying</div>
+          <div class="countdown-ring" id="countdown-ring"></div>
+          <div class="countdown-num" id="countdown-num" data-v="3">3</div>
+          <div class="countdown-label" id="countdown-label">Deploying</div>
         </div>
         <div class="gameover-overlay" id="my-gameover" style="display:none">
           <div class="gameover-title" id="gameover-title">GAME OVER</div>
@@ -1437,19 +1390,36 @@
           </div>
         </div>
       </div>
-
-      <div class="side-panel">
-        <div class="stat-box">
-          <div class="mini-label">Next</div>
-          <canvas class="preview-canvas" id="next-canvas" width="60" height="120"></canvas>
-        </div>
-        <div class="stat-box">
-          <div class="mini-label">Sent</div>
-          <div class="stat-val" id="atk-val">0</div>
-        </div>
+      <div class="score-strip">
+        <span class="score-label">SCORE</span>
+        <span class="score-value" id="score-val">0</span>
       </div>
     </div>
 
+    <!-- Right rail -->
+    <div class="right-rail">
+      <div class="panel panel-next">
+        <div class="panel-label">NEXT</div>
+        <canvas id="next-canvas" width="78" height="240"></canvas>
+      </div>
+      <div class="panel panel-attack">
+        <div class="panel-label">ATTACK</div>
+        <div class="attack-meter-track">
+          <div class="attack-meter-fill" id="attack-meter-fill"></div>
+        </div>
+        <div class="attack-meter-label" id="attack-meter-label">0 / 4</div>
+      </div>
+      <div class="panel panel-stat">
+        <div class="panel-label">INCOMING</div>
+        <div class="panel-value danger" id="inc-val">0</div>
+      </div>
+      <div class="panel panel-stat">
+        <div class="panel-label">SENT</div>
+        <div class="panel-value" id="atk-val">0</div>
+      </div>
+    </div>
+
+    <!-- Opponents (right of right rail on desktop) -->
     <div class="opponents-wrap" id="opponents-wrap">
       <div class="opponents-title">// RIVALS</div>
       <div class="opponents" id="opponents"></div>
@@ -1500,81 +1470,50 @@ const PEER_CONFIG = {
 // ══════════════════════════════════════════════════════════════════
 // SOUND
 // ══════════════════════════════════════════════════════════════════
-const SOUND_FILES = {
-  move:  'sound/move.mp3',
-  lock:  'sound/lock.mp3',
-  click: 'sound/click.mp3',
-  music: 'sound/music.mp3',
-};
-
+const SOUND_FILES = { move:'sound/move.mp3', lock:'sound/lock.mp3', click:'sound/click.mp3', music:'sound/music.mp3' };
 class SoundPool {
   constructor(src, volume, size = 4) {
     this.volume = volume; this.pool = []; this.index = 0;
     if (!src) return;
     for (let i = 0; i < size; i++) {
       const a = new Audio();
-      a.preload = 'auto';
-      a.volume = volume;
-      a.addEventListener('error', () => {
-        if (!a._warned) { a._warned = true; console.warn('[zetris sound] failed to load:', src); }
-      });
-      a.src = src;
-      this.pool.push(a);
+      a.preload = 'auto'; a.volume = volume;
+      a.addEventListener('error', () => { if (!a._warned) { a._warned = true; console.warn('[zetris sound] failed:', src); } });
+      a.src = src; this.pool.push(a);
     }
   }
   play() {
     if (!this.pool.length) return;
     const a = this.pool[this.index];
     this.index = (this.index + 1) % this.pool.length;
-    try {
-      a.currentTime = 0;
-      const p = a.play();
-      if (p && p.catch) p.catch(() => {});
-    } catch (e) {}
+    try { a.currentTime = 0; const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
   }
 }
-
 const Sound = {
-  move: null, lock: null, click: null, musicEl: null,
-  moveLast: 0, MOVE_THROTTLE: 55,
+  move: null, lock: null, click: null, musicEl: null, moveLast: 0, MOVE_THROTTLE: 55,
   init() {
-    this.move  = new SoundPool(SOUND_FILES.move,  0.45, 5);
-    this.lock  = new SoundPool(SOUND_FILES.lock,  0.65, 3);
+    this.move = new SoundPool(SOUND_FILES.move, 0.45, 5);
+    this.lock = new SoundPool(SOUND_FILES.lock, 0.65, 3);
     this.click = new SoundPool(SOUND_FILES.click, 0.55, 3);
     if (SOUND_FILES.music) {
       this.musicEl = new Audio();
-      this.musicEl.addEventListener('error', () => {
-        console.warn('[zetris sound] failed to load music:', SOUND_FILES.music);
-      });
-      this.musicEl.src = SOUND_FILES.music;
-      this.musicEl.loop = true;
-      this.musicEl.volume = 0.22;
-      this.musicEl.preload = 'auto';
+      this.musicEl.addEventListener('error', () => console.warn('[zetris sound] failed music:', SOUND_FILES.music));
+      this.musicEl.src = SOUND_FILES.music; this.musicEl.loop = true;
+      this.musicEl.volume = 0.22; this.musicEl.preload = 'auto';
     }
   },
-  playMove() {
-    const now = performance.now();
-    if (now - this.moveLast < this.MOVE_THROTTLE) return;
-    this.moveLast = now;
-    if (this.move) this.move.play();
-  },
-  playLock()  { if (this.lock)  this.lock.play();  },
+  playMove() { const n = performance.now(); if (n - this.moveLast < this.MOVE_THROTTLE) return; this.moveLast = n; if (this.move) this.move.play(); },
+  playLock() { if (this.lock) this.lock.play(); },
   playClick() { if (this.click) this.click.play(); },
   startMusic() {
     if (!this.musicEl) return;
     this.musicEl.play().catch(() => {
-      const retry = () => {
-        this.musicEl.play().catch(() => {});
-        document.removeEventListener('pointerdown', retry);
-        document.removeEventListener('keydown', retry);
-      };
+      const retry = () => { this.musicEl.play().catch(() => {}); document.removeEventListener('pointerdown', retry); document.removeEventListener('keydown', retry); };
       document.addEventListener('pointerdown', retry, { once: true });
       document.addEventListener('keydown', retry, { once: true });
     });
   },
-  stopMusic() {
-    if (this.musicEl) { this.musicEl.pause(); this.musicEl.currentTime = 0; }
-  },
+  stopMusic() { if (this.musicEl) { this.musicEl.pause(); this.musicEl.currentTime = 0; } },
 };
 
 // ══════════════════════════════════════════════════════════════════
@@ -1585,10 +1524,7 @@ const fxCtx = fxCanvas ? fxCanvas.getContext('2d') : null;
 const arenaEl = document.querySelector('.arena');
 const boardWrapEl = document.getElementById('my-board-wrap');
 
-let fxParticles = [];
-let fxFloats = [];
-let fxShocks = [];
-let shakeAmt = 0;
+let fxParticles = [], fxFloats = [], fxShocks = [], shakeAmt = 0;
 
 function resizeFx() {
   if (!fxCanvas) return;
@@ -1598,7 +1534,6 @@ function resizeFx() {
   fxCanvas.style.width = (COLS * cell) + 'px';
   fxCanvas.style.height = (TOTAL_ROWS * cell) + 'px';
 }
-
 function fxBurst(x, y, count, palette, opts = {}) {
   const speed = opts.speed || 3;
   const baseSize = opts.size || 3;
@@ -1607,11 +1542,8 @@ function fxBurst(x, y, count, palette, opts = {}) {
     const a = Math.random() * Math.PI * 2;
     const sp = speed * (0.4 + Math.random() * 1.2);
     fxParticles.push({
-      x, y,
-      vx: Math.cos(a) * sp,
-      vy: Math.sin(a) * sp - (opts.upBias !== undefined ? opts.upBias : 1.5),
-      life: 1,
-      decay: baseDecay * (0.7 + Math.random() * 0.6),
+      x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (opts.upBias !== undefined ? opts.upBias : 1.5),
+      life: 1, decay: baseDecay * (0.7 + Math.random() * 0.6),
       color: palette[(Math.random() * palette.length) | 0],
       size: baseSize * (0.5 + Math.random()),
       gravity: opts.gravity !== false ? 0.18 : 0,
@@ -1646,29 +1578,20 @@ function fxLoop() {
 
   for (let i = fxShocks.length - 1; i >= 0; i--) {
     const s = fxShocks[i];
-    s.r += (s.maxR - s.r) * 0.18;
-    s.life -= 0.04;
+    s.r += (s.maxR - s.r) * 0.18; s.life -= 0.04;
     if (s.life <= 0) { fxShocks.splice(i, 1); continue; }
     fxCtx.globalAlpha = s.life * 0.85;
-    fxCtx.strokeStyle = s.color;
-    fxCtx.shadowColor = s.color;
-    fxCtx.shadowBlur = 24;
+    fxCtx.strokeStyle = s.color; fxCtx.shadowColor = s.color; fxCtx.shadowBlur = 24;
     fxCtx.lineWidth = 2 + s.life * 4;
-    fxCtx.beginPath();
-    fxCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-    fxCtx.stroke();
+    fxCtx.beginPath(); fxCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2); fxCtx.stroke();
   }
   fxCtx.shadowBlur = 0;
 
   for (let i = fxParticles.length - 1; i >= 0; i--) {
     const p = fxParticles[i];
-    p.x += p.vx; p.y += p.vy; p.vy += p.gravity; p.vx *= 0.97;
-    p.life -= p.decay;
+    p.x += p.vx; p.y += p.vy; p.vy += p.gravity; p.vx *= 0.97; p.life -= p.decay;
     if (p.life <= 0) { fxParticles.splice(i, 1); continue; }
-    fxCtx.globalAlpha = p.life;
-    fxCtx.fillStyle = p.color;
-    fxCtx.shadowColor = p.color;
-    fxCtx.shadowBlur = 6;
+    fxCtx.globalAlpha = p.life; fxCtx.fillStyle = p.color; fxCtx.shadowColor = p.color; fxCtx.shadowBlur = 6;
     fxCtx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
   }
   fxCtx.shadowBlur = 0;
@@ -1678,16 +1601,12 @@ function fxLoop() {
     t.y += t.vy; t.vy *= 0.98; t.life -= t.decay;
     if (t.life <= 0) { fxFloats.splice(i, 1); continue; }
     fxCtx.globalAlpha = Math.min(1, t.life * 1.6);
-    fxCtx.fillStyle = t.color;
-    fxCtx.shadowColor = t.color;
-    fxCtx.shadowBlur = 20;
+    fxCtx.fillStyle = t.color; fxCtx.shadowColor = t.color; fxCtx.shadowBlur = 20;
     fxCtx.font = `900 ${t.size}px Orbitron, sans-serif`;
-    fxCtx.textAlign = 'center';
-    fxCtx.textBaseline = 'middle';
+    fxCtx.textAlign = 'center'; fxCtx.textBaseline = 'middle';
     fxCtx.fillText(t.text, t.x, t.y);
   }
-  fxCtx.globalAlpha = 1;
-  fxCtx.shadowBlur = 0;
+  fxCtx.globalAlpha = 1; fxCtx.shadowBlur = 0;
 
   if (shakeAmt > 0.2) {
     const dx = (Math.random() - 0.5) * shakeAmt * 2;
@@ -1698,7 +1617,6 @@ function fxLoop() {
     shakeAmt = 0;
     if (arenaEl) arenaEl.style.transform = '';
   }
-
   requestAnimationFrame(fxLoop);
 }
 
@@ -1722,7 +1640,10 @@ const PIECE_KEYS = Object.keys(PIECES);
 const COLORS = [null,'#00f5ff','#ffe500','#c73bff','#3b8bff','#ff2d95','#ff8a3a','#b4ff3a'];
 const GARBAGE_COLOR = '#3a3a4a';
 
-function cellSize() { return 33; }
+function cellSize() {
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--cell');
+  return parseInt(v) || 33;
+}
 function computeOppCell() {
   const alive = Object.values(opponentStates).filter(s => s.alive !== false).length;
   if (alive <= 1) return 20;
@@ -1744,13 +1665,11 @@ function makeBag() {
 }
 function rotateCW(mat) {
   const N = mat.length;
-  return Array.from({ length: N }, (_, i) =>
-    Array.from({ length: N }, (_, j) => mat[N - 1 - j][i]));
+  return Array.from({ length: N }, (_, i) => Array.from({ length: N }, (_, j) => mat[N - 1 - j][i]));
 }
 function rotateCCW(mat) {
   const N = mat.length;
-  return Array.from({ length: N }, (_, i) =>
-    Array.from({ length: N }, (_, j) => mat[j][N - 1 - i]));
+  return Array.from({ length: N }, (_, i) => Array.from({ length: N }, (_, j) => mat[j][N - 1 - i]));
 }
 const KICKS_JLSTZ = {
   '0>1': [[0,0],[-1,0],[-1,1],[0,-2],[-1,-2]],
@@ -1784,6 +1703,9 @@ function pieceBounds(shape) {
   return { minR, maxR, minC, maxC };
 }
 
+// ══════════════════════════════════════════════════════════════════
+// GAME CLASS
+// ══════════════════════════════════════════════════════════════════
 class TetrisGame {
   constructor(opts = {}) {
     this.onLock = opts.onLock || null;
@@ -1797,6 +1719,11 @@ class TetrisGame {
     this.alive = true; this.b2b = 0; this.combo = 0;
     this.totalAttack = 0; this.pendingGarbage = 0;
     this.lockAnim = null; this.clearAnim = null;
+
+    // Motion feel
+    this.trail = [];          // полупрозрачные следы фигуры
+    this.hardDropStreak = null;
+
     this.lockDelayMs = 300;
     this.lockDelayTimer = null;
     this.lockDelayActive = false;
@@ -1804,6 +1731,7 @@ class TetrisGame {
     this.MAX_LOCK_RESETS = 15;
     this.attackMeterLines = 0;
     this.ATTACK_METER_MAX = 4;
+
     this.spawn();
   }
   refillBag() { while (this.bag.length < 7) this.bag.push(...makeBag()); }
@@ -1812,6 +1740,16 @@ class TetrisGame {
     const p = PIECES[key];
     return { key, shape: p.shape.map(r => [...r]), color: p.color };
   }
+  _recordTrail() {
+    if (!this.current) return;
+    this.trail.push({
+      cx: this.cx, cy: this.cy,
+      shape: this.current.shape.map(r => [...r]),
+      color: this.current.color,
+      life: 1,
+    });
+    if (this.trail.length > 5) this.trail.shift();
+  }
   spawn() {
     this.refillBag();
     const key = this.bag.shift();
@@ -1819,6 +1757,7 @@ class TetrisGame {
     this.cx = Math.floor((COLS - this.current.shape[0].length) / 2);
     this.cy = 0; this.rotation = 0;
     this.lockResets = 0;
+    this.trail = [];
     this.cancelLockDelay();
     if (!this.valid(this.current.shape, this.cx, this.cy)) this.alive = false;
   }
@@ -1826,8 +1765,7 @@ class TetrisGame {
     if (this.lockDelayActive) return;
     this.lockDelayActive = true;
     this.lockDelayTimer = setTimeout(() => {
-      this.lockDelayTimer = null;
-      this.lockDelayActive = false;
+      this.lockDelayTimer = null; this.lockDelayActive = false;
       if (this.current && this.alive) this.lock();
     }, this.lockDelayMs);
   }
@@ -1837,9 +1775,7 @@ class TetrisGame {
   }
   bumpLockDelay() {
     if (!this.lockDelayActive) return;
-    if (this.valid(this.current.shape, this.cx, this.cy + 1)) {
-      this.cancelLockDelay(); return;
-    }
+    if (this.valid(this.current.shape, this.cx, this.cy + 1)) { this.cancelLockDelay(); return; }
     if (this.lockResets >= this.MAX_LOCK_RESETS) return;
     this.lockResets++;
     this.cancelLockDelay();
@@ -1865,13 +1801,17 @@ class TetrisGame {
   move(dx) {
     if (!this.current || !this.alive) return false;
     if (this.valid(this.current.shape, this.cx + dx, this.cy)) {
-      this.cx += dx; this.bumpLockDelay(); return true;
+      this._recordTrail();
+      this.cx += dx;
+      this.bumpLockDelay();
+      return true;
     }
     return false;
   }
   softDrop() {
     if (!this.current || !this.alive) return false;
     if (this.valid(this.current.shape, this.cx, this.cy + 1)) {
+      this._recordTrail();
       this.cy++; this.score += 1; return true;
     }
     return false;
@@ -1879,10 +1819,19 @@ class TetrisGame {
   hardDrop() {
     if (!this.current || !this.alive) return;
     this.cancelLockDelay();
+    const oldCy = this.cy;
     const gy = this.ghostY();
     const dropped = gy - this.cy;
+    this.hardDropStreak = {
+      oldCy, newCy: gy, cx: this.cx,
+      shape: this.current.shape.map(r => [...r]),
+      color: this.current.color,
+      start: performance.now(),
+      duration: 260,
+    };
     this.cy = gy;
     this.score += dropped * 2;
+    this.trail = [];
     this.lock();
   }
   rotate(dir = 1) {
@@ -1896,6 +1845,7 @@ class TetrisGame {
       const tx = this.cx + kicks[i][0];
       const ty = this.cy - kicks[i][1];
       if (this.valid(newShape, tx, ty)) {
+        this._recordTrail();
         this.current.shape = newShape;
         this.cx = tx; this.cy = ty; this.rotation = to;
         this.bumpLockDelay(); return true;
@@ -1914,6 +1864,7 @@ class TetrisGame {
       this.current = this.makePiece(prev);
       this.cx = Math.floor((COLS - this.current.shape[0].length) / 2);
       this.cy = 0; this.rotation = 0;
+      this.trail = [];
       if (!this.valid(this.current.shape, this.cx, this.cy)) this.alive = false;
     } else {
       this.hold = key; this.spawn();
@@ -1953,8 +1904,7 @@ class TetrisGame {
       }
     this.lockAnim = { cells: lockedCells, start: performance.now(), duration: LOCK_ANIM_MS };
 
-    let attack = 0;
-    let cleared = 0;
+    let attack = 0, cleared = 0;
 
     if (anyVisibleCell) {
       const clearCaptured = [];
@@ -1975,8 +1925,7 @@ class TetrisGame {
         this.combo++;
         const comboPts = this.combo > 1 ? (this.combo - 1) * 50 : 0;
         if (cleared === 4) {
-          this.b2b++;
-          attack = 4;
+          this.b2b++; attack = 4;
           if (this.b2b > 1) attack += 1;
           this.score += 800 * this.level + comboPts;
         } else {
@@ -2021,7 +1970,11 @@ class TetrisGame {
   gravity() {
     if (!this.current || !this.alive) return false;
     if (this.lockDelayActive) return false;
-    if (this.valid(this.current.shape, this.cx, this.cy + 1)) { this.cy++; return false; }
+    if (this.valid(this.current.shape, this.cx, this.cy + 1)) {
+      this._recordTrail();
+      this.cy++;
+      return false;
+    }
     this.startLockDelay();
     return false;
   }
@@ -2050,15 +2003,17 @@ function drawGhostCell(ctx, px, py, size, color) {
   ctx.strokeRect(px + 1.5, py + 1.5, size - 3, size - 3);
   ctx.shadowBlur = 0; ctx.globalAlpha = 1;
 }
+
 function drawBoard(canvas, game, cell) {
-  const w = COLS * cell;
-  const h = TOTAL_ROWS * cell;
+  const w = COLS * cell, h = TOTAL_ROWS * cell;
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, w, h);
+
   ctx.fillStyle = 'rgba(5,6,12,0.85)';
   ctx.fillRect(0, BUFFER * cell, w, ROWS * cell);
 
+  // Neon border
   ctx.strokeStyle = 'rgb(0,255,213)';
   ctx.shadowColor = 'rgb(0,255,213)';
   ctx.shadowBlur = 12; ctx.lineWidth = 2;
@@ -2067,6 +2022,7 @@ function drawBoard(canvas, game, cell) {
   ctx.beginPath(); ctx.moveTo(0, h); ctx.lineTo(w, h); ctx.stroke();
   ctx.shadowBlur = 0;
 
+  // Grid
   ctx.strokeStyle = 'rgba(0,255,213,0.08)'; ctx.lineWidth = 0.5;
   for (let r = 0; r <= ROWS; r++) {
     const y = (r + BUFFER) * cell + 0.25;
@@ -2075,6 +2031,8 @@ function drawBoard(canvas, game, cell) {
   for (let c = 0; c <= COLS; c++) {
     ctx.beginPath(); ctx.moveTo(c*cell+0.25, BUFFER*cell); ctx.lineTo(c*cell+0.25, h); ctx.stroke();
   }
+
+  // Death line
   const dangerAlpha = parseFloat(canvas.dataset.danger || '0');
   const lineAlpha = 0.4 + dangerAlpha * 0.6;
   ctx.strokeStyle = `rgba(255,45,149,${lineAlpha})`;
@@ -2083,12 +2041,61 @@ function drawBoard(canvas, game, cell) {
   ctx.beginPath(); ctx.moveTo(0, BUFFER*cell); ctx.lineTo(w, BUFFER*cell); ctx.stroke();
   ctx.shadowBlur = 0;
 
+  // Board cells
   for (let r = 0; r < TOTAL_ROWS; r++)
     for (let c = 0; c < COLS; c++) {
       const v = game.board[r][c];
       if (!v) continue;
       drawCell(ctx, c*cell, r*cell, cell, v === 8 ? GARBAGE_COLOR : COLORS[v]);
     }
+
+  // ═══ TRAIL (полупрозрачные следы движения) ═══
+  if (game.trail && game.trail.length) {
+    for (const t of game.trail) {
+      const a = Math.max(0, t.life * 0.22);
+      if (a < 0.01) continue;
+      for (let r = 0; r < t.shape.length; r++)
+        for (let c = 0; c < t.shape[r].length; c++) {
+          if (!t.shape[r][c]) continue;
+          const nx = t.cx + c, ny = t.cy + r;
+          if (ny >= 0 && ny < TOTAL_ROWS) {
+            drawCell(ctx, nx*cell, ny*cell, cell, COLORS[t.color], a);
+          }
+        }
+      t.life -= 0.14;
+    }
+    game.trail = game.trail.filter(t => t.life > 0);
+  }
+
+  // ═══ HARD DROP STREAK ═══
+  if (game.hardDropStreak) {
+    const s = game.hardDropStreak;
+    const elapsed = performance.now() - s.start;
+    const t = elapsed / s.duration;
+    if (t < 1) {
+      const alpha = 0.55 * (1 - t);
+      ctx.globalAlpha = alpha;
+      for (let r = 0; r < s.shape.length; r++)
+        for (let c = 0; c < s.shape[r].length; c++) {
+          if (!s.shape[r][c]) continue;
+          const nx = s.cx + c;
+          const startY = (s.oldCy + r) * cell;
+          const endY = (s.newCy + r) * cell;
+          if (endY <= startY) continue;
+          const grad = ctx.createLinearGradient(0, startY, 0, endY);
+          grad.addColorStop(0, 'rgba(255,255,255,0)');
+          grad.addColorStop(0.7, COLORS[s.color]);
+          grad.addColorStop(1, 'rgba(255,255,255,0.9)');
+          ctx.fillStyle = grad;
+          ctx.fillRect(nx * cell + 3, startY, cell - 6, endY - startY);
+        }
+      ctx.globalAlpha = 1;
+    } else {
+      game.hardDropStreak = null;
+    }
+  }
+
+  // Ghost
   if (game.current && game.alive) {
     const gy = game.ghostY();
     for (let r = 0; r < game.current.shape.length; r++)
@@ -2097,6 +2104,7 @@ function drawBoard(canvas, game, cell) {
         const nx = game.cx + c, ny = gy + r;
         if (ny >= 0) drawGhostCell(ctx, nx*cell, ny*cell, cell, COLORS[game.current.color]);
       }
+    // Current piece
     for (let r = 0; r < game.current.shape.length; r++)
       for (let c = 0; c < game.current.shape[r].length; c++) {
         if (!game.current.shape[r][c]) continue;
@@ -2104,6 +2112,8 @@ function drawBoard(canvas, game, cell) {
         if (ny >= 0) drawCell(ctx, nx*cell, ny*cell, cell, COLORS[game.current.color]);
       }
   }
+
+  // Lock animation
   if (game.lockAnim) {
     const t = (performance.now() - game.lockAnim.start) / game.lockAnim.duration;
     if (t < 1) {
@@ -2125,6 +2135,8 @@ function drawBoard(canvas, game, cell) {
       }
     } else game.lockAnim = null;
   }
+
+  // Clear animation
   if (game.clearAnim) {
     const t = Math.min(1, (performance.now() - game.clearAnim.start) / game.clearAnim.duration);
     if (t < 1) {
@@ -2156,6 +2168,7 @@ function drawBoard(canvas, game, cell) {
     } else game.clearAnim = null;
   }
 }
+
 function drawPieceInBox(ctx, key, bx, by, bw, bh, maxCell) {
   if (!key || !PIECES[key]) return;
   const p = PIECES[key];
@@ -2175,13 +2188,13 @@ function drawPreviewCanvas(canvas, key) {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (!key) return;
-  drawPieceInBox(ctx, key, 0, 0, canvas.width, canvas.height, 14);
+  drawPieceInBox(ctx, key, 0, 0, canvas.width, canvas.height, 20);
 }
 function drawNextCanvas(canvas, keys) {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const slot = canvas.height / 3;
-  keys.slice(0, 3).forEach((key, i) => drawPieceInBox(ctx, key, 0, i*slot, canvas.width, slot, 12));
+  keys.slice(0, 3).forEach((key, i) => drawPieceInBox(ctx, key, 0, i*slot, canvas.width, slot, 18));
 }
 function drawSmallBoard(canvas, boardData, cell, current) {
   const w = COLS * cell, h = ROWS * cell;
@@ -2235,7 +2248,7 @@ function updateStat(id, value) {
   if (avail > 0 && need > avail) {
     const base = parseFloat(getComputedStyle(el).fontSize) || 18;
     const ratio = avail / need;
-    el.style.fontSize = Math.max(8, Math.floor(base * ratio * 0.94)) + 'px';
+    el.style.fontSize = Math.max(10, Math.floor(base * ratio * 0.94)) + 'px';
   }
 }
 
@@ -2316,10 +2329,7 @@ class PeerAdapter {
   }
   async init() {
     let id = sessionStorage.getItem('zetris-id');
-    if (!id) {
-      id = 'u-' + Math.random().toString(36).slice(2, 10);
-      sessionStorage.setItem('zetris-id', id);
-    }
+    if (!id) { id = 'u-' + Math.random().toString(36).slice(2, 10); sessionStorage.setItem('zetris-id', id); }
     this.myId = id;
     return this;
   }
@@ -2333,9 +2343,7 @@ class PeerAdapter {
     const conn = this.connections.get(peerId);
     if (conn && conn.open) { try { conn.send({ type: 'event', event, data }); } catch(e) {} }
   }
-  _dispatch(event, data) {
-    (this.handlers[event] || []).forEach(h => { try { h(data); } catch(e){ console.error(e); } });
-  }
+  _dispatch(event, data) { (this.handlers[event] || []).forEach(h => { try { h(data); } catch(e){ console.error(e); } }); }
   onPeers(fn) { this.peerHandlers.push(fn); fn({ peers: [...this.roster.values()] }); }
   _notifyPeers(event, extra = {}) {
     const peers = [...this.roster.values()].map(p => ({ presence: p }));
@@ -2351,8 +2359,7 @@ class PeerAdapter {
     this._notifyPeers('presence', { peer: { presence: this.presenceData } });
   }
   async join(roomCode, asHost) {
-    this.roomCode = roomCode;
-    this.isHost = !!asHost;
+    this.roomCode = roomCode; this.isHost = !!asHost;
     const hostPeerId = 'zetris-' + roomCode;
     if (this.isHost) {
       this.peer = new Peer(hostPeerId, PEER_CONFIG);
@@ -2413,12 +2420,10 @@ class PeerAdapter {
     });
     conn.on('open', () => {
       this._notifyPeers('joined', { peer: { presence: { id: conn.peer } } });
-      if (this.presenceData)
-        try { conn.send({ type: 'presence', data: this.presenceData }); } catch(e){}
+      if (this.presenceData) try { conn.send({ type: 'presence', data: this.presenceData }); } catch(e){}
       if (this.isHost) {
         for (const p of this.roster.values())
-          if (p.id !== conn.peer)
-            try { conn.send({ type: 'presence', data: p }); } catch(e){}
+          if (p.id !== conn.peer) try { conn.send({ type: 'presence', data: p }); } catch(e){}
       }
     });
     conn.on('close', () => {
@@ -2453,6 +2458,7 @@ let opponentStates = {};
 let peerRoster = {};
 let returnScheduled = false;
 let iAmKicked = false;
+let deathAnimating = false;
 
 const GRAVITY_INTERVALS = [800,720,630,550,470,380,300,220,140,100,80,70,60,50];
 function getGravity(level, boost, settings) {
@@ -2463,20 +2469,20 @@ function getGravity(level, boost, settings) {
   return Math.max(30, Math.round(boosted));
 }
 
-// ══════════════════════════════════════════════════════════════════
-// SCREEN MANAGEMENT
-// ══════════════════════════════════════════════════════════════════
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
-
   if (id === 'game') {
     document.body.classList.add('in-game');
     document.getElementById('app-header').classList.add('hidden');
+    document.getElementById('game-hud-tl').style.display = 'flex';
+    document.getElementById('game-hud-tr').style.display = 'block';
   } else {
     document.body.classList.remove('in-game');
     document.getElementById('app-header').classList.remove('hidden');
+    document.getElementById('game-hud-tl').style.display = 'none';
+    document.getElementById('game-hud-tr').style.display = 'none';
     hideGameTopbar();
     bgOverlay.className = '';
     _lastDangerClass = '';
@@ -2491,13 +2497,8 @@ function updateHeaderName() {
 function updateHudStatus() {
   const el = document.getElementById('hud-status');
   if (!el) return;
-  if (!runtimeAvailable) {
-    el.textContent = 'OFFLINE';
-    el.classList.add('offline');
-  } else {
-    el.textContent = 'SYSTEM READY';
-    el.classList.remove('offline');
-  }
+  if (!runtimeAvailable) { el.textContent = 'OFFLINE'; el.classList.add('offline'); }
+  else { el.textContent = 'SYSTEM READY'; el.classList.remove('offline'); }
 }
 
 async function initRuntime() {
@@ -2507,10 +2508,7 @@ async function initRuntime() {
     window.__adapter = adapter;
     myId = adapter.myId;
     runtimeAvailable = true;
-  } catch (e) {
-    console.warn('PeerJS init failed:', e);
-    runtimeAvailable = false;
-  }
+  } catch (e) { console.warn('PeerJS init failed:', e); runtimeAvailable = false; }
   updateHudStatus();
 }
 
@@ -2521,8 +2519,7 @@ function genCode() {
 async function createRoom() {
   await runtimeReady;
   if (!runtimeAvailable) { toast('Multiplayer unavailable'); return; }
-  roomCode = genCode();
-  isHost = true;
+  roomCode = genCode(); isHost = true;
   await enterRoom();
 }
 async function joinRoom() {
@@ -2530,8 +2527,7 @@ async function joinRoom() {
   const code = document.getElementById('room-input').value.trim().toUpperCase();
   if (code.length < 3) { toast('Enter a valid room code'); return; }
   if (!runtimeAvailable) { toast('Multiplayer unavailable'); return; }
-  roomCode = code;
-  isHost = false;
+  roomCode = code; isHost = false;
   await enterRoom();
 }
 
@@ -2543,8 +2539,7 @@ async function enterRoom() {
   document.getElementById('start-btn').style.display = isHost ? 'block' : 'none';
   document.getElementById('ready-btn').style.display = isHost ? 'none' : 'block';
   document.getElementById('start-hint').textContent = isHost
-    ? 'START WHEN ALL PLAYERS ARE READY'
-    : 'CLICK READY WHEN YOU ARE SET';
+    ? 'START WHEN ALL PLAYERS ARE READY' : 'CLICK READY WHEN YOU ARE SET';
   setSettingsEditable(isHost);
   applySettingsToUI();
   myReady = false;
@@ -2566,9 +2561,8 @@ async function enterRoom() {
     setTimeout(() => { fullCleanup(); leaveRoom(); showScreen('main-menu'); }, 900);
   };
 
-  try {
-    await namedRoom.join(roomCode, isHost);
-  } catch (e) {
+  try { await namedRoom.join(roomCode, isHost); }
+  catch (e) {
     console.error('[zetris] join failed:', e);
     const code = e && e.message;
     let msg = 'Could not join room';
@@ -2577,10 +2571,7 @@ async function enterRoom() {
     else if (code === 'host-closed') msg = 'Host closed the room';
     else if (code === 'timeout') msg = 'Connection timeout';
     else if (code === 'network') msg = 'Signaling unreachable';
-    toast(msg);
-    leaveRoom();
-    showScreen('mp-menu');
-    return;
+    toast(msg); leaveRoom(); showScreen('mp-menu'); return;
   }
 
   myId = namedRoom.peer.id;
@@ -2692,9 +2683,6 @@ function updatePlayerList(peers) {
     }
     list.appendChild(row);
   });
-  const countText = rows.length + ' player' + (rows.length !== 1 ? 's' : '');
-  const ocEl = document.getElementById('online-count');
-  if (ocEl) ocEl.textContent = countText;
   peerRoster = {};
   rows.forEach(r => { if (!r.isMe) peerRoster[r.id] = { name: r.name, ready: r.ready }; });
   syncOpponentRoster(rows);
@@ -2764,6 +2752,19 @@ async function hostStartGame() {
   namedRoom.emit('start_game', { countdown: 3, settings: gameSettings });
   beginCountdown(3);
 }
+
+function playCountdownTick(color) {
+  if (!fxCtx) return;
+  // Простая визуальная пульсация — кольцо
+  const ring = document.getElementById('countdown-ring');
+  if (ring) {
+    ring.style.animation = 'none';
+    void ring.offsetHeight;
+    ring.style.borderColor = color;
+    ring.style.animation = '';
+  }
+}
+
 function beginCountdown(n) {
   if (gamePhase === 'playing') return;
   gamePhase = 'countdown';
@@ -2773,15 +2774,41 @@ function beginCountdown(n) {
   const overlay = document.getElementById('my-countdown');
   overlay.style.display = 'flex';
   const numEl = document.getElementById('countdown-num');
+  const ring = document.getElementById('countdown-ring');
+  const label = document.getElementById('countdown-label');
   let count = n;
-  numEl.textContent = count;
+
+  const setCountdown = (v) => {
+    numEl.dataset.v = String(v);
+    numEl.textContent = v;
+    numEl.style.animation = 'none';
+    void numEl.offsetHeight;
+    numEl.style.animation = '';
+    if (ring) {
+      ring.style.animation = 'none';
+      void ring.offsetHeight;
+      ring.style.animation = '';
+    }
+  };
+
+  setCountdown(count);
+  if (label) label.textContent = 'DEPLOYING';
+
   const iv = setInterval(() => {
     count--;
     if (count <= 0) {
       clearInterval(iv);
-      overlay.style.display = 'none';
-      startGame();
-    } else numEl.textContent = count;
+      setCountdown('GO');
+      if (label) label.textContent = 'ENGAGE';
+      fxShockwave((COLS*cellSize())/2, (TOTAL_ROWS*cellSize())/2, 500, '#b4ff3a');
+      fxShake(8);
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        startGame();
+      }, 500);
+    } else {
+      setCountdown(count);
+    }
   }, 900);
 }
 
@@ -2793,12 +2820,12 @@ function startSolo() {
   document.getElementById('ability-box').style.display = 'none';
   gamePhase = 'playing';
   document.getElementById('game-room-label').textContent = 'solo practice';
-  const ocSolo = document.getElementById('online-count');
-  if (ocSolo) ocSolo.textContent = 'solo practice';
   document.getElementById('my-waiting').style.display = 'none';
-  document.getElementById('game-timer').classList.remove('hidden');
   showScreen('game');
-  showGameTopbar('SOLO', false, '', true);
+  const roomTag = document.getElementById('hud-room-tag');
+  if (roomTag) roomTag.textContent = 'SOLO';
+  const timerHud = document.getElementById('hud-timer');
+  if (timerHud) timerHud.textContent = '0:00';
   startGame();
 }
 
@@ -2811,12 +2838,9 @@ function startGame() {
   speedBoost = 0;
   returnScheduled = false;
   Sound.startMusic();
-  const isMP = !!namedRoom;
-  const playerCount = isMP ? (Object.keys(opponentStates).length + 1) : 1;
-  showGameTopbar(
-    isMP ? 'ROOM ' + roomCode : 'SOLO', isMP,
-    playerCount + ' player' + (playerCount !== 1 ? 's' : ''), true
-  );
+
+  const roomTag = document.getElementById('hud-room-tag');
+  if (roomTag) roomTag.textContent = namedRoom ? ('ROOM ' + roomCode) : 'SOLO';
 
   const rosterSnapshot = Object.entries(opponentStates).map(([id, st]) => ({ id, name: st.name }));
   opponentStates = {};
@@ -2890,11 +2914,6 @@ function startGame() {
   setupInput();
   restartGravity();
   startRenderLoop();
-
-  const timerEl = document.getElementById('game-timer');
-  timerEl.classList.remove('hidden');
-  timerEl.textContent = '0:00';
-
   if (speedTimer) clearInterval(speedTimer);
   speedTimer = setInterval(checkSpeedBoost, 1000);
 }
@@ -2947,8 +2966,11 @@ function startRenderLoop() {
       const elapsedSec = Math.floor((performance.now() - gameStartTime) / 1000);
       const mm = Math.floor(elapsedSec / 60);
       const ss = String(elapsedSec % 60).padStart(2, '0');
+      const timeStr = mm + ':' + ss;
+      const timerHud = document.getElementById('hud-timer');
+      if (timerHud) timerHud.textContent = timeStr;
       const timerEl = document.getElementById('game-timer');
-      if (timerEl) timerEl.textContent = mm + ':' + ss;
+      if (timerEl) timerEl.textContent = timeStr;
     }
     renderLoop = requestAnimationFrame(frame);
   }
@@ -2992,16 +3014,12 @@ function fullCleanup() {
   Sound.stopMusic();
   gameRunning = false; gamePhase = 'lobby'; game = null;
   opponentStates = {}; peerRoster = {}; myReady = false;
-  const ocEl = document.getElementById('online-count');
-  if (ocEl) ocEl.textContent = 'solo practice';
   document.getElementById('opponents').innerHTML = '';
   updateOpponentsWrapVisibility();
   document.getElementById('my-gameover').style.display = 'none';
   document.getElementById('my-countdown').style.display = 'none';
   document.getElementById('my-waiting').style.display = 'flex';
   document.getElementById('ability-box').style.display = 'none';
-  document.getElementById('game-timer').classList.add('hidden');
-  document.getElementById('game-timer').textContent = '0:00';
   const title = document.getElementById('gameover-title');
   title.textContent = 'GAME OVER'; title.style.color = '';
   const reason = document.getElementById('gameover-reason');
@@ -3021,9 +3039,42 @@ function fullCleanup() {
   if (fxCtx && fxCanvas) fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
 }
 
+// ═══ DEATH ANIMATION ═══
+function playDeathAnimation(callback) {
+  if (!game || deathAnimating) { if (callback) callback(); return; }
+  deathAnimating = true;
+  const cell = cellSize();
+  // Все блоки борда разлетаются
+  for (let r = 0; r < TOTAL_ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const v = game.board[r][c];
+      if (!v) continue;
+      const px = c * cell + cell / 2;
+      const py = r * cell + cell / 2;
+      const color = v === 8 ? GARBAGE_COLOR : COLORS[v];
+      fxBurst(px, py, 5, [color, '#ffffff'], {
+        speed: 4 + Math.random() * 3,
+        size: 4,
+        decay: 0.017,
+        gravity: 0.22,
+      });
+    }
+  }
+  fxShake(38);
+  fxShockwave((COLS * cell) / 2, (TOTAL_ROWS * cell) / 2, 600, '#ff3860');
+  fxShockwave((COLS * cell) / 2, (TOTAL_ROWS * cell) / 2, 400, '#ff2d95');
+  // Очистить борд
+  game.board = game.board.map(row => row.map(() => 0));
+  game.current = null;
+  setTimeout(() => {
+    deathAnimating = false;
+    if (callback) callback();
+  }, 800);
+}
+
 function endGame() {
   if (gamePhase === 'gameover' || gamePhase === 'dead' || gamePhase === 'round_over'
-      || gamePhase === 'lobby' || gamePhase === 'waiting') return;
+      || gamePhase === 'lobby' || gamePhase === 'waiting' || gamePhase === 'dying') return;
   if (!game) return;
   gameRunning = false;
   cleanupTimers();
@@ -3037,17 +3088,23 @@ function endGame() {
   const stats = game ? { score: game.score, lines: game.lines, level: game.level, attack: game.totalAttack } : null;
 
   if (!namedRoom) {
-    gamePhase = 'gameover';
-    showOverlay('GAME OVER', reason, 'var(--danger)', stats);
+    gamePhase = 'dying';
+    playDeathAnimation(() => {
+      gamePhase = 'gameover';
+      showOverlay('GAME OVER', reason, 'var(--danger)', stats);
+    });
     return;
   }
-  gamePhase = 'dead';
+  gamePhase = 'dying';
   broadcastBoard(true);
   namedRoom.emit('player_died', {
     id: myId, name: myName,
     score: game.score, lines: game.lines, level: game.level,
   });
-  showOverlay('ELIMINATED', reason + ' · waiting for the winner…', 'var(--danger)', stats);
+  playDeathAnimation(() => {
+    gamePhase = 'dead';
+    showOverlay('ELIMINATED', reason + ' · waiting for the winner…', 'var(--danger)', stats);
+  });
 }
 function showOverlay(titleText, reasonText, color, statsObj) {
   const overlay = document.getElementById('my-gameover');
@@ -3121,8 +3178,7 @@ function renderLeaderboard(data) {
     title.style.textShadow = '0 0 30px rgba(180,255,58,0.6)';
   } else {
     title.textContent = 'MATCH RESULTS';
-    title.style.color = '';
-    title.style.textShadow = '';
+    title.style.color = ''; title.style.textShadow = '';
   }
   winnerEl.textContent = data.winnerName ? data.winnerName + ' // WINNER' : 'NO WINNER';
   winnerEl.style.color = data.winnerId === myId ? 'var(--lime)' : 'var(--cyan)';
@@ -3164,12 +3220,10 @@ function returnToWaitingRoom() {
     gameRunning = false; gamePhase = 'waiting'; game = null;
     document.getElementById('my-waiting').style.display = 'flex';
     document.getElementById('my-countdown').style.display = 'none';
-    document.getElementById('game-timer').classList.add('hidden');
     document.getElementById('start-btn').style.display = isHost ? 'block' : 'none';
     document.getElementById('ready-btn').style.display = isHost ? 'none' : 'block';
     document.getElementById('start-hint').textContent = isHost
-      ? 'START WHEN ALL PLAYERS ARE READY'
-      : 'CLICK READY WHEN YOU ARE SET';
+      ? 'START WHEN ALL PLAYERS ARE READY' : 'CLICK READY WHEN YOU ARE SET';
     updateStartButtonState();
     showScreen('waiting-room');
     const livePeers = [...namedRoom.roster.values()].filter(p => p.id !== myId).map(p => ({ presence: p }));
@@ -3454,7 +3508,7 @@ document.getElementById('copy-code-btn').addEventListener('click', copyRoomCode)
 document.getElementById('game-room-label').addEventListener('click', copyRoomCode);
 
 document.addEventListener('click', (e) => {
-  const hit = e.target.closest('button, .room-id-display, .header-name, .mode-card, .mp-action');
+  const hit = e.target.closest('button, .room-id-display, .header-name, .mode-card, .mp-action, .game-quit-hud');
   if (hit) Sound.playClick();
 }, true);
 
@@ -3480,7 +3534,7 @@ function updateDangerOverlay() {
   for (let r = 0; r < TOTAL_ROWS; r++) {
     if (game.board[r] && game.board[r].some(v => v)) { topRow = r; break; }
   }
-  let cls = ''; let dangerAmt = 0;
+  let cls = '', dangerAmt = 0;
   if (topRow <= BUFFER) { cls = 'critical'; dangerAmt = 1.0; }
   else if (topRow <= BUFFER + 4) { cls = 'danger'; dangerAmt = (BUFFER + 4 - topRow) / 4; }
   if (cls !== _lastDangerClass) { bgOverlay.className = cls; _lastDangerClass = cls; }
@@ -3498,26 +3552,10 @@ function updateDangerOverlay() {
 setInterval(() => { if (gameRunning) updateDangerOverlay(); }, 150);
 
 const gameTopbar = document.getElementById('game-topbar');
-function showGameTopbar(roomLabel, showOnline, countText, showTimer) {
-  gameTopbar.classList.remove('hidden');
-  document.getElementById('topbar-room').textContent = roomLabel || 'SOLO';
-  const onlineEl = document.getElementById('topbar-online');
-  if (showOnline) { onlineEl.style.display = 'flex'; document.getElementById('topbar-count').textContent = countText || ''; }
-  else onlineEl.style.display = 'none';
-  const timerEl = document.getElementById('topbar-timer');
-  if (showTimer) timerEl.classList.remove('hidden'); else timerEl.classList.add('hidden');
-}
-function hideGameTopbar() { gameTopbar.classList.add('hidden'); }
+function showGameTopbar() { /* replaced by HUD */ }
+function hideGameTopbar() { /* noop */ }
 
-setInterval(() => {
-  const gt = document.getElementById('game-timer');
-  const tb = document.getElementById('topbar-timer');
-  if (gt && tb) tb.textContent = gt.textContent;
-}, 500);
-
-// ══════════════════════════════════════════════════════════════════
-// BOOT
-// ══════════════════════════════════════════════════════════════════
+// ═══ BOOT ═══
 Sound.init();
 setupSettingsUI();
 applySettingsToUI();
