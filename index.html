@@ -1021,6 +1021,30 @@
   }
   @keyframes gbPulse { 0%,100%{box-shadow:0 0 10px rgba(255,56,96,0.5)} 50%{box-shadow:0 0 24px rgba(255,56,96,0.9)} }
   .garbage-bar.pulse { animation: gbPulse 0.35s ease-out; }
+    /* ── FX CANVAS (particles, shockwaves, floating text) ── */
+  #fx-canvas {
+    position: absolute;
+    top: calc(var(--cell) * -3);
+    left: 0;
+    pointer-events: none;
+    z-index: 8;
+  }
+
+  /* Critical danger board border */
+  .board-wrap.critical {
+    animation: boardCritical 0.7s ease-in-out infinite;
+  }
+  @keyframes boardCritical {
+    0%, 100% { box-shadow: 0 0 15px rgba(255,45,149,0.5), 0 0 30px rgba(255,45,149,0.3); }
+    50%      { box-shadow: 0 0 30px rgba(255,45,149,0.9), 0 0 60px rgba(255,45,149,0.5); }
+  }
+  .board-wrap {
+    transition: box-shadow 0.3s;
+  }
+  /* default neon frame glow */
+  .board-wrap:not(.critical) {
+    box-shadow: 0 0 20px rgba(0,255,213,0.15);
+  }
 </style>
 </head>
 <body>
@@ -1193,6 +1217,7 @@
 
       <div class="board-wrap" id="my-board-wrap">
         <canvas class="board-canvas" id="my-canvas" width="200" height="400"></canvas>
+        <canvas id="fx-canvas"></canvas>
         <div class="attack-flash" id="my-flash"></div>
         <div class="speed-flash" id="my-speed-flash"></div>
         <div class="garbage-bar-wrap">
@@ -1357,6 +1382,150 @@ const Sound = {
     if (this.musicEl) { this.musicEl.pause(); this.musicEl.currentTime = 0; }
   },
 };
+
+// ══════════════════════════════════════════════════════════════════
+// FX SYSTEM — particles, shockwaves, floating text, screen shake
+// ══════════════════════════════════════════════════════════════════
+const fxCanvas = document.getElementById('fx-canvas');
+const fxCtx = fxCanvas ? fxCanvas.getContext('2d') : null;
+const arenaEl = document.querySelector('.arena');
+const boardWrapEl = document.getElementById('my-board-wrap');
+
+let fxParticles = [];
+let fxFloats = [];
+let fxShocks = [];
+let shakeAmt = 0;
+
+function resizeFx() {
+  if (!fxCanvas) return;
+  const cell = cellSize();
+  fxCanvas.width = COLS * cell;
+  fxCanvas.height = TOTAL_ROWS * cell;
+  fxCanvas.style.width = (COLS * cell) + 'px';
+  fxCanvas.style.height = (TOTAL_ROWS * cell) + 'px';
+}
+
+function fxBurst(x, y, count, palette, opts = {}) {
+  const speed = opts.speed || 3;
+  const baseSize = opts.size || 3;
+  const baseDecay = opts.decay || 0.025;
+  for (let i = 0; i < count; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const sp = speed * (0.4 + Math.random() * 1.2);
+    fxParticles.push({
+      x, y,
+      vx: Math.cos(a) * sp,
+      vy: Math.sin(a) * sp - (opts.upBias !== undefined ? opts.upBias : 1.5),
+      life: 1,
+      decay: baseDecay * (0.7 + Math.random() * 0.6),
+      color: palette[(Math.random() * palette.length) | 0],
+      size: baseSize * (0.5 + Math.random()),
+      gravity: opts.gravity !== false ? 0.18 : 0,
+    });
+  }
+}
+
+function fxDust(x, y, count = 6) {
+  for (let i = 0; i < count; i++) {
+    const a = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 0.8;
+    const sp = 1 + Math.random() * 2.5;
+    fxParticles.push({
+      x: x + (Math.random() - 0.5) * 10,
+      y,
+      vx: Math.cos(a) * sp,
+      vy: Math.sin(a) * sp,
+      life: 1,
+      decay: 0.04 + Math.random() * 0.03,
+      color: ['#ffffff', '#9aa8b8', '#5a6a7a'][(Math.random() * 3) | 0],
+      size: 2 + Math.random() * 2,
+      gravity: 0.05,
+    });
+  }
+}
+
+function fxShockwave(x, y, maxR = 140, color = '#00ffd5') {
+  fxShocks.push({ x, y, r: 6, maxR, color, life: 1 });
+}
+
+function fxFloat(x, y, text, color = '#00ffd5', size = 22, vy = -1.4) {
+  fxFloats.push({ x, y, text, color, size, vy, life: 1, decay: 0.014 });
+}
+
+function fxShake(amount) {
+  shakeAmt = Math.max(shakeAmt, amount);
+}
+
+function fxLoop() {
+  if (!fxCtx) return;
+  const w = fxCanvas.width, h = fxCanvas.height;
+  fxCtx.clearRect(0, 0, w, h);
+
+  // Shockwaves
+  for (let i = fxShocks.length - 1; i >= 0; i--) {
+    const s = fxShocks[i];
+    s.r += (s.maxR - s.r) * 0.18;
+    s.life -= 0.04;
+    if (s.life <= 0) { fxShocks.splice(i, 1); continue; }
+    fxCtx.globalAlpha = s.life * 0.85;
+    fxCtx.strokeStyle = s.color;
+    fxCtx.shadowColor = s.color;
+    fxCtx.shadowBlur = 24;
+    fxCtx.lineWidth = 2 + s.life * 4;
+    fxCtx.beginPath();
+    fxCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    fxCtx.stroke();
+  }
+  fxCtx.shadowBlur = 0;
+
+  // Particles
+  for (let i = fxParticles.length - 1; i >= 0; i--) {
+    const p = fxParticles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += p.gravity;
+    p.vx *= 0.97;
+    p.life -= p.decay;
+    if (p.life <= 0) { fxParticles.splice(i, 1); continue; }
+    fxCtx.globalAlpha = p.life;
+    fxCtx.fillStyle = p.color;
+    fxCtx.shadowColor = p.color;
+    fxCtx.shadowBlur = 6;
+    fxCtx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+  }
+  fxCtx.shadowBlur = 0;
+
+  // Floating text
+  for (let i = fxFloats.length - 1; i >= 0; i--) {
+    const t = fxFloats[i];
+    t.y += t.vy;
+    t.vy *= 0.98;
+    t.life -= t.decay;
+    if (t.life <= 0) { fxFloats.splice(i, 1); continue; }
+    fxCtx.globalAlpha = Math.min(1, t.life * 1.6);
+    fxCtx.fillStyle = t.color;
+    fxCtx.shadowColor = t.color;
+    fxCtx.shadowBlur = 20;
+    fxCtx.font = `900 ${t.size}px Orbitron, sans-serif`;
+    fxCtx.textAlign = 'center';
+    fxCtx.textBaseline = 'middle';
+    fxCtx.fillText(t.text, t.x, t.y);
+  }
+  fxCtx.globalAlpha = 1;
+  fxCtx.shadowBlur = 0;
+
+  // Screen shake (applied to .arena)
+  if (shakeAmt > 0.2) {
+    const dx = (Math.random() - 0.5) * shakeAmt * 2;
+    const dy = (Math.random() - 0.5) * shakeAmt * 2;
+    if (arenaEl) arenaEl.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
+    shakeAmt *= 0.85;
+  } else if (shakeAmt !== 0) {
+    shakeAmt = 0;
+    if (arenaEl) arenaEl.style.transform = '';
+  }
+
+  requestAnimationFrame(fxLoop);
+}
 
 // ══════════════════════════════════════════════════════════════════
 // TETRIS CONSTANTS
@@ -2649,10 +2818,70 @@ function startGame() {
   Object.keys(statValues).forEach(k => delete statValues[k]);
 
   lastGarbage = 0;
-  game = new TetrisGame({
+    game = new TetrisGame({
     experimental: gameSettings.experimental,
     onLock: (attack, g, cleared) => {
       Sound.playLock();
+      const cell = cellSize();
+      const bx = (COLS * cell) / 2;
+      const by = (TOTAL_ROWS * cell) / 2;
+
+      // ── Line clear FX ──
+      if (cleared > 0 && g.clearAnim) {
+        for (const row of g.clearAnim.rows) {
+          for (let c = 0; c < COLS; c++) {
+            const v = row.cells[c];
+            if (!v) continue;
+            const px = c * cell + cell / 2;
+            const py = row.y * cell + cell / 2;
+            const color = v === 8 ? GARBAGE_COLOR : COLORS[v];
+            fxBurst(px, py, 4, [color, '#ffffff'], { speed: 3.5, size: 3.5 });
+          }
+        }
+
+        // Big label
+        const labels = ['', 'SINGLE', 'DOUBLE', 'TRIPLE', 'TETRIS'];
+        if (labels[cleared]) {
+          const isTetris = cleared === 4;
+          fxFloat(
+            bx,
+            (BUFFER * cell) + (ROWS * cell) / 2,
+            labels[cleared],
+            isTetris ? '#ff2d95' : '#b4ff3a',
+            isTetris ? 42 : 28,
+            -2
+          );
+        }
+
+        // Tetris rainbow burst
+        if (cleared === 4) {
+          fxBurst(
+            bx,
+            (BUFFER * cell) + (ROWS * cell) / 2,
+            60,
+            ['#00ffd5', '#ff2d95', '#b4ff3a', '#ffe500', '#c73bff'],
+            { speed: 7, size: 5, decay: 0.018 }
+          );
+        }
+
+        fxShake(cleared * 3.5 + (cleared === 4 ? 8 : 0));
+        fxShockwave(
+          bx,
+          (BUFFER * cell) + (ROWS * cell) / 2,
+          180 + cleared * 25,
+          cleared === 4 ? '#ff2d95' : '#00ffd5'
+        );
+      }
+
+      // ── Lock dust (always on lock) ──
+      if (g.lockAnim && g.lockAnim.cells.length) {
+        const cells = g.lockAnim.cells;
+        const lowest = cells.reduce((a, b) => a.y > b.y ? a : b);
+        const dx2 = lowest.x * cell + cell / 2;
+        const dy2 = (lowest.y + 1) * cell;
+        fxDust(dx2, dy2, 5);
+      }
+
       if (attack > 0) sendAttack(attack);
       broadcastBoard(true);
       if (!g.alive) endGame();
@@ -2661,6 +2890,7 @@ function startGame() {
   });
 
   setupInput();
+  resizeFx();
   restartGravity();
   startRenderLoop();
 
@@ -2794,6 +3024,16 @@ function fullCleanup() {
   if (mf) { mf.style.width = '0%'; mf.classList.remove('ready'); }
   const ml = document.getElementById('attack-meter-label');
   if (ml) ml.textContent = '0 / 4';
+  // Cleanup FX
+  fxParticles.length = 0;
+  fxFloats.length = 0;
+  fxShocks.length = 0;
+  shakeAmt = 0;
+  if (arenaEl) arenaEl.style.transform = '';
+  if (boardWrapEl) boardWrapEl.classList.remove('critical');
+  const myCanvas = document.getElementById('my-canvas');
+  if (myCanvas) myCanvas.style.filter = '';
+  if (fxCtx && fxCanvas) fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
 }
 
 // ── END OF ROUND ──
@@ -3332,6 +3572,19 @@ function updateDangerOverlay() {
       bgOverlay.className = '';
       _lastDangerClass = '';
       const canvas = document.getElementById('my-canvas');
+      const wrap = document.getElementById('my-board-wrap');
+      if (canvas) {
+        canvas.dataset.danger = dangerAmt.toFixed(2);
+        if (dangerAmt > 0.4) {
+          const shift = (dangerAmt * 3).toFixed(1);
+          canvas.style.filter = `drop-shadow(${shift}px 0 rgba(255,45,149,0.55)) drop-shadow(-${shift}px 0 rgba(0,255,213,0.55))`;
+        } else if (canvas.style.filter) {
+          canvas.style.filter = '';
+        }
+      }
+      if (wrap) {
+        wrap.classList.toggle('critical', cls === 'critical');
+      }
       if (canvas) canvas.dataset.danger = '0';
     }
     return;
@@ -3409,6 +3662,12 @@ if (savedName) {
   showScreen('name-screen');
   setTimeout(() => document.getElementById('name-input').focus(), 100);
 }
+// ══════════════════════════════════════════════════════════════════
+// FX BOOT
+// ══════════════════════════════════════════════════════════════════
+resizeFx();
+fxLoop();
+window.addEventListener('resize', resizeFx);
 </script>
 </body>
 </html>
