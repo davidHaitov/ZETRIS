@@ -1214,10 +1214,10 @@ function drawBoard(canvas, game, cell) {
   ctx.fillRect(0, 0, w, BUFFER * cell);
 
   // Play area — 80% dark so board reads clearly against photo
-  ctx.fillStyle = 'rgba(0,0,0,0.80)';
+  ctx.fillStyle = 'rgba(0,0,0,0.70)';
   ctx.fillRect(0, BUFFER * cell, w, ROWS * cell);
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  ctx.strokeStyle = 'rgb(255,255,255)';
   ctx.lineWidth = 10;
   // левая граница
   ctx.beginPath(); ctx.moveTo(0, BUFFER*cell); ctx.lineTo(0, h); ctx.stroke();
