@@ -2620,7 +2620,7 @@ function onKeyDown(e) {
     return;
   }
   if (!game || !gameRunning || !game.alive) return;
-  if (e.code === 'ArrowDown' || e.code === 'keyS') {
+  if (e.code === 'ArrowDown' || e.code === 'KeyS') {
     e.preventDefault();
     if (!held[e.code]) {
       held[e.code] = true;
@@ -2636,11 +2636,11 @@ function onKeyDown(e) {
   if (held[e.code]) return;
   held[e.code] = true;
   switch (e.code) {
-    case 'ArrowLeft': case 'keyA': 
+    case 'ArrowLeft': case 'KeyA': 
       e.preventDefault(); if (game.move(-1)) Sound.playMove(); startDAS(-1); break;
-    case 'ArrowRight': case 'keyD': 
+    case 'ArrowRight': case 'KeyD': 
       e.preventDefault(); if (game.move(1)) Sound.playMove(); startDAS(1); break;
-    case 'ArrowUp': case 'keyW': case 'KeyX': 
+    case 'ArrowUp': case 'KeyW': case 'KeyX': 
       e.preventDefault(); if (game.rotate(1)) Sound.playMove(); break;
     case 'KeyZ': e.preventDefault(); if (game.rotate(-1)) Sound.playMove(); break;
     case 'Space': e.preventDefault(); game.hardDrop(); break;
