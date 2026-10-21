@@ -2636,7 +2636,7 @@ function scheduleGravityTick() {
 
 // ═══ DEBUFF TIMER ═══
 function getDebuffInterval(elapsedSec) {
-  return Math.max(10000, 30000 - Math.floor(elapsedSec / 30) * 2000);
+  return Math.max(10000, 45000 - Math.floor(elapsedSec / 30) * 2000);
 }
 function scheduleDebuffTick() {
   if (debuffTimer) clearTimeout(debuffTimer);
