@@ -2363,7 +2363,7 @@ function endGame() {
       if (renderLoop) { cancelAnimationFrame(renderLoop); renderLoop = null; }
       showOverlay('GAME OVER', reason, 'var(--danger)', stats);
     }, 1400);
-  } } else {
+  } else {
   gamePhase = 'dying';
   broadcastBoard(true);
   namedRoom.emit('player_died', { id: myId, name: myName, score: game.score, lines: game.lines, level: game.level });
