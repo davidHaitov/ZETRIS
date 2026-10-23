@@ -2363,18 +2363,27 @@ function endGame() {
       if (renderLoop) { cancelAnimationFrame(renderLoop); renderLoop = null; }
       showOverlay('GAME OVER', reason, 'var(--danger)', stats);
     }, 1400);
-  } else {
-    gamePhase = 'dying';
-    broadcastBoard(true);
-    namedRoom.emit('player_died', { id: myId, name: myName, score: game.score, lines: game.lines, level: game.level });
-    setTimeout(() => {
-      gamePhase = 'dead';
+  } } else {
+  gamePhase = 'dying';
+  broadcastBoard(true);
+  namedRoom.emit('player_died', { id: myId, name: myName, score: game.score, lines: game.lines, level: game.level });
+  setTimeout(() => {
+    // Guard: round может закончиться пока играет death-анимация.
+    // В этом случае DEFEAT уже показан — не перезаписываем ELIMINATED.
+    if (gamePhase === 'round_over' || gamePhase === 'gameover') {
       if (renderLoop) { cancelAnimationFrame(renderLoop); renderLoop = null; }
-      enterSpectatorMode(reason, stats);
-    }, 1400);
+      return;
+    }
+    gamePhase = 'dead';
+    if (renderLoop) { cancelAnimationFrame(renderLoop); renderLoop = null; }
+    enterSpectatorMode(reason, stats);
+  }, 1400);
   }
 }
 function enterSpectatorMode(reason, stats) {
+  if (gamePhase === 'round_over' || gamePhase === 'gameover') return;  // ← новая строка
+  localPlayerDead = true;
+  document.body.classList.add('spectating');
   localPlayerDead = true;
   document.body.classList.add('spectating');
   const banner = document.getElementById('eliminated-banner');
