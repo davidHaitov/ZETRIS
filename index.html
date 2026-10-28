@@ -301,6 +301,11 @@
   #toast.boost { border-color: var(--lime); color: var(--lime); }
   #toast.debuff { border-color: var(--danger); color: var(--danger); }
 
+  @keyframes atkFly {
+    0%   { opacity:1; transform:translate(0,0) scale(1); }
+    50%  { opacity:1; transform:translate(calc(var(--dx)*.5),calc(var(--dy)*.3)) scale(.9); }
+    100% { opacity:0; transform:translate(var(--dx),var(--dy)) scale(.6); }
+  }
   @media (max-width: 1600px) { :root { --rail-w: 220px; --cell: 32px; } .panel-hold canvas { width: 170px; height: 170px; } }
   @media (max-width: 1280px) { :root { --rail-w: 190px; --cell: 28px; } .panel-hold canvas { width: 145px; height: 145px; } .panel-stat .panel-value { font-size: 20px; } .panel-stat .panel-value.big { font-size: 24px; } }
   @media (max-width: 900px) { .mode-cards { flex-direction: column; gap: 16px; } .mode-card { min-width: unset; max-width: 100%; min-height: unset; padding: 24px; } .lobby-container { grid-template-columns: 1fr; } .mp-panel { padding: 28px 24px; } .hud.bl, .hud.br { display: none; } #room-input { font-size: 34px; padding: 18px 16px 18px 28px; } .lobby-global-actions { flex-direction: column; } }
@@ -348,18 +353,83 @@
       <div class="mode-desc">Real-time combat. Send garbage to rivals and outlast them all. 2–8 operatives.</div>
       <div class="mode-action">Deploy</div>
     </button>
-    <button class="mode-card rogue" id="rogue-btn">
-      <div class="mode-icon">✦</div>
-      <div class="mode-title">ROGUELIKE</div>
-      <div class="mode-desc">Random buffs, escalating debuffs. Every minute the system gets crueler. How long can you last?</div>
-      <div class="mode-action">Enter</div>
-    </button>
     <button class="mode-card" id="sp-btn">
       <div class="mode-icon">●</div>
       <div class="mode-title">SOLO</div>
-      <div class="mode-desc">Practice protocol. Clear lines, chain combos, hunt high score. No pressure.</div>
+      <div class="mode-desc">Classic, Sprint 40L, Survival, Roguelike, Ban Mode, vs Bot — choose your protocol.</div>
       <div class="mode-action">Initialize</div>
     </button>
+  </div>
+</div>
+
+<!-- SOLO SETTINGS -->
+<div class="screen" id="solo-settings">
+  <div style="background:rgba(8,10,18,0.92);backdrop-filter:blur(20px);border:1px solid rgba(0,255,213,0.25);padding:32px 36px;width:100%;max-width:700px;clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px));display:flex;flex-direction:column;gap:20px;">
+    <div style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:20px;letter-spacing:.1em;color:#00ffd5;text-shadow:0 0 20px rgba(0,255,213,.5);">▸ SOLO // PROTOCOL SELECT</div>
+    <div class="field-label">Game mode</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:border-color .15s;" id="sml-classic">
+        <input type="radio" name="solo-mode" value="classic" checked style="accent-color:#00ffd5;margin-top:3px;flex-shrink:0;">
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;color:#e0e8f0;letter-spacing:.1em;">Classic</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6a7a8a;margin-top:3px;line-height:1.5;">Endless play, level up, survive.</div></div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:border-color .15s;" id="sml-sprint">
+        <input type="radio" name="solo-mode" value="sprint" style="accent-color:#00ffd5;margin-top:3px;flex-shrink:0;">
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;color:#e0e8f0;letter-spacing:.1em;">Sprint 40L</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6a7a8a;margin-top:3px;line-height:1.5;">Clear 40 lines as fast as possible.</div></div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:border-color .15s;" id="sml-survival">
+        <input type="radio" name="solo-mode" value="survival" style="accent-color:#00ffd5;margin-top:3px;flex-shrink:0;">
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;color:#e0e8f0;letter-spacing:.1em;">Survival</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6a7a8a;margin-top:3px;line-height:1.5;">Garbage rains every 10 seconds.</div></div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:border-color .15s;" id="sml-roguelike">
+        <input type="radio" name="solo-mode" value="roguelike" style="accent-color:#00ffd5;margin-top:3px;flex-shrink:0;">
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;color:#e0e8f0;letter-spacing:.1em;">Roguelike</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6a7a8a;margin-top:3px;line-height:1.5;">Random abilities &amp; debuffs each run.</div></div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:border-color .15s;" id="sml-ban">
+        <input type="radio" name="solo-mode" value="ban" style="accent-color:#00ffd5;margin-top:3px;flex-shrink:0;">
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;color:#ff2d95;letter-spacing:.1em;">Ban Mode</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6a7a8a;margin-top:3px;line-height:1.5;">Ban 2 pieces before the match.</div></div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:border-color .15s;" id="sml-vsbot">
+        <input type="radio" name="solo-mode" value="vsbot" style="accent-color:#00ffd5;margin-top:3px;flex-shrink:0;">
+        <div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;color:#b4ff3a;letter-spacing:.1em;">vs Bot</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6a7a8a;margin-top:3px;line-height:1.5;">Fight the Dellacherie AI bot.</div></div>
+      </label>
+    </div>
+    <div style="height:1px;background:rgba(255,255,255,.08);"></div>
+    <div class="field-label">Fall speed</div>
+    <div class="speed-tabs" id="solo-speed-tabs">
+      <button class="speed-tab" data-speed="0.7">Easy</button>
+      <button class="speed-tab active" data-speed="1">Normal</button>
+      <button class="speed-tab" data-speed="1.5">Hard</button>
+      <button class="speed-tab" data-speed="2.2">Insane</button>
+    </div>
+    <div class="field-label">Gravity acceleration over time</div>
+    <div class="speed-tabs" id="solo-gravity-tabs">
+      <button class="speed-tab" data-gravity="none">None</button>
+      <button class="speed-tab active" data-gravity="normal">Normal</button>
+      <button class="speed-tab" data-gravity="fast">Fast ×2</button>
+      <button class="speed-tab" data-gravity="instant">Instant</button>
+    </div>
+    <label class="checkbox-row" for="solo-tspin-cb"><input type="checkbox" id="solo-tspin-cb" checked><div class="checkbox-content"><div class="checkbox-label">T-spin detection</div><div class="checkbox-hint">Reward T-spin clears with 2× attack + floating label</div></div></label>
+    <label class="checkbox-row" for="solo-b2b-cb"><input type="checkbox" id="solo-b2b-cb" checked><div class="checkbox-content"><div class="checkbox-label">Back-to-Back bonus</div><div class="checkbox-hint">Consecutive Tetris/T-spin gives +1 attack each</div></div></label>
+    <label class="checkbox-row" for="solo-rotlock-cb"><input type="checkbox" id="solo-rotlock-cb"><div class="checkbox-content"><div class="checkbox-label">Rotation lock (max 8 resets)</div><div class="checkbox-hint">Prevents infinite spin stalling at surface</div></div></label>
+    <div style="display:flex;gap:12px;margin-top:4px;">
+      <button class="btn btn-ghost" id="solo-settings-back">← BACK</button>
+      <button class="btn btn-primary" id="solo-settings-start" style="flex:1;">INITIALIZE →</button>
+    </div>
+  </div>
+</div>
+
+<!-- BAN MODE SCREEN -->
+<div class="screen" id="ban-screen">
+  <div style="background:rgba(8,10,18,0.92);backdrop-filter:blur(20px);border:1px solid rgba(255,56,96,.35);padding:32px 36px;width:100%;max-width:600px;clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px));display:flex;flex-direction:column;gap:20px;align-items:center;">
+    <div style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:22px;letter-spacing:.1em;color:#ff2d95;text-shadow:0 0 20px rgba(255,56,96,.5);">BAN MODE</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6a7a8a;letter-spacing:.12em;">// SELECT 2 PIECES TO ELIMINATE</div>
+    <div id="ban-pieces-grid" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;"></div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6a7a8a;">Banned: <span style="color:#ff2d95;font-weight:700;" id="ban-count">0</span>/2</div>
+    <div style="display:flex;gap:12px;width:100%;">
+      <button class="btn btn-ghost" id="ban-back">← BACK</button>
+      <button class="btn" id="ban-random" style="border-color:#c73bff;color:#c73bff;">⚄ RANDOM</button>
+      <button class="btn btn-primary" id="ban-start" disabled style="flex:1;">START →</button>
+    </div>
   </div>
 </div>
 
@@ -451,6 +521,8 @@
     <div class="panel panel-stat"><div class="panel-label">LEVEL</div><div class="panel-value" id="level-val">1</div></div>
     <div class="panel panel-stat"><div class="panel-label">LINES</div><div class="panel-value" id="lines-val">0</div></div>
     <div class="panel panel-stat panel-target" style="display:none;"><div class="panel-label">NEXT HIT</div><div class="panel-value magenta" id="target-val">—</div></div>
+    <div class="panel panel-stat" id="panel-tspin" style="display:none;"><div class="panel-label">T-SPIN</div><div class="panel-value" style="color:#c73bff" id="tspin-val">—</div></div>
+    <div class="panel panel-stat" id="panel-b2b" style="display:none;"><div class="panel-label">B2B</div><div class="panel-value" style="color:#00ffd5" id="b2b-val">0</div></div>
     <div class="panel panel-stat panel-inc"><div class="panel-label">INCOMING</div><div class="panel-value danger" id="inc-val">0</div></div>
     <div class="panel panel-stat panel-sent"><div class="panel-label">SENT</div><div class="panel-value magenta" id="atk-val">0</div></div>
   </div>
@@ -459,6 +531,11 @@
 
   <div class="arena">
     <div class="opponents-side left" id="opponents-left"></div>
+    <div id="bot-section" style="display:none;flex-direction:column;align-items:center;gap:6px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#ff2d95;letter-spacing:.18em;text-transform:uppercase;">A.I. BOT</div>
+      <canvas id="bot-canvas" style="border:1px solid rgba(255,45,149,.35);display:block;"></canvas>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6a7a8a;">LINES: <span id="bot-lines">0</span></div>
+    </div>
 
     <div class="my-section" id="my-section">
       <div class="board-wrap" id="my-board-wrap">
@@ -780,11 +857,20 @@ class TetrisGame {
     let key;
     if (this.squareUntil > performance.now()) key = 'O';
     else if (this.redPiecesLeft > 0) { key = 'Z'; this.redPiecesLeft--; }
-    else { this.refillBag(); key = this.bag.shift(); }
+    else {
+      this.refillBag();
+      key = this.bag.shift();
+      // Skip banned pieces — keep pulling until we find an allowed one
+      let safety = 0;
+      while (bannedPieces.has(key) && safety++ < 14) {
+        this.refillBag();
+        key = this.bag.shift();
+      }
+    }
     this.current = this.makePiece(key);
     this.cx = Math.floor((COLS - this.current.shape[0].length) / 2);
     this.cy = 0; this.rotation = 0;
-    this.lockResets = 0; this.trail = [];
+    this.lockResets = 0; this.rotResets = 0; this.trail = [];
     this.cancelLockDelay();
     if (!this.valid(this.current.shape, this.cx, this.cy)) this.alive = false;
   }
@@ -797,11 +883,14 @@ class TetrisGame {
     }, this.lockDelayMs);
   }
   cancelLockDelay() { if (this.lockDelayTimer) { clearTimeout(this.lockDelayTimer); this.lockDelayTimer = null; } this.lockDelayActive = false; }
-  bumpLockDelay() {
+  bumpLockDelay(isRotation) {
     if (!this.lockDelayActive) return;
     if (this.valid(this.current.shape, this.cx, this.cy+1)) { this.cancelLockDelay(); return; }
-    if (this.lockResets >= this.MAX_LOCK_RESETS) return;
-    this.lockResets++; this.cancelLockDelay(); this.startLockDelay();
+    // Rotation lock: cap rotations separately if enabled
+    const rotLimit = soloSettings.rotLockEnabled ? 8 : this.MAX_LOCK_RESETS;
+    if (this.lockResets >= rotLimit) return;
+    this.lockResets++;
+    this.cancelLockDelay(); this.startLockDelay();
   }
   valid(shape, tx, ty) {
     for (let r = 0; r < shape.length; r++) for (let c = 0; c < shape[r].length; c++) {
@@ -861,6 +950,9 @@ class TetrisGame {
     this.cancelLockDelay();
     if (!this.current || !this.alive) return 0;
     const { shape, color } = this.current;
+    // Save T-spin detection state before we write to board
+    this.current_was_T = this.current.key === 'T';
+    this._lastCx = this.cx; this._lastCy = this.cy; this._lastRot = this.rotation;
     const lockedCells = [];
     let anyVisibleCell = false;
     for (let r = 0; r < shape.length; r++) for (let c = 0; c < shape[r].length; c++) {
@@ -888,26 +980,47 @@ class TetrisGame {
       const garbageRows = clearCaptured.filter(r => r.cells.some(v => v === 8)).length;
       const pureRows = cleared - garbageRows;
 
+      // T-spin detection (only for T piece)
+      let tspinType = 'none';
+      if (this.current_was_T && soloSettings.tspinEnabled) {
+        tspinType = detectTspin(this.board, this._lastCx, this._lastCy, this._lastRot);
+      }
+
       if (cleared > 0) {
         this.combo++;
         const comboMult = this.abilities.includes('combo_master') ? 2 : 1;
         const comboPts = this.combo > 1 ? (this.combo - 1) * 50 * comboMult : 0;
-        if (cleared === 4) {
-          this.b2b++;
+        const isTspin = tspinType === 'tspin';
+        const isTspinMini = tspinType === 'tspin-mini';
+        const isTetris = cleared === 4;
+        const isSpecial = isTspin || isTetris; // triggers B2B
+
+        if (isTspin) {
+          // T-spin scoring: 2× normal points
+          const pts = [0, 200, 600, 1000][Math.min(cleared, 3)];
+          this.score += pts * this.level + comboPts;
+          if (soloSettings.b2bEnabled) { this.b2b++; } else this.b2b = 0;
+          this.lastTspin = tspinType;
+        } else if (isTetris) {
+          if (soloSettings.b2bEnabled) { this.b2b++; } else this.b2b = 0;
           this.score += 800 * this.level + comboPts;
         } else {
-          if (this.b2b > 0) this.b2b = 0;
+          if (this.b2b > 0 && !isSpecial) this.b2b = 0;
           const pts = [0, 100, 300, 500, 800];
           this.score += pts[cleared] * this.level + comboPts;
         }
         this.lines += cleared;
         this.level = Math.floor(this.lines / 10) + 1;
-      } else { this.combo = 0; }
+        this.lastClearType = isTspin ? (cleared === 2 ? 'T-SPIN DBL' : cleared === 3 ? 'T-SPIN TRP' : 'T-SPIN') : isTetris ? 'TETRIS' : null;
+      } else { this.combo = 0; this.lastClearType = null; }
 
       // Attack — only from non-garbage rows
       if (pureRows > 0) {
-        let atk = [0, 0, 1, 2, 4][pureRows] || 0;
-        if (this.b2b > 1) atk += 1;
+        const isTspin = tspinType === 'tspin';
+        let atk = isTspin
+          ? [0, 2, 4, 6][Math.min(pureRows, 3)] // T-spin: 2×
+          : [0, 0, 1, 2, 4][pureRows] || 0;
+        if (soloSettings.b2bEnabled && this.b2b > 1) atk += 1;
         if (this.combo > 1) atk += Math.floor(this.combo / 2);
         attack = atk;
       }
@@ -1388,6 +1501,244 @@ class PeerAdapter {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// SOLO SETTINGS STATE
+// ══════════════════════════════════════════════════════════════════
+let soloSettings = {
+  mode: 'classic', speedMult: 1, gravityAccel: 'normal',
+  tspinEnabled: true, b2bEnabled: true, rotLockEnabled: false,
+};
+let bannedPieces = new Set();
+let soloGameMode = 'classic';
+
+// ══════════════════════════════════════════════════════════════════
+// T-SPIN DETECTION
+// ══════════════════════════════════════════════════════════════════
+function detectTspin(board, cx, cy, rotation) {
+  function isFilled(x, y) {
+    if (x < 0 || x >= COLS || y < 0 || y >= TOTAL_ROWS) return true;
+    return !!board[y][x];
+  }
+  const tcx = cx + 1, tcy = cy + 1;
+  const corners = [[tcx-1,tcy-1],[tcx+1,tcy-1],[tcx-1,tcy+1],[tcx+1,tcy+1]];
+  const filledCount = corners.filter(([x,y]) => isFilled(x,y)).length;
+  if (filledCount < 3) return 'none';
+  const frontMap = {
+    0: [[tcx-1,tcy-1],[tcx+1,tcy-1]],
+    1: [[tcx+1,tcy-1],[tcx+1,tcy+1]],
+    2: [[tcx-1,tcy+1],[tcx+1,tcy+1]],
+    3: [[tcx-1,tcy-1],[tcx-1,tcy+1]],
+  };
+  const front = frontMap[rotation] || frontMap[0];
+  const frontFilled = front.filter(([x,y]) => isFilled(x,y)).length;
+  return frontFilled === 2 ? 'tspin' : 'tspin-mini';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DELLACHERIE BOT
+// ══════════════════════════════════════════════════════════════════
+let botGame = null, botTimer = null;
+
+function botValidPlace(board, shape, tx, ty) {
+  for (let r = 0; r < shape.length; r++)
+    for (let c = 0; c < shape[r].length; c++) {
+      if (!shape[r][c]) continue;
+      const nx = tx+c, ny = ty+r;
+      if (nx < 0 || nx >= COLS || ny < 0 || ny >= TOTAL_ROWS) return false;
+      if (board[ny][nx]) return false;
+    }
+  return true;
+}
+function botEval(board) {
+  const w = COLS;
+  const colH = Array(w).fill(0);
+  for (let c = 0; c < w; c++)
+    for (let r = BUFFER; r < TOTAL_ROWS; r++)
+      if (board[r][c]) { colH[c] = TOTAL_ROWS - r; break; }
+  let rowsCleared = 0;
+  for (let r = BUFFER; r < TOTAL_ROWS; r++) if (board[r].every(v => v)) rowsCleared++;
+  let rowTrans = 0;
+  for (let r = BUFFER; r < TOTAL_ROWS; r++) {
+    let prev = 1;
+    for (let c = 0; c < w; c++) { const cur = board[r][c] ? 1 : 0; if (cur !== prev) rowTrans++; prev = cur; }
+    if (!prev) rowTrans++;
+  }
+  let colTrans = 0;
+  for (let c = 0; c < w; c++) {
+    let prev = 1;
+    for (let r = BUFFER; r < TOTAL_ROWS; r++) { const cur = board[r][c] ? 1 : 0; if (cur !== prev) colTrans++; prev = cur; }
+  }
+  let holes = 0;
+  for (let c = 0; c < w; c++) {
+    let blockFound = false;
+    for (let r = BUFFER; r < TOTAL_ROWS; r++) { if (board[r][c]) blockFound = true; else if (blockFound) holes++; }
+  }
+  let wells = 0;
+  for (let c = 0; c < w; c++)
+    for (let r = BUFFER; r < TOTAL_ROWS; r++)
+      if (!board[r][c]) {
+        const lw = c === 0 || !!board[r][c-1], rw = c === w-1 || !!board[r][c+1];
+        if (lw && rw) { let d = 0; for (let rr = r; rr < TOTAL_ROWS && !board[rr][c]; rr++) d++; wells += d*(d+1)/2; }
+      }
+  const landH = Math.max(...colH);
+  return -4.5*landH + 3.418*rowsCleared - 3.218*rowTrans - 9.348*colTrans - 7.899*holes - 3.386*wells;
+}
+function botBestMove(board, pieceKey) {
+  const p = PIECES[pieceKey];
+  let bestScore = -Infinity, bestMove = null;
+  let shape = p.shape.map(r => [...r]);
+  for (let rot = 0; rot < 4; rot++) {
+    for (let cx = -2; cx < COLS + 2; cx++) {
+      let cy = 0;
+      while (botValidPlace(board, shape, cx, cy+1)) cy++;
+      if (!botValidPlace(board, shape, cx, cy)) continue;
+      const sim = board.map(r => [...r]);
+      for (let r = 0; r < shape.length; r++)
+        for (let c = 0; c < shape[r].length; c++) {
+          if (!shape[r][c]) continue;
+          const ny = cy+r, nx = cx+c;
+          if (ny >= 0 && ny < TOTAL_ROWS) sim[ny][nx] = p.color;
+        }
+      for (let r = TOTAL_ROWS-1; r >= BUFFER; r--)
+        if (sim[r].every(v => v)) { sim.splice(r,1); sim.unshift(Array(COLS).fill(0)); r++; }
+      const sc = botEval(sim);
+      if (sc > bestScore) { bestScore = sc; bestMove = { cx, cy, rot, shape: shape.map(r=>[...r]) }; }
+    }
+    shape = rotateCW(shape);
+  }
+  return bestMove;
+}
+function startBot() {
+  botGame = {
+    board: Array.from({length: TOTAL_ROWS}, () => Array(COLS).fill(0)),
+    bag: [], lines: 0, alive: true,
+    current: null, cx: 0, cy: 0,
+    pendingGarbage: 0,
+  };
+  botRefillBag(); botSpawn();
+  const cell = Math.floor(cellSize() * 0.6);
+  const bc = document.getElementById('bot-canvas');
+  bc.width = COLS * cell; bc.height = ROWS * cell;
+  document.getElementById('bot-section').style.display = 'flex';
+  scheduleBotMove();
+}
+function stopBot() {
+  if (botTimer) { clearTimeout(botTimer); botTimer = null; }
+  botGame = null;
+  document.getElementById('bot-section').style.display = 'none';
+}
+function botRefillBag() { while (botGame.bag.length < 7) botGame.bag.push(...makeBag()); }
+function botSpawn() {
+  botRefillBag();
+  let key = botGame.bag.shift();
+  // skip banned pieces in bot's bag too
+  while (bannedPieces.has(key) && botGame.bag.length) key = botGame.bag.shift();
+  const p = PIECES[key];
+  botGame.current = { key, shape: p.shape.map(r=>[...r]), color: p.color };
+  botGame.cx = Math.floor((COLS - botGame.current.shape[0].length) / 2);
+  botGame.cy = 0;
+  if (!botValidPlace(botGame.board, botGame.current.shape, botGame.cx, botGame.cy)) botGame.alive = false;
+}
+function scheduleBotMove() {
+  if (!botGame || !botGame.alive || !gameRunning) return;
+  botTimer = setTimeout(() => {
+    if (!botGame || !botGame.alive || !gameRunning) return;
+    const move = botBestMove(botGame.board, botGame.current.key);
+    if (move) {
+      for (let r = 0; r < move.shape.length; r++)
+        for (let c = 0; c < move.shape[r].length; c++) {
+          if (!move.shape[r][c]) continue;
+          const ny = move.cy+r, nx = move.cx+c;
+          if (ny >= 0 && ny < TOTAL_ROWS) botGame.board[ny][nx] = botGame.current.color;
+        }
+      let cleared = 0;
+      for (let r = TOTAL_ROWS-1; r >= BUFFER; r--)
+        if (botGame.board[r].every(v => v)) { botGame.board.splice(r,1); botGame.board.unshift(Array(COLS).fill(0)); cleared++; r++; }
+      botGame.lines += cleared;
+      document.getElementById('bot-lines').textContent = botGame.lines;
+      if (botGame.pendingGarbage > 0) {
+        const hole = Math.floor(Math.random() * COLS);
+        for (let i = 0; i < botGame.pendingGarbage; i++) { botGame.board.shift(); const row = Array(COLS).fill(8); row[hole] = 0; botGame.board.push(row); }
+        botGame.pendingGarbage = 0;
+      }
+      if (cleared >= 2 && game && game.alive) {
+        const atk = [0,0,1,2,4][Math.min(cleared,4)];
+        if (atk > 0) { game.pendingGarbage += atk; flashAttack(); fxAttackFly('bot-section', 'my-board-wrap', atk, '#ff2d95'); }
+      }
+      drawBotBoard();
+      botSpawn();
+    }
+    scheduleBotMove();
+  }, 260 + Math.random() * 140);
+}
+function drawBotBoard() {
+  const bc = document.getElementById('bot-canvas');
+  if (!bc || !botGame) return;
+  const cell = Math.floor(cellSize() * 0.6);
+  const w = COLS*cell, h = ROWS*cell;
+  if (bc.width !== w || bc.height !== h) { bc.width = w; bc.height = h; }
+  const ctx = bc.getContext('2d');
+  ctx.fillStyle = 'rgba(5,6,12,.9)'; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle = 'rgba(255,45,149,.06)'; ctx.lineWidth = 0.5;
+  for (let r = 0; r <= ROWS; r++) { ctx.beginPath(); ctx.moveTo(0,r*cell); ctx.lineTo(w,r*cell); ctx.stroke(); }
+  for (let c = 0; c <= COLS; c++) { ctx.beginPath(); ctx.moveTo(c*cell,0); ctx.lineTo(c*cell,h); ctx.stroke(); }
+  for (let r = BUFFER; r < TOTAL_ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      const v = botGame.board[r][c]; if (!v) continue;
+      drawCell(ctx, c*cell, (r-BUFFER)*cell, cell, v === 8 ? GARBAGE_COLOR : COLORS[v]);
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ATTACK FLY ANIMATION
+// ══════════════════════════════════════════════════════════════════
+function fxAttackFly(fromId, toId, lines, color) {
+  const fromEl = document.getElementById(fromId);
+  const toEl   = document.getElementById(toId);
+  if (!fromEl || !toEl) return;
+  const from = fromEl.getBoundingClientRect();
+  const to   = toEl.getBoundingClientRect();
+  const el = document.createElement('div');
+  el.style.cssText = `position:fixed;pointer-events:none;z-index:99;font-family:'Orbitron',sans-serif;font-size:13px;font-weight:900;color:${color || '#ff2d95'};text-shadow:0 0 18px ${color || '#ff2d95'};letter-spacing:.1em;white-space:nowrap;left:${from.left + from.width/2}px;top:${from.top + from.height/2}px;`;
+  el.textContent = `⚡+${lines}`;
+  const dx = (to.left + to.width/2) - (from.left + from.width/2);
+  const dy = (to.top  + to.height*.7) - (from.top  + from.height/2);
+  el.style.setProperty('--dx', dx+'px');
+  el.style.setProperty('--dy', dy+'px');
+  el.style.animation = 'atkFly .7s cubic-bezier(.4,0,.2,1) forwards';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 750);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SURVIVAL MODE GARBAGE RAIN
+// ══════════════════════════════════════════════════════════════════
+let survivalTimer = null;
+function startSurvival() {
+  survivalTimer = setInterval(() => {
+    if (!game || !game.alive || !gameRunning) { clearInterval(survivalTimer); return; }
+    const elapsed = (performance.now() - gameStartTime) / 1000;
+    const lines = elapsed < 60 ? 1 : elapsed < 120 ? 2 : 3;
+    game.pendingGarbage += lines;
+    flashAttack();
+    toast('SURGE +' + lines, 'debuff');
+  }, 10000);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SPRINT MODE
+// ══════════════════════════════════════════════════════════════════
+function checkSprintDone(g) {
+  if (soloGameMode !== 'sprint') return;
+  if (g.lines >= 40) {
+    const elapsed = (performance.now() - gameStartTime) / 1000;
+    const mm = Math.floor(elapsed / 60), ss = (elapsed % 60).toFixed(2).padStart(5, '0');
+    gameRunning = false;
+    cleanupTimers();
+    showOverlay('SPRINT COMPLETE', `40 lines in ${mm}:${ss}`, 'var(--success)', { score: g.score, lines: g.lines, level: g.level, attack: 0 });
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
 // GLOBAL STATE
 // ══════════════════════════════════════════════════════════════════
 let namedRoom = null;
@@ -1858,6 +2209,17 @@ function startGame() {
 
   // Show/hide MP-only panels
   document.querySelectorAll('.panel-target').forEach(el => el.style.display = isMP ? '' : 'none');
+  // T-spin / B2B panels
+  const tspinPanel = document.getElementById('panel-tspin');
+  const b2bPanel   = document.getElementById('panel-b2b');
+  if (tspinPanel) tspinPanel.style.display = soloSettings.tspinEnabled ? '' : 'none';
+  if (b2bPanel)   b2bPanel.style.display   = soloSettings.b2bEnabled   ? '' : 'none';
+  // Mode-specific setup
+  soloGameMode = soloSettings.mode;
+  if (soloGameMode === 'survival') startSurvival();
+  else if (survivalTimer) { clearInterval(survivalTimer); survivalTimer = null; }
+  if (soloGameMode === 'vsbot') startBot();
+  else stopBot();
 
   Object.keys(statValues).forEach(k => delete statValues[k]);
   lastGarbage = 0;
@@ -1876,14 +2238,31 @@ function startGame() {
             fxBurst(c*cell+cell/2, row.y*cell+cell/2, 4, [color, '#ffffff'], { speed: 3.5, size: 3.5 });
           }
         }
-        const labels = ['', 'SINGLE', 'DOUBLE', 'TRIPLE', 'TETRIS'];
-        if (labels[cleared]) {
-          const isTetris = cleared === 4;
-          fxFloat(bx, (BUFFER*cell) + (ROWS*cell)/2, labels[cleared], isTetris ? '#ff2d95' : '#b4ff3a', isTetris ? 48 : 32, -2);
+        // Clear label — T-spin overrides
+        const clearLabel = g.lastClearType || ['', 'SINGLE', 'DOUBLE', 'TRIPLE', 'TETRIS'][Math.min(cleared,4)];
+        const isTetris = cleared === 4 && !g.lastClearType;
+        const isTspin  = g.lastClearType && g.lastClearType.startsWith('T-SPIN');
+        const labelColor = isTspin ? '#c73bff' : isTetris ? '#ff2d95' : '#b4ff3a';
+        fxFloat(bx, (BUFFER*cell) + (ROWS*cell)/2, clearLabel, labelColor, isTetris || isTspin ? 42 : 30, -2);
+        // B2B float
+        if (g.b2b > 1 && soloSettings.b2bEnabled) {
+          fxFloat(bx, (BUFFER*cell) + (ROWS*cell)/2 + 48, `B2B ×${g.b2b-1}`, '#00ffd5', 20, -1.5);
         }
-        if (cleared === 4) fxBurst(bx, (BUFFER*cell)+(ROWS*cell)/2, 60, ['#00ffd5','#ff2d95','#b4ff3a','#ffe500','#c73bff'], { speed: 7, size: 5, decay: 0.018 });
+        // Combo float
+        if (g.combo > 1) fxFloat(bx, (BUFFER*cell)+(ROWS*cell)/2+80, `COMBO ×${g.combo}`, '#ffe500', 18, -1.2);
+        if (isTetris || isTspin) fxBurst(bx, (BUFFER*cell)+(ROWS*cell)/2, isTspin ? 50 : 60, isTspin ? ['#c73bff','#ff2d95','#ffffff'] : ['#00ffd5','#ff2d95','#b4ff3a','#ffe500','#c73bff'], { speed: isTspin ? 6 : 7, size: 5, decay: 0.018 });
         fxShake(cleared * 3.5 + (cleared === 4 ? 8 : 0));
-        fxShockwave(bx, (BUFFER*cell)+(ROWS*cell)/2, 240+cleared*30, cleared === 4 ? '#ff2d95' : '#00ffd5');
+        fxShockwave(bx, (BUFFER*cell)+(ROWS*cell)/2, 240+cleared*30, isTspin ? '#c73bff' : isTetris ? '#ff2d95' : '#00ffd5');
+        // Update T-spin stat panel
+        if (soloSettings.tspinEnabled) {
+          const tEl = document.getElementById('tspin-val');
+          if (tEl && g.lastClearType) { tEl.textContent = g.lastClearType; setTimeout(() => { if(tEl) tEl.textContent = '—'; }, 2000); }
+        }
+        // Update B2B stat panel
+        if (soloSettings.b2bEnabled) {
+          const b2bEl = document.getElementById('b2b-val');
+          if (b2bEl) b2bEl.textContent = g.b2b > 1 ? g.b2b - 1 : 0;
+        }
       }
       if (g.lockAnim && g.lockAnim.cells.length) {
         const cells = g.lockAnim.cells;
@@ -1893,6 +2272,7 @@ function startGame() {
       if (g.roguelike) checkAbilityThreshold(g);
       if (attack > 0) sendAttack(attack);
       broadcastBoard(true);
+      checkSprintDone(g);
       if (!g.alive) endGame();
       else scheduleGravityTick();
     }
@@ -2277,13 +2657,16 @@ function broadcastBoard(force) {
   });
 }
 function sendAttack(lines) {
+  // vs Bot mode
+  if (soloGameMode === 'vsbot') { if (botGame && botGame.alive) { botGame.pendingGarbage += lines; fxAttackFly('my-board-wrap', 'bot-section', lines, '#00ffd5'); } return; }
   if (!lines || !namedRoom) return;
   const pool = Object.keys(opponentStates).filter(id => opponentStates[id].alive !== false);
   if (!pool.length) return;
   let target = game.nextAttackTarget;
   if (!target || !pool.includes(target)) target = pool[Math.floor(Math.random() * pool.length)];
   namedRoom.emit('attack', { from: myId, to: target, lines });
-  // Pick next target
+  // Attack fly animation to opponent card
+  fxAttackFly('my-board-wrap', 'opp-' + target, lines, '#ff2d95');
   const newPool = pool.length > 1 ? pool.filter(id => id !== target) : pool;
   game.nextAttackTarget = newPool[Math.floor(Math.random() * newPool.length)];
 }
@@ -2293,6 +2676,8 @@ function cleanupTimers() {
   if (abilityChoiceTimer) { clearInterval(abilityChoiceTimer); abilityChoiceTimer = null; }
   if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
   if (speedTimer) { clearInterval(speedTimer); speedTimer = null; }
+  if (survivalTimer) { clearInterval(survivalTimer); survivalTimer = null; }
+  if (botTimer) { clearTimeout(botTimer); botTimer = null; }
   if (renderLoop) { cancelAnimationFrame(renderLoop); renderLoop = null; }
   if (dasTimer) { clearTimeout(dasTimer); dasTimer = null; }
   if (arrTimer) { clearInterval(arrTimer); arrTimer = null; }
@@ -2713,8 +3098,122 @@ document.getElementById('header-name').addEventListener('click', () => {
   }
 });
 document.getElementById('mp-btn').addEventListener('click', () => showScreen('mp-menu'));
-document.getElementById('rogue-btn').addEventListener('click', startRoguelike);
-document.getElementById('sp-btn').addEventListener('click', startSolo);
+document.getElementById('sp-btn').addEventListener('click', () => showScreen('solo-settings'));
+
+// ── SOLO SETTINGS ──
+document.getElementById('solo-settings-back').addEventListener('click', () => showScreen('main-menu'));
+document.getElementById('solo-settings-start').addEventListener('click', () => {
+  // Read mode
+  const modeEl = document.querySelector('input[name="solo-mode"]:checked');
+  soloSettings.mode = modeEl ? modeEl.value : 'classic';
+  soloSettings.tspinEnabled = document.getElementById('solo-tspin-cb').checked;
+  soloSettings.b2bEnabled   = document.getElementById('solo-b2b-cb').checked;
+  soloSettings.rotLockEnabled = document.getElementById('solo-rotlock-cb').checked;
+  if (soloSettings.mode === 'ban') {
+    initBanScreen(); showScreen('ban-screen');
+  } else if (soloSettings.mode === 'roguelike') {
+    startRoguelike();
+  } else {
+    launchSolo();
+  }
+});
+// Solo speed tabs
+document.querySelectorAll('#solo-speed-tabs .speed-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#solo-speed-tabs .speed-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    soloSettings.speedMult = parseFloat(btn.dataset.speed);
+  });
+});
+// Solo gravity tabs
+document.querySelectorAll('#solo-gravity-tabs .speed-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#solo-gravity-tabs .speed-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    soloSettings.gravityAccel = btn.dataset.gravity;
+  });
+});
+
+function launchSolo() {
+  // Apply solo speed to gameSettings for gravity
+  gameSettings.speedMult = soloSettings.speedMult;
+  // Gravity accel: modify boostMult
+  const gravMap = { none: 1, normal: 1.55, fast: 2.5, instant: 99 };
+  gameSettings.boostMult = gravMap[soloSettings.gravityAccel] || 1.55;
+  bannedPieces = new Set(); // clear bans unless ban mode
+  startSolo();
+}
+
+// ── BAN MODE ──
+function initBanScreen() {
+  bannedPieces = new Set();
+  const grid = document.getElementById('ban-pieces-grid');
+  grid.innerHTML = '';
+  PIECE_KEYS.forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-ghost';
+    btn.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 18px;border:2px solid rgba(255,255,255,.12);cursor:pointer;min-width:72px;font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:700;letter-spacing:.1em;color:#6a7a8a;transition:all .18s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));background:rgba(0,0,0,.5);';
+    btn.dataset.key = key;
+    // Mini preview canvas
+    const c = document.createElement('canvas');
+    c.width = 44; c.height = 34; c.style.display = 'block';
+    const ctx = c.getContext('2d');
+    const p = PIECES[key];
+    const b = pieceBounds(p.shape);
+    if (b) {
+      const cs = Math.min(Math.floor(44/(b.maxC-b.minC+1)), Math.floor(34/(b.maxR-b.minR+1)));
+      const ox = (44 - (b.maxC-b.minC+1)*cs)/2;
+      const oy = (34 - (b.maxR-b.minR+1)*cs)/2;
+      for (let r = 0; r < p.shape.length; r++)
+        for (let col = 0; col < p.shape[r].length; col++) {
+          if (!p.shape[r][col]) continue;
+          drawCell(ctx, ox+(col-b.minC)*cs, oy+(r-b.minR)*cs, cs, COLORS[p.color]);
+        }
+    }
+    btn.appendChild(c);
+    const label = document.createElement('span');
+    label.textContent = key;
+    btn.appendChild(label);
+    btn.addEventListener('click', () => {
+      if (bannedPieces.has(key)) {
+        bannedPieces.delete(key);
+        btn.style.borderColor = 'rgba(255,255,255,.12)';
+        btn.style.color = '#6a7a8a';
+        btn.style.background = 'rgba(0,0,0,.5)';
+      } else {
+        if (bannedPieces.size >= 2) { toast('Max 2 bans'); return; }
+        bannedPieces.add(key);
+        btn.style.borderColor = '#ff2d95';
+        btn.style.color = '#ff2d95';
+        btn.style.background = 'rgba(255,45,149,.1)';
+      }
+      document.getElementById('ban-count').textContent = bannedPieces.size;
+      document.getElementById('ban-start').disabled = bannedPieces.size !== 2;
+    });
+    grid.appendChild(btn);
+  });
+}
+document.getElementById('ban-back').addEventListener('click', () => showScreen('solo-settings'));
+document.getElementById('ban-random').addEventListener('click', () => {
+  bannedPieces = new Set();
+  document.querySelectorAll('#ban-pieces-grid button').forEach(btn => {
+    btn.style.borderColor = 'rgba(255,255,255,.12)';
+    btn.style.color = '#6a7a8a';
+    btn.style.background = 'rgba(0,0,0,.5)';
+  });
+  const shuffled = [...PIECE_KEYS].sort(() => Math.random() - 0.5).slice(0, 2);
+  shuffled.forEach(key => {
+    bannedPieces.add(key);
+    const btn = document.querySelector(`#ban-pieces-grid button[data-key="${key}"]`);
+    if (btn) { btn.style.borderColor = '#ff2d95'; btn.style.color = '#ff2d95'; btn.style.background = 'rgba(255,45,149,.1)'; }
+  });
+  document.getElementById('ban-count').textContent = bannedPieces.size;
+  document.getElementById('ban-start').disabled = bannedPieces.size !== 2;
+});
+document.getElementById('ban-start').addEventListener('click', () => {
+  soloSettings.mode = 'ban';
+  launchSolo();
+});
 document.getElementById('create-btn').addEventListener('click', createRoom);
 document.getElementById('join-menu-btn').addEventListener('click', () => {
   document.getElementById('room-input').value = '';
