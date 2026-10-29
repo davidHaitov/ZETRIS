@@ -1542,14 +1542,16 @@ function botValidPlace(board, shape, tx, ty) {
   for (let r = 0; r < shape.length; r++)
     for (let c = 0; c < shape[r].length; c++) {
       if (!shape[r][c]) continue;
-      const nx = tx+c, ny = ty+r;
-      if (nx < 0 || nx >= COLS || ny < 0 || ny >= TOTAL_ROWS) return false;
-      if (board[ny][nx]) return false;
+      const nx = tx + c, ny = ty + r;
+      if (nx < 0 || nx >= COLS) return false;
+      if (ny < 0 || ny >= TOTAL_ROWS) return false;
+      if (ny >= 0 && board[ny][nx]) return false;
     }
   return true;
 }
 function botEval(board) {
   const w = COLS;
+  // Heights measured from play area only (BUFFER..TOTAL_ROWS)
   const colH = Array(w).fill(0);
   for (let c = 0; c < w; c++)
     for (let r = BUFFER; r < TOTAL_ROWS; r++)
@@ -1579,7 +1581,7 @@ function botEval(board) {
         const lw = c === 0 || !!board[r][c-1], rw = c === w-1 || !!board[r][c+1];
         if (lw && rw) { let d = 0; for (let rr = r; rr < TOTAL_ROWS && !board[rr][c]; rr++) d++; wells += d*(d+1)/2; }
       }
-  const landH = Math.max(...colH);
+  const landH = colH.length ? Math.max(...colH) : 0;
   return -4.5*landH + 3.418*rowsCleared - 3.218*rowTrans - 9.348*colTrans - 7.899*holes - 3.386*wells;
 }
 function botBestMove(board, pieceKey) {
@@ -1588,20 +1590,31 @@ function botBestMove(board, pieceKey) {
   let shape = p.shape.map(r => [...r]);
   for (let rot = 0; rot < 4; rot++) {
     for (let cx = -2; cx < COLS + 2; cx++) {
-      let cy = 0;
-      while (botValidPlace(board, shape, cx, cy+1)) cy++;
-      if (!botValidPlace(board, shape, cx, cy)) continue;
+      // Start drop from BUFFER (top of play area), not 0
+      let cy = BUFFER;
+      if (!botValidPlace(board, shape, cx, cy)) { shape = rotateCW(shape); continue; }
+      while (botValidPlace(board, shape, cx, cy + 1)) cy++;
+      // Reject if any cell lands above BUFFER (death zone)
+      let touchesDeath = false;
+      for (let r = 0; r < shape.length; r++)
+        for (let c = 0; c < shape[r].length; c++) {
+          if (!shape[r][c]) continue;
+          if (cy + r < BUFFER) { touchesDeath = true; break; }
+        }
+      if (touchesDeath) continue;
+      // Simulate placement
       const sim = board.map(r => [...r]);
       for (let r = 0; r < shape.length; r++)
         for (let c = 0; c < shape[r].length; c++) {
           if (!shape[r][c]) continue;
-          const ny = cy+r, nx = cx+c;
-          if (ny >= 0 && ny < TOTAL_ROWS) sim[ny][nx] = p.color;
+          const ny = cy + r, nx = cx + c;
+          if (ny >= BUFFER && ny < TOTAL_ROWS) sim[ny][nx] = p.color;
         }
-      for (let r = TOTAL_ROWS-1; r >= BUFFER; r--)
-        if (sim[r].every(v => v)) { sim.splice(r,1); sim.unshift(Array(COLS).fill(0)); r++; }
+      // Clear full rows in play area only
+      for (let r = TOTAL_ROWS - 1; r >= BUFFER; r--)
+        if (sim[r].every(v => v)) { sim.splice(r, 1); sim.unshift(Array(COLS).fill(0)); r++; }
       const sc = botEval(sim);
-      if (sc > bestScore) { bestScore = sc; bestMove = { cx, cy, rot, shape: shape.map(r=>[...r]) }; }
+      if (sc > bestScore) { bestScore = sc; bestMove = { cx, cy, rot, shape: shape.map(r => [...r]) }; }
     }
     shape = rotateCW(shape);
   }
@@ -1630,45 +1643,70 @@ function botRefillBag() { while (botGame.bag.length < 7) botGame.bag.push(...mak
 function botSpawn() {
   botRefillBag();
   let key = botGame.bag.shift();
-  // skip banned pieces in bot's bag too
-  while (bannedPieces.has(key) && botGame.bag.length) key = botGame.bag.shift();
+  let safety = 0;
+  while (bannedPieces.has(key) && safety++ < 14 && botGame.bag.length) {
+    botRefillBag(); key = botGame.bag.shift();
+  }
   const p = PIECES[key];
-  botGame.current = { key, shape: p.shape.map(r=>[...r]), color: p.color };
+  botGame.current = { key, shape: p.shape.map(r => [...r]), color: p.color };
   botGame.cx = Math.floor((COLS - botGame.current.shape[0].length) / 2);
-  botGame.cy = 0;
+  // Spawn at BUFFER (top of play area), not 0
+  botGame.cy = BUFFER;
   if (!botValidPlace(botGame.board, botGame.current.shape, botGame.cx, botGame.cy)) botGame.alive = false;
 }
 function scheduleBotMove() {
   if (!botGame || !botGame.alive || !gameRunning) return;
+  // Bot plays one piece every ~700-1000ms — human-like pace, not instant
+  const delay = 700 + Math.random() * 300;
   botTimer = setTimeout(() => {
     if (!botGame || !botGame.alive || !gameRunning) return;
     const move = botBestMove(botGame.board, botGame.current.key);
     if (move) {
+      // Lock piece — only in play area (BUFFER..TOTAL_ROWS-1)
+      let lockedAny = false;
       for (let r = 0; r < move.shape.length; r++)
         for (let c = 0; c < move.shape[r].length; c++) {
           if (!move.shape[r][c]) continue;
-          const ny = move.cy+r, nx = move.cx+c;
-          if (ny >= 0 && ny < TOTAL_ROWS) botGame.board[ny][nx] = botGame.current.color;
+          const ny = move.cy + r, nx = move.cx + c;
+          if (ny >= BUFFER && ny < TOTAL_ROWS) {
+            botGame.board[ny][nx] = botGame.current.color;
+            lockedAny = true;
+          } else if (ny < BUFFER) {
+            // Cell above death line → bot topped out
+            botGame.alive = false;
+          }
         }
+      if (!lockedAny || !botGame.alive) { drawBotBoard(); return; }
+      // Clear full lines in play area
       let cleared = 0;
-      for (let r = TOTAL_ROWS-1; r >= BUFFER; r--)
-        if (botGame.board[r].every(v => v)) { botGame.board.splice(r,1); botGame.board.unshift(Array(COLS).fill(0)); cleared++; r++; }
+      for (let r = TOTAL_ROWS - 1; r >= BUFFER; r--)
+        if (botGame.board[r].every(v => v)) { botGame.board.splice(r, 1); botGame.board.unshift(Array(COLS).fill(0)); cleared++; r++; }
       botGame.lines += cleared;
-      document.getElementById('bot-lines').textContent = botGame.lines;
+      const lineEl = document.getElementById('bot-lines');
+      if (lineEl) lineEl.textContent = botGame.lines;
+      // Apply incoming garbage
       if (botGame.pendingGarbage > 0) {
         const hole = Math.floor(Math.random() * COLS);
-        for (let i = 0; i < botGame.pendingGarbage; i++) { botGame.board.shift(); const row = Array(COLS).fill(8); row[hole] = 0; botGame.board.push(row); }
+        for (let i = 0; i < botGame.pendingGarbage; i++) {
+          botGame.board.shift();
+          const row = Array(COLS).fill(8); row[hole] = 0; botGame.board.push(row);
+        }
         botGame.pendingGarbage = 0;
       }
+      // Bot attacks player when clearing 2+ lines
       if (cleared >= 2 && game && game.alive) {
-        const atk = [0,0,1,2,4][Math.min(cleared,4)];
-        if (atk > 0) { game.pendingGarbage += atk; flashAttack(); fxAttackFly('bot-section', 'my-board-wrap', atk, '#ff2d95'); }
+        const atk = [0, 0, 1, 2, 4][Math.min(cleared, 4)];
+        if (atk > 0) {
+          game.pendingGarbage += atk;
+          flashAttack();
+          fxAttackFly('bot-section', 'my-board-wrap', atk, '#ff2d95');
+        }
       }
       drawBotBoard();
       botSpawn();
     }
     scheduleBotMove();
-  }, 260 + Math.random() * 140);
+  }, delay);
 }
 function drawBotBoard() {
   const bc = document.getElementById('bot-canvas');
@@ -2148,9 +2186,14 @@ function startSolo() {
   document.body.classList.add('solo-mode');
   document.body.classList.remove('spectating');
   document.getElementById('eliminated-banner').style.display = 'none';
-  document.getElementById('hud-room-tag').textContent = 'SOLO';
+  const modeLabels = {
+    classic: 'SOLO', sprint: 'SPRINT 40L', survival: 'SURVIVAL',
+    roguelike: 'ROGUELIKE', ban: 'BAN MODE', vsbot: 'VS BOT',
+  };
+  const label = modeLabels[soloSettings.mode] || 'SOLO';
+  document.getElementById('hud-room-tag').textContent = label;
   document.getElementById('hud-timer').textContent = '0:00';
-  document.getElementById('game-room-label').textContent = 'solo practice';
+  document.getElementById('game-room-label').textContent = label.toLowerCase();
   beginCountdown(3);
 }
 
@@ -2214,12 +2257,18 @@ function startGame() {
   const b2bPanel   = document.getElementById('panel-b2b');
   if (tspinPanel) tspinPanel.style.display = soloSettings.tspinEnabled ? '' : 'none';
   if (b2bPanel)   b2bPanel.style.display   = soloSettings.b2bEnabled   ? '' : 'none';
-  // Mode-specific setup
-  soloGameMode = soloSettings.mode;
-  if (soloGameMode === 'survival') startSurvival();
-  else if (survivalTimer) { clearInterval(survivalTimer); survivalTimer = null; }
-  if (soloGameMode === 'vsbot') startBot();
-  else stopBot();
+  // Mode-specific setup — only for solo; MP has no solo modes
+  if (!isMP) {
+    soloGameMode = soloSettings.mode;
+    if (soloGameMode === 'survival') startSurvival();
+    else if (survivalTimer) { clearInterval(survivalTimer); survivalTimer = null; }
+    if (soloGameMode === 'vsbot') startBot();
+    else stopBot();
+  } else {
+    soloGameMode = 'multiplayer';
+    if (survivalTimer) { clearInterval(survivalTimer); survivalTimer = null; }
+    stopBot();
+  }
 
   Object.keys(statValues).forEach(k => delete statValues[k]);
   lastGarbage = 0;
@@ -2302,7 +2351,8 @@ function checkSpeedBoost() {
   else if (elapsed >= 120) newBoost = 1;
   if (newBoost > speedBoost) {
     speedBoost = newBoost;
-    toast('⚡ Speed up! ×' + gameSettings.boostMult, true);
+    const activeMult = soloGameMode === 'multiplayer' ? gameSettings.boostMult : soloSettings.gravityAccel === 'none' ? 1 : gameSettings.boostMult;
+    toast('⚡ Speed up! ×' + activeMult, true);
     const flash = document.getElementById('my-speed-flash');
     flash.classList.remove('fire'); void flash.offsetWidth; flash.classList.add('fire');
     scheduleGravityTick();
@@ -2312,7 +2362,11 @@ function scheduleGravityTick() {
   if (gravityTimer) clearTimeout(gravityTimer);
   gravityTimer = null;
   if (!game || !gameRunning || !game.alive || game.paused) return;
-  const interval = getGravity(game.level, speedBoost, gameSettings, game);
+  // Solo modes use soloSettings speed; MP uses gameSettings; 'none' gravity accel = no boostMult
+  const activeSettings = (soloGameMode === 'multiplayer')
+    ? gameSettings
+    : { speedMult: soloSettings.speedMult, boostMult: soloSettings.gravityAccel === 'none' ? 1 : soloSettings.gravityAccel === 'fast' ? 2.5 : soloSettings.gravityAccel === 'instant' ? 99 : gameSettings.boostMult };
+  const interval = getGravity(game.level, speedBoost, activeSettings, game);
   gravityTimer = setTimeout(() => {
     if (!game || !gameRunning || !game.alive || game.paused) return;
     game.gravity();
@@ -3135,12 +3189,12 @@ document.querySelectorAll('#solo-gravity-tabs .speed-tab').forEach(btn => {
 });
 
 function launchSolo() {
-  // Apply solo speed to gameSettings for gravity
+  // Apply solo speed to gameSettings
   gameSettings.speedMult = soloSettings.speedMult;
-  // Gravity accel: modify boostMult
   const gravMap = { none: 1, normal: 1.55, fast: 2.5, instant: 99 };
   gameSettings.boostMult = gravMap[soloSettings.gravityAccel] || 1.55;
-  bannedPieces = new Set(); // clear bans unless ban mode
+  // Only clear bans if NOT in ban mode — ban-screen already set bannedPieces
+  if (soloSettings.mode !== 'ban') bannedPieces = new Set();
   startSolo();
 }
 
