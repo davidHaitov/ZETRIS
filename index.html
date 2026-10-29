@@ -5003,11 +5003,12 @@
 				    throw lastErr;
 				  }
 				
-				  async _joinOnce(hostPeerId) {
+				async _joinOnce(hostPeerId) {
 				    if (this.isHost) {
 				      this.peer = new Peer(hostPeerId, PEER_CONFIG);
 				      await new Promise((resolve, reject) => {
-				        const t = setTimeout(() => reject(new Error('timeout')), 25000);
+				        // 60s — Render cold start может занять до минуты
+				        const t = setTimeout(() => reject(new Error('timeout')), 60000);
 				        const onOpen = () => { clearTimeout(t); this.peer.off('error', onErr); resolve(); };
 				        const onErr = (err) => {
 				          clearTimeout(t); this.peer.off('open', onOpen);
@@ -5023,7 +5024,7 @@
 				    } else {
 				      this.peer = new Peer(PEER_CONFIG);
 				      await new Promise((resolve, reject) => {
-				        const t = setTimeout(() => reject(new Error('timeout')), 25000);
+				        const t = setTimeout(() => reject(new Error('timeout')), 60000);
 				        const onOpen = () => { clearTimeout(t); this.peer.off('error', onErr); resolve(); };
 				        const onErr = (err) => {
 				          clearTimeout(t); this.peer.off('open', onOpen);
@@ -5036,7 +5037,7 @@
 				      this.peer.on('disconnected', () => { try { this.peer.reconnect(); } catch(e){} });
 				      const conn = this.peer.connect(hostPeerId, { reliable: true });
 				      await new Promise((resolve, reject) => {
-				        const t = setTimeout(() => reject(new Error('host-timeout')), 25000);
+				        const t = setTimeout(() => reject(new Error('host-timeout')), 60000);
 				        const onOpen = () => { clearTimeout(t); conn.off('error', onErr); resolve(); };
 				        const onErr = () => { clearTimeout(t); conn.off('open', onOpen); reject(new Error('host-closed')); };
 				        conn.once('open', onOpen);
@@ -5103,21 +5104,16 @@
 					conn.on("error", () => {});
 				}
 				leave() {
-					for (const conn of this.connections.values())
-						try {
-							conn.close();
-						} catch (e) {}
-					this.connections.clear();
-					this.roster.clear();
-					this.presenceData = null;
-					if (this.peer) {
-						try {
-							this.peer.destroy();
-						} catch (e) {}
-						this.peer = null;
-					}
-					this.isHost = false;
-				}
+				    for (const conn of this.connections.values()) {
+				      try { conn.close(); } catch(e){}
+				    }
+				    this.connections.clear(); this.roster.clear(); this.presenceData = null;
+				    if (this.peer) {
+				      try { this.peer.destroy(); } catch(e){}
+				      this.peer = null;
+				    }
+				    this.isHost = false;
+			  	}
 			}
 
 			// ══════════════════════════════════════════════════════════════════
@@ -5682,46 +5678,30 @@
 			}
 			async function createRoom() {
 				try {
-					await runtimeReady;
-					if (!runtimeAvailable || !window.__adapter) {
-						toast("Multiplayer unavailable");
-						return;
-					}
-					roomCode = genCode();
-					isHost = true;
-					gameMode = "multiplayer";
-					await enterRoom();
-				} catch (err) {
-					console.error("[createRoom]", err);
-					toast("Failed: " + (err?.message || "unknown"));
-					leaveRoom();
-					showScreen("mp-menu");
+				    await runtimeReady;
+				    if (!runtimeAvailable || !window.__adapter) { toast('Multiplayer unavailable'); return; }
+				    roomCode = genCode(); isHost = true; gameMode = 'multiplayer';
+				    toast('Connecting… (server may be waking up)', true);
+				    await enterRoom();
+			  	} catch(err) {
+				    console.error('[createRoom]', err);
+				    toast('Failed: ' + (err?.message || 'unknown'));
+				    leaveRoom(); showScreen('mp-menu');
 				}
 			}
 			async function joinRoom() {
 				try {
-					await runtimeReady;
-					const code = document
-						.getElementById("room-input")
-						.value.trim()
-						.toUpperCase();
-					if (code.length < 3) {
-						toast("Enter a valid room code");
-						return;
-					}
-					if (!runtimeAvailable || !window.__adapter) {
-						toast("Multiplayer unavailable");
-						return;
-					}
-					roomCode = code;
-					isHost = false;
-					gameMode = "multiplayer";
-					await enterRoom();
-				} catch (err) {
-					console.error("[joinRoom]", err);
-					toast("Failed: " + (err?.message || "unknown"));
-					leaveRoom();
-					showScreen("mp-menu");
+				    await runtimeReady;
+				    const code = document.getElementById('room-input').value.trim().toUpperCase();
+				    if (code.length < 3) { toast('Enter a valid room code'); return; }
+				    if (!runtimeAvailable || !window.__adapter) { toast('Multiplayer unavailable'); return; }
+				    roomCode = code; isHost = false; gameMode = 'multiplayer';
+				    toast('Connecting… (server may be waking up)', true);
+				    await enterRoom();
+			  	} catch(err) {
+				    console.error('[joinRoom]', err);
+				    toast('Failed: ' + (err?.message || 'unknown'));
+				    leaveRoom(); showScreen('mp-menu');
 				}
 			}
 
@@ -8362,19 +8342,14 @@
 				});
 
 			function leaveRoom() {
-				stopKeepAlive();
-				roomCode = "";
-				isHost = false;
-				gamePhase = "lobby";
-				iAmKicked = false;
-				stopWaitingPoll();
-				clearBots();
-				if (namedRoom) {
-					try {
-						namedRoom.leave();
-					} catch (e) {}
-					namedRoom = null;
-				}
+			  roomCode = ''; isHost = false; gamePhase = 'lobby'; iAmKicked = false;
+			  stopWaitingPoll();
+			  stopKeepAlive();
+			  clearBots();
+			  if (namedRoom) {
+			    try { namedRoom.leave(); } catch(e) { console.warn('[zetris] leaveRoom error:', e); }
+			    namedRoom = null;
+			  }
 			}
 			function copyRoomCode() {
 				if (!roomCode) {
