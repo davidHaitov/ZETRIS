@@ -57,13 +57,11 @@
 
 			/* Menu-only Tetris background */
 			#menu-bg-canvas {
-				position: fixed;
-				inset: 0;
-				z-index: 0;
-				pointer-events: none;
-				opacity: 0.55;
-				display: block;
-			}
+			    position: fixed; z-index: 0;
+			    pointer-events: none;
+			    opacity: 0.55;
+			    display: block;
+		  	}
 			body.in-game #menu-bg-canvas {
 				display: none;
 			}
@@ -4976,100 +4974,77 @@
 					});
 				}
 				async join(roomCode, asHost) {
-					this.roomCode = roomCode;
-					this.isHost = !!asHost;
-					const hostPeerId = "zetris-" + roomCode;
-					if (this.peer) {
-						for (const conn of this.connections.values())
-							try {
-								conn.close();
-							} catch (e) {}
-						this.connections.clear();
-						this.roster.clear();
-						this.presenceData = null;
-						try {
-							this.peer.destroy();
-						} catch (e) {}
-						this.peer = null;
-						await new Promise((r) => setTimeout(r, 500));
-					}
-					if (this.isHost) {
-						this.peer = new Peer(hostPeerId, PEER_CONFIG);
-						await new Promise((resolve, reject) => {
-							const t = setTimeout(
-								() => reject(new Error("timeout")),
-								12000,
-							);
-							const onOpen = () => {
-								clearTimeout(t);
-								this.peer.off("error", onErr);
-								resolve();
-							};
-							const onErr = (err) => {
-								clearTimeout(t);
-								this.peer.off("open", onOpen);
-								if (err && err.type === "unavailable-id")
-									reject(new Error("room-taken"));
-								else if (err && err.type === "network")
-									reject(new Error("network"));
-								else reject(err);
-							};
-							this.peer.once("open", onOpen);
-							this.peer.once("error", onErr);
-						});
-						this.peer.on("connection", (conn) =>
-							this._setupConnection(conn),
-						);
-						this.peer.on("disconnected", () => {
-							try {
-								this.peer.reconnect();
-							} catch (e) {}
-						});
-					} else {
-						this.peer = new Peer(PEER_CONFIG);
-						await new Promise((resolve, reject) => {
-							const t = setTimeout(
-								() => reject(new Error("timeout")),
-								12000,
-							);
-							const onOpen = () => {
-								clearTimeout(t);
-								this.peer.off("error", onErr);
-								resolve();
-							};
-							const onErr = (err) => {
-								clearTimeout(t);
-								this.peer.off("open", onOpen);
-								if (err && err.type === "network")
-									reject(new Error("network"));
-								else reject(err);
-							};
-							this.peer.once("open", onOpen);
-							this.peer.once("error", onErr);
-						});
-						const conn = this.peer.connect(hostPeerId, {reliable: true});
-						await new Promise((resolve, reject) => {
-							const t = setTimeout(
-								() => reject(new Error("host-timeout")),
-								12000,
-							);
-							const onOpen = () => {
-								clearTimeout(t);
-								conn.off("error", onErr);
-								resolve();
-							};
-							const onErr = () => {
-								clearTimeout(t);
-								conn.off("open", onOpen);
-								reject(new Error("host-closed"));
-							};
-							conn.once("open", onOpen);
-							conn.once("error", onErr);
-						});
-						this._setupConnection(conn);
-					}
-					return this;
-				}
+				    this.roomCode = roomCode; this.isHost = !!asHost;
+				    const hostPeerId = 'zetris-' + roomCode;
+				    if (this.peer) {
+				      for (const conn of this.connections.values()) try { conn.close(); } catch(e){}
+				      this.connections.clear(); this.roster.clear(); this.presenceData = null;
+				      try { this.peer.destroy(); } catch(e){}
+				      this.peer = null;
+				      await new Promise(r => setTimeout(r, 500));
+				    }
+				    // Retry: signaling may be sleeping (Render free tier cold start ~20-30s)
+				    const maxAttempts = 3;
+				    let lastErr = null;
+				    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+				      try {
+				        if (this.peer) { try { this.peer.destroy(); } catch(e){} this.peer = null; }
+				        await this._joinOnce(hostPeerId);
+				        return this;
+				      } catch (err) {
+				        lastErr = err;
+				        if (err.message === 'room-taken') throw err;
+				        if (attempt < maxAttempts) {
+				          console.warn('[zetris] join attempt ' + attempt + ' failed:', err.message, '— retrying');
+				          await new Promise(r => setTimeout(r, 1500 * attempt));
+				        }
+				      }
+				    }
+				    throw lastErr;
+				  }
+				
+				  async _joinOnce(hostPeerId) {
+				    if (this.isHost) {
+				      this.peer = new Peer(hostPeerId, PEER_CONFIG);
+				      await new Promise((resolve, reject) => {
+				        const t = setTimeout(() => reject(new Error('timeout')), 25000);
+				        const onOpen = () => { clearTimeout(t); this.peer.off('error', onErr); resolve(); };
+				        const onErr = (err) => {
+				          clearTimeout(t); this.peer.off('open', onOpen);
+				          if (err && err.type === 'unavailable-id') reject(new Error('room-taken'));
+				          else if (err && err.type === 'network') reject(new Error('network'));
+				          else reject(err);
+				        };
+				        this.peer.once('open', onOpen);
+				        this.peer.once('error', onErr);
+				      });
+				      this.peer.on('connection', conn => this._setupConnection(conn));
+				      this.peer.on('disconnected', () => { try { this.peer.reconnect(); } catch(e){} });
+				    } else {
+				      this.peer = new Peer(PEER_CONFIG);
+				      await new Promise((resolve, reject) => {
+				        const t = setTimeout(() => reject(new Error('timeout')), 25000);
+				        const onOpen = () => { clearTimeout(t); this.peer.off('error', onErr); resolve(); };
+				        const onErr = (err) => {
+				          clearTimeout(t); this.peer.off('open', onOpen);
+				          if (err && err.type === 'network') reject(new Error('network'));
+				          else reject(err);
+				        };
+				        this.peer.once('open', onOpen);
+				        this.peer.once('error', onErr);
+				      });
+				      this.peer.on('disconnected', () => { try { this.peer.reconnect(); } catch(e){} });
+				      const conn = this.peer.connect(hostPeerId, { reliable: true });
+				      await new Promise((resolve, reject) => {
+				        const t = setTimeout(() => reject(new Error('host-timeout')), 25000);
+				        const onOpen = () => { clearTimeout(t); conn.off('error', onErr); resolve(); };
+				        const onErr = () => { clearTimeout(t); conn.off('open', onOpen); reject(new Error('host-closed')); };
+				        conn.once('open', onOpen);
+				        conn.once('error', onErr);
+				      });
+				      this._setupConnection(conn);
+				    }
+				  }
 				_setupConnection(conn) {
 					this.connections.set(conn.peer, conn);
 					conn.on("data", (msg) => {
@@ -5629,6 +5604,7 @@
 				abilityChoiceTimer = null,
 				countdownInterval = null,
 				waitingPollTimer = null;
+			let keepAliveTimer = null;
 			let gamePhase = "lobby";
 			let gameMode = "solo";
 			let runtimeReady = null;
@@ -5989,13 +5965,23 @@
 					gamePhase = "waiting";
 					updatePlayerList([]);
 					startWaitingPoll();
+					startKeepAlive();
 				} catch (err) {
 					console.error("[enterRoom]", err);
 					toast("Failed: " + (err?.message || "unknown"));
 					showScreen("mp-menu");
 				}
 			}
-
+			function startKeepAlive() {
+			  stopKeepAlive();
+			  keepAliveTimer = setInterval(() => {
+			    if (!namedRoom) return;
+			    try { namedRoom.emit('__keepalive', { t: Date.now() }); } catch(e){}
+			  }, 15000);
+			}
+			function stopKeepAlive() {
+			  if (keepAliveTimer) { clearInterval(keepAliveTimer); keepAliveTimer = null; }
+			}
 			function startWaitingPoll() {
 				stopWaitingPoll();
 				waitingPollTimer = setInterval(() => {
@@ -7286,6 +7272,7 @@
 				}
 			}
 			function fullCleanup() {
+				stopKeepAlive();
 				cleanupTimers();
 				stopWaitingPoll();
 				stopBotLoops();
@@ -7974,149 +7961,144 @@
 
 			// ═══ MENU BACKGROUND TETRIS ═══
 			(function initMenuBg() {
-				const canvas = document.getElementById("menu-bg-canvas");
-				if (!canvas) return;
-				const ctx = canvas.getContext("2d");
-				let cols = 0,
-					rows = 0,
-					cell = 0;
-				let board = [];
-				let current = null;
-				let lastDrop = 0,
-					lastSpawn = 0;
-				let currentColor = 1;
-				function resize() {
-					canvas.width = window.innerWidth;
-					canvas.height = window.innerHeight;
-					// Larger cells, fewer columns/rows so pieces are visible
-					cell = Math.max(
-						40,
-						Math.round(Math.min(canvas.width / 18, canvas.height / 14)),
-					);
-					cols = Math.ceil(canvas.width / cell);
-					rows = Math.ceil(canvas.height / cell);
-					board = Array.from({length: rows}, () => Array(cols).fill(0));
-				}
-				function makeBagMenu() {
-					const bag = [...PIECE_KEYS];
-					for (let i = bag.length - 1; i > 0; i--) {
-						const j = Math.floor(Math.random() * (i + 1));
-						[bag[i], bag[j]] = [bag[j], bag[i]];
-					}
-					return bag;
-				}
-				let menuBag = [];
-				function spawnMenu() {
-					if (menuBag.length === 0) menuBag = makeBagMenu();
-					const key = menuBag.shift();
-					const p = PIECES[key];
-					const shape = p.shape.map((r) => [...r]);
-					const maxX = Math.max(0, cols - shape[0].length);
-					const x = Math.floor(Math.random() * (maxX + 1));
-					current = {shape, color: p.color, x, y: 0};
-					if (!validMenu(current.shape, current.x, current.y)) {
-						current = null;
-						return;
-					}
-				}
-				function validMenu(shape, x, y) {
-					for (let r = 0; r < shape.length; r++)
-						for (let c = 0; c < shape[r].length; c++) {
-							if (!shape[r][c]) continue;
-							const nx = x + c,
-								ny = y + r;
-							if (nx < 0 || nx >= cols || ny >= rows) return false;
-							if (ny >= 0 && board[ny][nx]) return false;
-						}
-					return true;
-				}
-				function dropMenu() {
-					if (!current) return;
-					if (validMenu(current.shape, current.x, current.y + 1)) {
-						current.y++;
-					} else {
-						for (let r = 0; r < current.shape.length; r++)
-							for (let c = 0; c < current.shape[r].length; c++) {
-								if (!current.shape[r][c]) continue;
-								const ny = current.y + r,
-									nx = current.x + c;
-								if (ny >= 0 && ny < rows && nx >= 0 && nx < cols)
-									board[ny][nx] = current.color;
-							}
-						current = null;
-						// Clear lines
-						for (let r = rows - 1; r >= 0; r--) {
-							if (board[r].every((v) => v)) {
-								board.splice(r, 1);
-								board.unshift(Array(cols).fill(0));
-								r++;
-							}
-						}
-					}
-				}
-				function drawMenu() {
-					ctx.clearRect(0, 0, canvas.width, canvas.height);
-					for (let r = 0; r < rows; r++)
-						for (let c = 0; c < cols; c++) {
-							const v = board[r][c];
-							if (!v) continue;
-							const color = COLORS[v];
-							ctx.globalAlpha = 0.5;
-							ctx.fillStyle = color;
-							ctx.fillRect(
-								c * cell + 1,
-								r * cell + 1,
-								cell - 2,
-								cell - 2,
-							);
-							ctx.globalAlpha = 0.2;
-							ctx.fillStyle = "rgba(255,255,255,0.4)";
-							ctx.fillRect(c * cell + 1, r * cell + 1, cell - 2, 2);
-							ctx.globalAlpha = 1;
-						}
-					if (current) {
-						for (let r = 0; r < current.shape.length; r++)
-							for (let c = 0; c < current.shape[r].length; c++) {
-								if (!current.shape[r][c]) continue;
-								const nx = current.x + c,
-									ny = current.y + r;
-								if (ny < 0) continue;
-								const color = COLORS[current.color];
-								ctx.globalAlpha = 0.7;
-								ctx.fillStyle = color;
-								ctx.fillRect(
-									nx * cell + 1,
-									ny * cell + 1,
-									cell - 2,
-									cell - 2,
-								);
-								ctx.globalAlpha = 0.3;
-								ctx.fillStyle = "rgba(255,255,255,0.5)";
-								ctx.fillRect(nx * cell + 1, ny * cell + 1, cell - 2, 2);
-								ctx.globalAlpha = 1;
-							}
-					}
-				}
-				function loop() {
-					if (!document.body.classList.contains("in-game")) {
-						const now = performance.now();
-						if (now - lastDrop > 200) {
-							dropMenu();
-							lastDrop = now;
-						}
-						if (!current && now - lastSpawn > 300) {
-							spawnMenu();
-							lastSpawn = now;
-						}
-						drawMenu();
-					}
-					requestAnimationFrame(loop);
-				}
-				window.addEventListener("resize", resize);
-				resize();
-				loop();
+			  const canvas = document.getElementById('menu-bg-canvas');
+			  if (!canvas) return;
+			  const ctx = canvas.getContext('2d');
+			  let cols = 0, rows = 0, cell = 0;
+			  let board = [];
+			  let current = null;
+			  let lastDrop = 0, lastSpawn = 0;
+			  let clearRows = [];
+			  let clearStart = 0;
+			  const CLEAR_MS = 420;
+			
+			  function resize() {
+			    // 38–56px cells — big enough to see, small enough to fit
+			    cell = Math.max(38, Math.min(56, Math.floor(Math.min(window.innerWidth / 24, window.innerHeight / 16))));
+			    cols = Math.floor(window.innerWidth / cell);
+			    rows = Math.floor(window.innerHeight / cell);
+			    canvas.width = cols * cell;
+			    canvas.height = rows * cell;
+			    canvas.style.width = canvas.width + 'px';
+			    canvas.style.height = canvas.height + 'px';
+			    // Center on screen
+			    canvas.style.left = Math.max(0, (window.innerWidth - canvas.width) / 2) + 'px';
+			    canvas.style.top = Math.max(0, (window.innerHeight - canvas.height) / 2) + 'px';
+			    board = Array.from({length: rows}, () => Array(cols).fill(0));
+			    current = null;
+			    clearRows = [];
+			  }
+			  function makeBagMenu() {
+			    const bag = [...PIECE_KEYS];
+			    for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; }
+			    return bag;
+			  }
+			  let menuBag = [];
+			  function spawnMenu() {
+			    if (menuBag.length === 0) menuBag = makeBagMenu();
+			    const key = menuBag.shift();
+			    const p = PIECES[key];
+			    const shape = p.shape.map(r => [...r]);
+			    const maxX = Math.max(0, cols - shape[0].length);
+			    const x = Math.floor(Math.random() * (maxX + 1));
+			    current = { shape, color: p.color, x, y: 0 };
+			    if (!validMenu(current.shape, current.x, current.y)) { current = null; }
+			  }
+			  function validMenu(shape, x, y) {
+			    for (let r = 0; r < shape.length; r++) for (let c = 0; c < shape[r].length; c++) {
+			      if (!shape[r][c]) continue;
+			      const nx = x + c, ny = y + r;
+			      if (nx < 0 || nx >= cols || ny >= rows) return false;
+			      if (ny >= 0 && board[ny][nx]) return false;
+			    }
+			    return true;
+			  }
+			  function dropMenu() {
+			    if (!current || clearRows.length > 0) return;
+			    if (validMenu(current.shape, current.x, current.y + 1)) { current.y++; }
+			    else {
+			      for (let r = 0; r < current.shape.length; r++) for (let c = 0; c < current.shape[r].length; c++) {
+			        if (!current.shape[r][c]) continue;
+			        const ny = current.y + r, nx = current.x + c;
+			        if (ny >= 0 && ny < rows && nx >= 0 && nx < cols) board[ny][nx] = current.color;
+			      }
+			      current = null;
+			      for (let r = rows - 1; r >= 0; r--) if (board[r].every(v => v)) clearRows.push(r);
+			      if (clearRows.length) clearStart = performance.now();
+			    }
+			  }
+			  function drawMenu() {
+			    ctx.clearRect(0, 0, canvas.width, canvas.height);
+			    // Grid lines — visible but subtle
+			    ctx.strokeStyle = 'rgba(0,255,213,0.07)';
+			    ctx.lineWidth = 1;
+			    for (let c = 0; c <= cols; c++) {
+			      ctx.beginPath(); ctx.moveTo(c * cell + 0.5, 0); ctx.lineTo(c * cell + 0.5, canvas.height); ctx.stroke();
+			    }
+			    for (let r = 0; r <= rows; r++) {
+			      ctx.beginPath(); ctx.moveTo(0, r * cell + 0.5); ctx.lineTo(canvas.width, r * cell + 0.5); ctx.stroke();
+			    }
+			
+			    const clearing = clearRows.length > 0;
+			    const clearT = clearing ? Math.min(1, (performance.now() - clearStart) / CLEAR_MS) : 0;
+			
+			    for (let r = 0; r < rows; r++) {
+			      if (clearing && clearRows.includes(r)) {
+			        const flashAlpha = Math.max(0, 1 - clearT * 2.2);
+			        if (flashAlpha > 0.01) {
+			          ctx.fillStyle = `rgba(0,255,213,${flashAlpha * 0.7})`;
+			          ctx.fillRect(0, r * cell, canvas.width, cell);
+			        }
+			        continue;
+			      }
+			      for (let c = 0; c < cols; c++) {
+			        const v = board[r][c]; if (!v) continue;
+			        const color = COLORS[v];
+			        const alpha = 0.42 + Math.sin(performance.now() / 1800 + r * 0.25 + c * 0.15) * 0.12;
+			        ctx.globalAlpha = alpha;
+			        ctx.fillStyle = color;
+			        ctx.fillRect(c * cell + 1, r * cell + 1, cell - 2, cell - 2);
+			        ctx.globalAlpha = alpha * 0.5;
+			        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+			        ctx.fillRect(c * cell + 1, r * cell + 1, cell - 2, 2);
+			        ctx.globalAlpha = 1;
+			      }
+			    }
+			    if (current) {
+			      for (let r = 0; r < current.shape.length; r++) for (let c = 0; c < current.shape[r].length; c++) {
+			        if (!current.shape[r][c]) continue;
+			        const nx = current.x + c, ny = current.y + r;
+			        if (ny < 0) continue;
+			        const color = COLORS[current.color];
+			        ctx.globalAlpha = 0.72;
+			        ctx.fillStyle = color;
+			        ctx.fillRect(nx * cell + 1, ny * cell + 1, cell - 2, cell - 2);
+			        ctx.globalAlpha = 0.42;
+			        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+			        ctx.fillRect(nx * cell + 1, ny * cell + 1, cell - 2, 2);
+			        ctx.globalAlpha = 1;
+			      }
+			    }
+			    if (clearing && clearT >= 1) {
+			      const sorted = clearRows.sort((a, b) => a - b);
+			      sorted.forEach(r => { board.splice(r, 1); board.unshift(Array(cols).fill(0)); });
+			      clearRows = [];
+			    }
+			  }
+			  function loop() {
+			    if (!document.body.classList.contains('in-game')) {
+			      const now = performance.now();
+			      if (now - lastDrop > 210) { dropMenu(); lastDrop = now; }
+			      if (!current && now - lastSpawn > 320 && clearRows.length === 0) { spawnMenu(); lastSpawn = now; }
+			      drawMenu();
+			    }
+			    requestAnimationFrame(loop);
+			  }
+			  window.addEventListener('resize', resize);
+			  resize();
+			  loop();
 			})();
-
+					  
 			// ═══ MODE CARD HOVER ANIMATION ═══
 			(function initCardHover() {
 				document.querySelectorAll(".mode-card").forEach((card) => {
@@ -8380,6 +8362,7 @@
 				});
 
 			function leaveRoom() {
+				stopKeepAlive();
 				roomCode = "";
 				isHost = false;
 				gamePhase = "lobby";
@@ -8417,6 +8400,12 @@
 				true,
 			);
 
+			document.addEventListener('visibilitychange', () => {
+			  if (document.visibilityState === 'visible' && namedRoom) {
+			    try { namedRoom.emit('__keepalive', { t: Date.now() }); } catch(e){}
+			  }
+			});
+
 			window.addEventListener(
 				"keydown",
 				(e) => {
@@ -8444,6 +8433,7 @@
 				},
 				{passive: false},
 			);
+			
 
 			let _lastDangerClass = "";
 			function updateDangerOverlay() {
