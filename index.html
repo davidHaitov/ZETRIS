@@ -2322,47 +2322,82 @@
 					throw lastErr;
 				}
 				async _joinOnce(hostPeerId) {
-					if (this.isHost) {
-						this.peer = new Peer(hostPeerId, PEER_CONFIG);
-						await new Promise((resolve, reject) => {
-							const t = setTimeout(() => reject(new Error("timeout")), 60000);
-							const onOpen = () => { clearTimeout(t); this.peer.off("error", onErr); resolve(); };
-							const onErr = (err) => {
-								clearTimeout(t); this.peer.off("open", onOpen);
-								if (err && err.type === "unavailable-id") reject(new Error("room-taken"));
-								else if (err && err.type === "network") reject(new Error("network"));
-								else reject(err);
-							};
-							this.peer.once("open", onOpen);
-							this.peer.once("error", onErr);
-						});
-						this.peer.on("connection", (conn) => this._setupConnection(conn));
-						this.peer.on("disconnected", () => { try { this.peer.reconnect(); } catch (e) {} });
-					} else {
-						this.peer = new Peer(PEER_CONFIG);
-						await new Promise((resolve, reject) => {
-							const t = setTimeout(() => reject(new Error("timeout")), 60000);
-							const onOpen = () => { clearTimeout(t); this.peer.off("error", onErr); resolve(); };
-							const onErr = (err) => {
-								clearTimeout(t); this.peer.off("open", onOpen);
-								if (err && err.type === "network") reject(new Error("network"));
-								else reject(err);
-							};
-							this.peer.once("open", onOpen);
-							this.peer.once("error", onErr);
-						});
-						this.peer.on("disconnected", () => { try { this.peer.reconnect(); } catch (e) {} });
-						const conn = this.peer.connect(hostPeerId, { reliable: true });
-						// ★ FIX: register handlers BEFORE open so host's presence isn't lost
-						this._setupConnection(conn);
-						await new Promise((resolve, reject) => {
-							const t = setTimeout(() => reject(new Error("host-timeout")), 60000);
-							const onOpen = () => { clearTimeout(t); conn.off("error", onErr); resolve(); };
-							const onErr = () => { clearTimeout(t); conn.off("open", onOpen); reject(new Error("host-closed")); };
-							conn.once("open", onOpen);
-							conn.once("error", onErr);
-						});
-					}
+				    const attachCommonHandlers = () => {
+				        // ★ FIX: постоянно слушаем ошибки. НЕ выходим из комнаты из-за signaling.
+				        this.peer.on("error", (err) => {
+				            const t = err && err.type;
+				            const m = err && err.message;
+				            // Не фатальны во время матча — DataChannel'ы P2P живут отдельно
+				            if (t === "network") {
+				                console.warn("[zetris] signaling network issue (game continues):", m);
+				                return;
+				            }
+				            if (t === "peer-unavailable") {
+				                console.warn("[zetris] peer unavailable:", m);
+				                return;
+				            }
+				            if (t === "disconnected") {
+				                console.warn("[zetris] signaling disconnected");
+				                return;
+				            }
+				            if (t === "server-error") {
+				                console.warn("[zetris] signaling server-error:", m);
+				                return;
+				            }
+				            console.warn("[zetris] peer error:", t, m);
+				        });
+				
+				        // ★ FIX: debounce, иначе reconnect-шторм роняет сигналинг окончательно
+				        let _lastReconnect = 0;
+				        this.peer.on("disconnected", () => {
+				            if (this._leaving) return;
+				            const now = Date.now();
+				            if (now - _lastReconnect < 5000) return;
+				            _lastReconnect = now;
+				            try { this.peer.reconnect(); } catch (e) {}
+				        });
+				    };
+				
+				    if (this.isHost) {
+				        this.peer = new Peer(hostPeerId, PEER_CONFIG);
+				        await new Promise((resolve, reject) => {
+				            const t = setTimeout(() => reject(new Error("timeout")), 60000);
+				            const onOpen = () => { clearTimeout(t); this.peer.off("error", onErr); resolve(); };
+				            const onErr = (err) => {
+				                clearTimeout(t); this.peer.off("open", onOpen);
+				                if (err && err.type === "unavailable-id") reject(new Error("room-taken"));
+				                else if (err && err.type === "network") reject(new Error("network"));
+				                else reject(err);
+				            };
+				            this.peer.once("open", onOpen);
+				            this.peer.once("error", onErr);
+				        });
+				        attachCommonHandlers();   // ★
+				        this.peer.on("connection", (conn) => this._setupConnection(conn));
+				    } else {
+				        this.peer = new Peer(PEER_CONFIG);
+				        await new Promise((resolve, reject) => {
+				            const t = setTimeout(() => reject(new Error("timeout")), 60000);
+				            const onOpen = () => { clearTimeout(t); this.peer.off("error", onErr); resolve(); };
+				            const onErr = (err) => {
+				                clearTimeout(t); this.peer.off("open", onOpen);
+				                if (err && err.type === "network") reject(new Error("network"));
+				                else reject(err);
+				            };
+				            this.peer.once("open", onOpen);
+				            this.peer.once("error", onErr);
+				        });
+				        attachCommonHandlers();   // ★
+				        const conn = this.peer.connect(hostPeerId, { reliable: true });
+				        this._setupConnection(conn);
+				        await new Promise((resolve, reject) => {
+				            const t = setTimeout(() => reject(new Error("host-timeout")), 60000);
+				            const onOpen = () => { clearTimeout(t); conn.off("error", onErr); resolve(); };
+				            const onErr = () => { clearTimeout(t); conn.off("open", onOpen); reject(new Error("host-closed")); };
+				            conn.once("open", onOpen);
+				            conn.once("error", onErr);
+				        });
+				    }
 				}
 				_setupConnection(conn) {
 					this.connections.set(conn.peer, conn);
@@ -2703,9 +2738,18 @@
 				}
 			}
 			function onBotDied(bg) {
-				broadcastBotBoard(bg);
-				if (namedRoom) namedRoom.emit("player_died", { id: bg.id, name: bg.name, score: bg.score, lines: bg.lines, level: bg.level });
-				if (isHost && gamePhase === "playing") checkForWinner();
+			    broadcastBotBoard(bg);
+			    if (namedRoom)
+			        namedRoom.emit("player_died", {
+			            id: bg.id,
+			            name: bg.name,
+			            score: bg.score,
+			            lines: bg.lines,
+			            level: bg.level,
+			        });
+			    // ★ FIX: всегда проверяем, даже если хост уже в "dead"/"dying" — иначе раунд зависает
+			    if (isHost && gamePhase !== "round_over" && gamePhase !== "lobby" && gamePhase !== "waiting")
+			        checkForWinner();
 			}
 			function clearBots() {
 				bots.forEach((b) => { if (b.timer) { clearInterval(b.timer); b.timer = null; } });
@@ -2824,9 +2868,11 @@
 					toast("Connecting… (server may be waking up)", true);
 					await enterRoom();
 				} catch (err) {
-					console.error("[createRoom]", err);
-					toast("Failed: " + (err?.message || "unknown"));
-					leaveRoom(); showScreen("mp-menu");
+				    console.error("[createRoom]", err);
+				    toast("Failed: " + (err?.message || "unknown"));
+				    fullCleanup();
+				    leaveRoom();
+				    showScreen("mp-menu");
 				}
 			}
 			async function joinRoom() {
@@ -2839,9 +2885,11 @@
 					toast("Connecting… (server may be waking up)", true);
 					await enterRoom();
 				} catch (err) {
-					console.error("[joinRoom]", err);
-					toast("Failed: " + (err?.message || "unknown"));
-					leaveRoom(); showScreen("mp-menu");
+				    console.error("[joinRoom]", err);
+				    toast("Failed: " + (err?.message || "unknown"));
+				    fullCleanup();
+				    leaveRoom();
+				    showScreen("mp-menu");
 				}
 			}
 
@@ -2884,17 +2932,19 @@
 					try {
 						await namedRoom.join(roomCode, isHost);
 					} catch (e) {
-						console.error("[zetris] join failed:", e);
-						const code = e && e.message;
-						let msg = "Could not join room";
-						if (code === "room-taken") msg = "Room code in use";
-						else if (code === "host-timeout") msg = "Room not found";
-						else if (code === "host-closed") msg = "Host closed the room";
-						else if (code === "timeout") msg = "Connection timeout";
-						else if (code === "network") msg = "Signaling unreachable";
-						toast(msg);
-						leaveRoom(); showScreen("mp-menu");
-						return;
+					    console.error("[zetris] join failed:", e);
+					    const code = e && e.message;
+					    let msg = "Could not join room";
+					    if (code === "room-taken") msg = "Room code in use";
+					    else if (code === "host-timeout") msg = "Room not found";
+					    else if (code === "host-closed") msg = "Host closed the room";
+					    else if (code === "timeout") msg = "Connection timeout";
+					    else if (code === "network") msg = "Signaling unreachable";
+					    toast(msg);
+					    fullCleanup();       // ★ FIX
+					    leaveRoom();
+					    showScreen("mp-menu");
+					    return;
 					}
 
 					myId = namedRoom.peer.id;
@@ -2983,7 +3033,8 @@
 						if (typeof data.lines === "number") st.lines = data.lines;
 						opponentStates[data.id] = st;
 						rerenderAliveOpponents();
-						if (gamePhase === "playing") checkForWinner();
+						if (gamePhase !== "round_over" && gamePhase !== "lobby" && gamePhase !== "waiting")
+        					checkForWinner();
 					});
 					namedRoom.on("round_end", (data) => { if (data) applyRoundEnd(data); });
 					namedRoom.on("kick", ({ target }) => {
@@ -3005,9 +3056,11 @@
 					startWaitingPoll();
 					startKeepAlive();
 				} catch (err) {
-					console.error("[enterRoom]", err);
-					toast("Failed: " + (err?.message || "unknown"));
-					showScreen("mp-menu");
+				    console.error("[enterRoom]", err);
+				    toast("Failed: " + (err?.message || "unknown"));
+				    fullCleanup();       // ★ FIX
+				    leaveRoom();
+				    showScreen("mp-menu");
 				}
 			}
 			function startKeepAlive() {
@@ -3965,9 +4018,36 @@
 			}
 			// ★ FIX: allow check when host is dead but still in room
 			function checkForWinner() {
-				if (gamePhase === "round_over") return;
-				const aliveOpps = Object.keys(opponentStates).filter((id) => opponentStates[id].alive !== false);
-				if (aliveOpps.length === 0) finishRound(myId, myName);
+			    if (gamePhase === "round_over") return;
+			    const aliveOpps = Object.keys(opponentStates).filter(
+			        (id) => opponentStates[id].alive !== false,
+			    );
+			    if (aliveOpps.length > 0) return;  // ещё есть живые
+			
+			    // ★ FIX: если я сам мёртв, но хост — объявляем победителя по очкам
+			    const iAmAlive =
+			        !localPlayerDead &&
+			        game &&
+			        game.alive &&
+			        (gamePhase === "playing" || gamePhase === "dying");
+			
+			    if (iAmAlive) {
+			        finishRound(myId, myName);
+			        return;
+			    }
+			    if (!isHost) return;   // не-хост не имеет права объявлять результат
+			    // Хост мёртв — считаем по очкам среди всех
+			    let winnerId = myId,
+			        winnerName = myName,
+			        bestScore = game ? game.score : 0;
+			    for (const [id, st] of Object.entries(opponentStates)) {
+			        if ((st.score || 0) > bestScore) {
+			            bestScore = st.score;
+			            winnerId = id;
+			            winnerName = st.name || "Player";
+			        }
+			    }
+			    finishRound(winnerId, winnerName);
 			}
 			function finishRound(winnerId, winnerName) {
 				if (gamePhase === "round_over") return;
@@ -4003,9 +4083,14 @@
 			}
 
 			function returnToWaitingRoom() {
-				if (returnScheduled) return;
-				returnScheduled = true;
-				document.getElementById("my-gameover").style.display = "none";
+			    if (returnScheduled) return;
+			    returnScheduled = true;
+			    // ★ FIX: убиваем всё игровое, даже если applyRoundEnd не вызывался
+			    Sound.stopMusic();
+			    cleanupTimers();
+			    stopBotLoops();
+			    resetFX();
+			    document.getElementById("my-gameover").style.display = "none";
 				document.getElementById("eliminated-banner").style.display = "none";
 				document.body.classList.remove("spectating", "solo-mode");
 				localPlayerDead = false;
@@ -4602,7 +4687,10 @@
 
 			function leaveRoom() {
 				roomCode = ""; isHost = false; gamePhase = "lobby"; iAmKicked = false;
-				stopWaitingPoll(); stopKeepAlive(); clearBots();
+				stopWaitingPoll();
+				Sound.stopMusic();
+    			resetFX();
+				stopKeepAlive(); clearBots();
 				if (namedRoom) {
 					try { namedRoom.leave(); } catch (e) { console.warn("[zetris] leaveRoom error:", e); }
 					namedRoom = null;
@@ -4664,6 +4752,15 @@
 			setInterval(() => { if (gameRunning) updateDangerOverlay(); }, 150);
 
 			// ═══ BOOT ═══
+			// ★ FIX: не позволяем unhandled rejection/error убить стейт
+			window.addEventListener("unhandledrejection", (e) => {
+			    console.error("[zetris unhandled rejection]", e.reason);
+			    e.preventDefault();
+			});
+			window.addEventListener("error", (e) => {
+			    // не авто-выходим, только логируем
+			    console.error("[zetris window.error]", e.message);
+			});
 			Sound.init();
 			setupSettingsUI();
 			applySettingsToUI();
