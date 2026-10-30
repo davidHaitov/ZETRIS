@@ -3974,14 +3974,58 @@
 					// ★ FIX: even a dead host must check for winner
 					if (isHost) checkForWinner();
 					setTimeout(() => {
-						if (gamePhase === "round_over" || gamePhase === "gameover") {
-							if (renderLoop) { cancelAnimationFrame(renderLoop); renderLoop = null; }
-							return;
-						}
-						gamePhase = "dead";
-						if (renderLoop) { cancelAnimationFrame(renderLoop); renderLoop = null; }
-						enterSpectatorMode(reason, stats);
-					}, 1400);
+				        if (gamePhase === "round_over" || gamePhase === "gameover") {
+				            if (renderLoop) {
+				                cancelAnimationFrame(renderLoop);
+				                renderLoop = null;
+				            }
+				            return;
+				        }
+				
+				        // ★ NEW: если других людей нет — не входим в наблюдение, показываем DEFEAT
+				        const aliveOppsNow = Object.keys(opponentStates).filter(
+				            (id) => opponentStates[id].alive !== false,
+				        );
+				        const aliveHumansNow = aliveOppsNow.filter((id) => !id.startsWith("bot-"));
+				        if (aliveHumansNow.length === 0) {
+				            if (isHost) {
+				                // Хост должен был уже это сделать в checkForWinner();
+				                // если нет (обрыв event'а) — доделываем
+				                const botWinner =
+				                    aliveOppsNow.find((id) => id.startsWith("bot-")) || "bot-1";
+				                const botName = opponentStates[botWinner]?.name || "BOT";
+				                finishRound(botWinner, botName);
+				            } else {
+				                // Non-host: локально показываем DEFEAT (хост тоже пришлёт round_end)
+				                gamePhase = "gameover";
+				                if (renderLoop) {
+				                    cancelAnimationFrame(renderLoop);
+				                    renderLoop = null;
+				                }
+				                Sound.stopMusic();
+				                cleanupTimers();
+				                stopBotLoops();
+				                const botWinner =
+				                    aliveOppsNow.find((id) => id.startsWith("bot-")) || "bot-1";
+				                const botName = opponentStates[botWinner]?.name || "BOT";
+				                showOverlay(
+				                    "DEFEAT",
+				                    botName + " outlasted you",
+				                    "var(--danger)",
+				                    stats,
+				                    false,
+				                );
+				            }
+				            return;
+				        }
+				
+				        gamePhase = "dead";
+				        if (renderLoop) {
+				            cancelAnimationFrame(renderLoop);
+				            renderLoop = null;
+				        }
+				        enterSpectatorMode(reason, stats);
+				    }, 1400);
 				}
 			}
 			function enterSpectatorMode(reason, stats) {
@@ -4019,24 +4063,46 @@
 			// ★ FIX: allow check when host is dead but still in room
 			function checkForWinner() {
 			    if (gamePhase === "round_over") return;
+			
 			    const aliveOpps = Object.keys(opponentStates).filter(
 			        (id) => opponentStates[id].alive !== false,
 			    );
-			    if (aliveOpps.length > 0) return;  // ещё есть живые
-			
-			    // ★ FIX: если я сам мёртв, но хост — объявляем победителя по очкам
+			    const aliveHumans = aliveOpps.filter((id) => !id.startsWith("bot-"));
 			    const iAmAlive =
 			        !localPlayerDead &&
 			        game &&
 			        game.alive &&
 			        (gamePhase === "playing" || gamePhase === "dying");
 			
+			    // Другие люди ещё живы — раунд продолжается (наблюдение нормально)
+			    if (aliveHumans.length > 0) return;
+			
+			    // Я последний живой человек — я победил
 			    if (iAmAlive) {
 			        finishRound(myId, myName);
 			        return;
 			    }
-			    if (!isHost) return;   // не-хост не имеет права объявлять результат
-			    // Хост мёртв — считаем по очкам среди всех
+			
+			    // Все люди мертвы. Финал объявляет только хост.
+			    if (!isHost) return;
+			
+			    // Есть живые боты → побеждает бот с наибольшим счётом (ты = DEFEAT)
+			    if (aliveOpps.length > 0) {
+			        let winnerId = aliveOpps[0];
+			        let winnerName = opponentStates[winnerId]?.name || "BOT";
+			        let bestScore = opponentStates[winnerId]?.score || 0;
+			        for (const id of aliveOpps) {
+			            if ((opponentStates[id]?.score || 0) > bestScore) {
+			                bestScore = opponentStates[id].score;
+			                winnerId = id;
+			                winnerName = opponentStates[id].name || "BOT";
+			            }
+			        }
+			        finishRound(winnerId, winnerName);
+			        return;
+			    }
+			
+			    // Никто не жив — считаем по очкам среди всех
 			    let winnerId = myId,
 			        winnerName = myName,
 			        bestScore = game ? game.score : 0;
@@ -4076,7 +4142,15 @@
 				title.style.color = isWin ? "var(--lime)" : "var(--danger)";
 				title.classList.toggle("win", isWin);
 				reason.textContent = isWin ? "You outlasted every rival" : winnerName + " won the match";
-				document.getElementById("gameover-stats-box").style.display = "none";
+				if (game && gameMode === "multiplayer") {
+				    document.getElementById("go-score").textContent = game.score.toLocaleString();
+				    document.getElementById("go-lines").textContent = game.lines;
+				    document.getElementById("go-level").textContent = game.level;
+				    document.getElementById("go-attack").textContent = game.totalAttack;
+				    document.getElementById("gameover-stats-box").style.display = "";
+				} else {
+				    document.getElementById("gameover-stats-box").style.display = "none";
+				}
 				document.getElementById("round-return-btn").style.display = "";
 				overlay.style.display = "flex";
 				bgOverlay.className = "gameover";
